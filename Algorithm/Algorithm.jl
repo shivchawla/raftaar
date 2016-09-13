@@ -1,17 +1,5 @@
 
-type AlgorithmParameters
-	slippagemodel::SlippageModel
-	feemodel::FeeModel
-	brokeragemodel::BrokerModel
-	marginmodel::MarginModel
-	cancelpolicy::OrderDuration
-	benchmark::SecuritySymbol
-	seedCash::Float64
-
-end
-
-@enum AlgorithmStatus
-    DeployError = 1    #Error compiling algorithm at start
+#=    DeployError = 1    #Error compiling algorithm at start
     InQueue = 2        #Waiting for a server
     Running = 3        #Running algorithm
     Stopped = 4        #Stopped algorithm or exited with runtime errors
@@ -22,37 +10,25 @@ end
     Invalid = 9		   #Error in the algorithm id (not used).
     LoggingIn  = 10    #The algorithm is logging into the brokerage
     Initializing = 11  #The algorithm is initializing
+=#
+
+include("Universe.jl")
+include("TradingEnvironment.jl")
+include("../Account/Account.jl")
+include("../Execution/Brokerage.jl")
+
+@enum AlgorithmStatus DeployError InQueue Running Stopped Liquidated Deleted Completed RuntimeError LoggingIn Initializing
         
 type Algorithm
 	algorithmid::ASCIIString
 	status::AlgorithmStatus
-	portfolio::Portfolio
+	account::Account
 	universe::Universe
-	blotter::Blotter
 	tradeenv::TradingEnvironment
-	algoparameters::AlgorithmParameters
-
-	Algorithm(algorithmid::ASCIIString, status::AlgorithmStatus, portfolio::Portfolio, universe::Universe, 
-				blotter::Blotter, tradeenv::TradingEnvironment, algoparameters::AlgorithmParameters)
-	= new(algorithmid, status, portfolio, universe, blotter, tradeenv, algoparameters)
-
+	brokerage::BacktestBrokerage
 end
 
-Algorithm() = Algorithm(ASCIIString(), AlgorithmStatus.Initializing, Portfolio(), Universe(),
-						Blotter(), TradingEnvironment(), AlgorithmParameters())
-
-
-function getfeemodel(algorithm::Algorithm) 
-	return algorithm.algoparameter.feemodel
-end
-
-function initialize()
-	
-end
-
-function setalgorithmid!(algorithm::Algorithm)
-	
-end
+Algorithm() = Algorithm("", AlgorithmStatus(Initializing), Account(), Universe(), TradingEnvironment(), BacktestBrokerage())
 
 
 

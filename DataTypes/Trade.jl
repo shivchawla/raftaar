@@ -1,17 +1,15 @@
 type Trade
   id::ASCIIString
   security::Security
-  amount::Int64
+  quantity::Int64
   entryPrice::Float64
   exitPrice::Float64
   entryTime::DateTime
   exitTime::DateTime
-
-  function Trade(id::ASCIIString, security::Security, amount::Int64, entryPrice::Float64,
-                  exitPrice::Float64, entryTime::DateTime, exitTime::DateTime)
-    new(id, security, amount, entryPrice, exitPrice, entryTime, exitTime)
-  end
+  direction::TradeDirection
+  profitloss::Float64
+  totalfees::Float64
+  mae::Float64
+  mfe::Float64
+  endtradedrawdown::Float64
 end
-
-
-Trade() = Trade("",Security(), 0, 0.0, 0.0 DateTime.Now(), DateTime.Now())
