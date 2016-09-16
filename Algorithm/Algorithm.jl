@@ -16,9 +16,12 @@ include("Universe.jl")
 include("TradingEnvironment.jl")
 include("../Account/Account.jl")
 include("../Execution/Brokerage.jl")
+include("../Performance/Performance.jl")
+
+using DataStructures
 
 @enum AlgorithmStatus DeployError InQueue Running Stopped Liquidated Deleted Completed RuntimeError LoggingIn Initializing
-        
+  
 type Algorithm
 	algorithmid::ASCIIString
 	status::AlgorithmStatus
@@ -26,11 +29,29 @@ type Algorithm
 	universe::Universe
 	tradeenv::TradingEnvironment
 	brokerage::BacktestBrokerage
+    accounttracker::AccountTracker #To track evolution of account with time
+    cashtracker::CashTracker
 end
 
-Algorithm() = Algorithm("", AlgorithmStatus(Initializing), Account(), Universe(), TradingEnvironment(), BacktestBrokerage())
+Algorithm() = Algorithm("", AlgorithmStatus(Initializing), Account(), 
+                                            Universe(), TradingEnvironment(), 
+                                            BacktestBrokerage(), Dict{DateTime, Account}(), 
+                                            Dict{DateTime, Float64}())
 
+function updateaccounttracker!(algorithm::Algorithm)
+    accountcopy = deepcopy(algorithm.account)
+    algorithm.accounttracker[getcurrentdatetime(algorithm.tradeenv)] = accountcopy
+end
 
+function setcash!(algorithm::Algorithm, cash::Float64)
+    algorithm.cashtracker[getcurrentdatetime(algorithm.tradeenv)] = cash    
+    setcash!(algorithm.account, cash)
+end
+ 
+function addcash!(algorithm::Algorithm, cash::Float64)
+    algorithm.cashtracker[getcurrentdatetime(algorithm.tradeenv)] = cash    
+    addcash!(algorithm.account, cash)
+end
 
 
 

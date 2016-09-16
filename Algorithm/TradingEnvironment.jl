@@ -43,6 +43,10 @@ function setcurrentdatetime!(tradeenv::TradingEnvironment, datetime::DateTime)
   end
 end
 
+function getcurrentdatetime(tradeenv::TradingEnvironment)
+  tradeenv.currentdatetime
+end
+
 
 #=
 TradingCalendar(startdate::DateTime, enddate::DateTime, calendar::TradingCalendar)

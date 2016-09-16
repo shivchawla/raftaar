@@ -4,37 +4,28 @@ include("../DataTypes/Split.jl")
 
 type PortfolioMetrics
   netexposure::Float64
-  netvalue::Float64
-  grossvalue::Float64
   grossexposure::Float64
   shortexposure::Float64
   shortcount::Float64
   longexposure::Float64
   longcount::Float64
-  #totalprofit::Float64
-  #totalfees::Float64
-  #totalsalevolume::Float64
-  leverage::Float64
-  #totalmarginused::Float64
-  
-  #marginremaining::Float64
 end
 
 PortfolioMetrics() = PortfolioMetrics(
                       0.0, 0.0, 0.0, 
-                      0.0, 0.0, 0.0, 
-                      0.0, 0.0, 0.0)  
+                      0.0, 0.0, 0.0)
 
 type Portfolio
   cash::Float64
   positions::Dict{SecuritySymbol, Position}
+  metrics::PortfolioMetrics
 end
 
-Portfolio() = Portfolio(0.0, Dict())
+Portfolio() = Portfolio(0.0, Dict(), PortfolioMetrics())
 
 getindex(portfolio::Portfolio, symbol::SecuritySymbol) = get(portfolio.positions, symbol, Position())
 getindex(portfolio::Portfolio, security::Security) = get(portfolio.positions, security.symbol, Position())
-setindex!(portfolio::Portfolio, position::Position, securitysymbol::SecuritySymbol, ) = 
+setindex!(portfolio::Portfolio, position::Position, securitysymbol::SecuritySymbol) = 
                       setindex!(portfolio.positions, position, securitysymbol)
 
 
@@ -69,12 +60,22 @@ function setposition!(portfolio::Portfolio, symbol::SecuritySymbol, avgprice::Fl
   end
 end
 
-function totalportfoliovalue(portfolio::Portfolio)
-  tpv = 0
+function getportfoliovalue(portfolio::Portfolio)
+  pv = 0
   for (sec, pos) in enumerate(portfolio.positions)
-    tpv += holdingvalue(pos)
+    pv += holdingvalue(pos)
   end
-  return tpv
+  return pv
+end
+
+
+function getnetexposure(portfolio::Portfolio)
+  portfolio.metrics.netexposure
+end
+
+
+function getgrossexposure(portfolio::Portfolio)
+  portfolio.metrics.grossexposure
 end
 
 
@@ -91,6 +92,9 @@ function updateportfolioforfills!(portfolio::Portfolio, fills::Vector{OrderFill}
   for fill in fills 
     cash += updateportfolioforfill!(portfolio, fill)
   end
+
+  updateportfoliometrics!(portfolio::Portfolio)
+
   return cash
 end
 
@@ -136,6 +140,24 @@ function updateportfolioforprice!(portfolio::Portfolio, tradebars::Dict{Security
         updatepositionforprice!(position, tradebars[securitysymbol][1])
       end
   end 
+
+  updateportfoliometrics!(portfolio::Portfolio)
+end
+
+
+function updateportfoliometrics!(portfolio::Portfolio) 
+  
+  portfolio.metrics = PortfolioMetrics()
+
+  for (symbol, position) in portfolio.positions
+    portfolio.metrics.netexposure += position.quantity * position.lastprice  
+    portfolio.metrics.grossexposure += abs(position.quantity * position.lastprice)
+    portfolio.metrics.shortexposure += position.quantity < 0 ? abs(position.quantity * position.lastprice) : 0.0
+    portfolio.metrics.shortcount +=  position.quantity < 0 ? 1 : 0
+    portfolio.metrics.longexposure += position.quantity > 0 ? abs(position.quantity * position.lastprice) : 0.0
+    portfolio.metrics.longcount += position.quantity > 0 ? 1 : 0
+  end
+
 end
 
 

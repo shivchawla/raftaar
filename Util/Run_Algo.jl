@@ -45,12 +45,12 @@ function Evaluate(data::DataFrame)
 end=#
 
 
-include("../Engine/Raftaar.jl")
+include("../Engine/API.jl")
 include("../Examples/firstalgorithm.jl")
 
 using DataFrames
+using DataStructures
 #using Dates
-#using Raftaar
 
 #import Raftaar.history
 #=
@@ -59,23 +59,22 @@ Work in pipeline: Yojak
 =#
 
 
-  #const algorithm = Algorithm()
+  algorithm = Algorithm()
 
   sym = "GOOG/NASDAQ_QQQ"
   #alldata = history(sym, 1000)    
 
-  alldata  =DataFrame()
+  alldata = DataFrame()
 
   alldata[:Date] = Date(2001,01,01):Date(2016,01,31)
   #println(size(alldata,1))
   alldata[:Close] = 1.0:size(alldata,1)
 
-  DateTime(date::Date) = DateTime(Dates.year(date), Dates.month(date), Dates.day(date))
+  DateTime(date::Date) = Dates.DateTime(Dates.year(date), Dates.month(date), Dates.day(date))
 
   sd = Date(2001,01,01)
   ed = Date(2016,01,31)
 
-  
   setstartdate(DateTime(sd))
   setenddate(DateTime(ed))
   
@@ -86,10 +85,8 @@ Work in pipeline: Yojak
   
   i = 0
 
-  #println(alldata)
   for i in 1:size(alldata,1)
     
-    #println(i)
     close = alldata[i,:Close]
     datetime = DateTime(alldata[i,:Date])
 
@@ -102,30 +99,38 @@ Work in pipeline: Yojak
     tradebars[ss] = Vector{TradeBar}()
     push!(tradebars[ss], tradebar) 
 
-    #println(tradebars)
-
+       
+    #If a stock doesn't come with a price?????, liquidate at a last known price.
+    #If a stock goes through a split, position and orders are adjusted accordingly.
+    #If a stock has a dividend, cash is updated
+    #_updateportfoliofordividends()
+    #_updatportfolioforsplits()
     _updateprices(tradebars)
-    
-    #_updatePortfolioForSplitsAndDividends();
-    
-    fills = _updatependingorders(datetime) 
-    #Internal function to execute pending orders using todays's close
+
+ 
+    #Update pending orders for splits
+    #A 2:1 split causes 100 shares order to go to 200 shares       
     #What if there is a split?
     #What if there is no price and it doesnn't trade anymore?
-    _updateportfolioforfills(fills)
-    _updateportfolioforprice(datetime)
+    
+    #_updatependingordersforsplits()
+    
+    #Internal function to execute pending orders using todays's close
+    _updatependingorders() 
+        
+    _updateaccountforprice()
+    
     #Internal function to update portfolio value using today's close
-          #What if there is no price and it doesnn't trade anymore?
+    #What if there is no price and it doesnn't trade anymore?
 
     #Internal system already has the close price but not yet visible to the user
     #Internal system fetches prices for all the stocks in the portfolio 
     #and for all the stocks with pending orders.
-    #If a stock doesn't come with a price?????, liquidate at a last known price.
-    #If a stock goes through a split, position and orders are adjusted accordingly.
-    #If a stock has a dividend, cash is updated
+
+
+    #beforeclose()
 
     #once orders are placed, internal system calls onData();
-
     ondata() #this is called every data stamp, user can 
     # user defines this functions where he sets universe, 
     #creates new orders for the next session 
@@ -133,23 +138,13 @@ Work in pipeline: Yojak
     #Internal system checks policy for stocks not in universe
     #If liquidation is set to true, add additional pending orders of liquidation
 
-    #Market_Open
-
-    #Market_Close  
-
-     
-    #What if there is a split?
-    #What if there is a dividend?
-    #this willjust modify the cash value of the portfolio
-    #BUT over all portfolio value will remain the same.
-
-    #now the market is closed.....
-    #create new universe
-    #rebalance();#=or=# placeorder(); #now prepare order list fo tomorrow based on new universe
-
-
-    println(getportfoliovalue())
+    #this should only be called once a day in case of high frequency data
+    _updateaccounttracker()
   end  
+
+  _calculateperformance()
+  
+
 
   #initialize()
   #for data in alldata

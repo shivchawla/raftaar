@@ -1,3 +1,4 @@
+
 type TradeStats
     startdatetime::DateTime
     enddatetime::DateTime

@@ -44,7 +44,7 @@ end
 function getmargin(brokerage::BacktestBrokerage, order::Order)
 end
 
-function placeorder(brokerage::BacktestBrokerage, order::Order)
+function placeorder!(brokerage::BacktestBrokerage, order::Order)
 	
 	###################
 	#should do sanity checks if order can be placed....
@@ -52,7 +52,6 @@ function placeorder(brokerage::BacktestBrokerage, order::Order)
 	###################
 
 	
-
 	#assign an order id	
 	order.id = generateorderid(order)
 	order.orderstatus = OrderStatus(New)
@@ -116,9 +115,11 @@ function updatependingorders!(brokerage::BacktestBrokerage, universe::Universe)
 			#Step 3 check if account has sufficient capital to execute the order
 		end
 
+
 		if haskey(universe.tradebars, order.securitysymbol)
 			latestprice = universe.tradebars[order.securitysymbol]
 		else
+			##Give a message
 			continue
 		end
 

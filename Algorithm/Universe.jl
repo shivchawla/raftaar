@@ -1,6 +1,8 @@
 
 include("../Security/Security.jl")
-include("../DataTypes/Price.jl")
+
+@enum Resolution Tick Second Minute Hour Daily
+@enum FieldType Open High Low Close Last Volume 
 
 immutable TradeBar
   datetime::DateTime
@@ -25,39 +27,38 @@ end
 
 Universe() = Universe(Dict(), Dict())
 
-getindex(universe::Universe, symbol::SecuritySymbol) = get(universe.securities, symbol, Security())
-getindex(universe::Universe, security::Security) = get(portfolio.securities, security.symbol, Security())
+getindex(universe::Universe, symbol::SecuritySymbol) = getindex(universe.securities, symbol)
+getindex(universe::Universe, security::Security) = get(universe.securities, security.symbol, Security())
 setindex!(universe::Universe, security::Security, symbol::SecuritySymbol) = setindex!(universe.securities, security, symbol)
 
 function contains(universe::Universe, symbol::SecuritySymbol) 
 	haskey(universe.securities, symbol)
 end
 
-function adduniverse!(universe::Universe, ticker::ASCIIString, securitytype::SecurityType)	
+function adduniverse1!(universe::Universe, ticker::ASCIIString, securitytype::SecurityType)	
 	security = Security(ticker, securitytype)
-	adduniverse!(algorithm.universe, security)
+	adduniverse3!(universe, security)
 end
 
-function adduniverse!(universe::Universe, tickers::Vector{ASCIIString}, securitytype::SecurityType)
+function adduniverse2!(universe::Universe, tickers::Vector{ASCIIString}, securitytype::SecurityType)
 	for ticker in tickers
-		adduniverse!(universe, ticker, securitytype)
+		adduniverse1!(universe, ticker, securitytype)
 	end
 end
 
-function setuniverse!(universe::Universe, ticker::ASCIIString, securitytype::SecurityType)
-	universe = Universe()
-	adduniverse!(universe, ticker, securitytype)
+function setuniverse1!(universe::Universe, ticker::ASCIIString, securitytype::SecurityType)
+	resetuniverse!(universe)
+	adduniverse1!(universe, ticker, securitytype)
 end
 
-function setuniverse!(universe::Universe, tickers::Vector{ASCIIString}, securitytype::SecurityType)
-	universe = Universe()
-	adduniverse!(universe, tickers, securitytype)
+function setuniverse2!(universe::Universe, tickers::Vector{ASCIIString}, securitytype::SecurityType)
+	resetuniverse!(universe)
+	adduniverse2!(universe, tickers, securitytype)
 end
-
 
 ####################
 
-function adduniverse!(universe::Universe, security::Security)	
+function adduniverse3!(universe::Universe, security::Security)	
 	if !empty(security)
 		if !contains(universe, security.symbol)
 			universe[security.symbol] = security
@@ -65,22 +66,21 @@ function adduniverse!(universe::Universe, security::Security)
 	end
 end
 
-function adduniverse!(universe::Universe, securities::Vector{Security})
+function adduniverse4!(universe::Universe, securities::Vector{Security})
 	for security in securities
-		adduniverse!(universe, security)
+		adduniverse3!(universe, security)
 	end
 end
 
-function setuniverse!(universe::Universe, security::Security)
-	universe = Universe()
-	adduniverse!(universe, security)
+function setuniverse3!(universe::Universe, security::Security)
+	resetuniverse!(universe)
+	adduniverse3!(universe, security)
 end
 
-function setuniverse!(universe::Universe, securities::Vector{Security})
-	universe = Universe()
-	adduniverse!(universe, securities)
+function setuniverse4!(universe::Universe, securities::Vector{Security})
+	resetuniverse!(universe) 
+	adduniverse4!(universe, securities)
 end
-
 
 function getsecurity(universe::Universe, ticker::ASCIIString, securitytype::SecurityType)
 	symbol = createsymbol(ticker, securitytype)
@@ -88,7 +88,7 @@ function getsecurity(universe::Universe, ticker::ASCIIString, securitytype::Secu
 end
 
 function getsecurity(universe::Universe, symbol::SecuritySymbol)
-	get!(universe, symbol, SecuritySymbol())
+	get!(universe, symbol, Security())
 end
 
 function removesecurity!(universe::Universe, symbol::SecuritySymbol)
@@ -154,6 +154,14 @@ end
 function cantrade(universe::Universe, symbol::SecuritySymbol, datetime::DateTime)
 	security = universe[symbol]
 	cantrade(universe, security, datetime)
+end
+
+function getuniverse(universe::Universe)
+	values(universe.securities)
+end
+
+function resetuniverse!(universe::Universe)
+	universe.securities = Dict()
 end
 
 

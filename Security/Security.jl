@@ -15,7 +15,7 @@ empty(symbol::SecuritySymbol) = (symbol.id==0 && symbol.ticker=="")
 Base.hash(symbol::SecuritySymbol, h::UInt) = hash(symbol.id, h)
 
 
-immutable Security
+type Security
   symbol::SecuritySymbol
   securitytype::SecurityType
   name::ASCIIString
