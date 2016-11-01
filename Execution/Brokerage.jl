@@ -1,3 +1,7 @@
+# © AIMSQUANT PVT. LTD.
+# Author: Shiv Chawla
+# Email: shiv.chawla@aimsquant.com
+# Organization: AIMSQUANT PVT. LTD.
 
 include("OrderFill.jl")
 include("Blotter.jl")
@@ -9,6 +13,9 @@ include("../Algorithm/Universe.jl")
 
 @enum CancelPolicy EOD GTC 
 
+"""
+Types to support brokerge actions
+"""
 type BacktestBrokerage
 	blotter::Blotter
 	commission::Commission
@@ -18,32 +25,56 @@ type BacktestBrokerage
 	participationrate::Float64
 end
 
+"""
+Empty brokerage constructor
+"""
 BacktestBrokerage() = BacktestBrokerage(Blotter(), Commission(), Margin(),
 							Slippage(), CancelPolicy(EOD), 0.005)
       
+"""
+Function to set commission model
+"""
 function setcommission!(brokerage::BacktestBrokerage, commission::Commission)
 	brokerage.commission = commission
 end 
 
+"""
+Function to set margin model
+"""
 function setmargin!(brokerage::BacktestBrokerage, commission::Commission)
 	brokerage.margin = margin
 end
 
+"""
+Function to set slippage model
+"""
 function setslippage!(brokerage::BacktestBrokerage, slippage::Slippage)
 	brokerage.slippage = slippage
 end
 
+"""
+Function to set cancel policy
+"""
 function setcancelpolicy!(brokerage::BacktestBrokerage, cancelpolicy::CancelPolicy)
 	brokerage.cancelpolicy = cancelpolicy
 end
 
+"""
+Function to set participationrate
+"""
 function setparticipationrate!(brokerage::BacktestBrokerage, participationrate::Float64)
 	brokerage.participationrate = participationrate
 end
 
+"""
+Function to get margin for the order
+"""
 function getmargin(brokerage::BacktestBrokerage, order::Order)
 end
 
+"""
+Function to place order 
+"""
 function placeorder!(brokerage::BacktestBrokerage, order::Order)
 	
 	###################
@@ -65,12 +96,17 @@ end
 #	getorderstatus()
 #end
 
+"""
+Function to cancel an order based on orderid
+"""
 function cancelorder(brokerage::BacktestBrokerage, orderid::Integer)
 	order = removeopenorder!(brokerage.blotter, orderid)
 	order.orderstatus = OrderStatus(Canceled)
 end	
 
-
+"""
+Function to cancel all orders for the symbol
+"""
 function cancelallorders!(brokerage::BacktestBrokerage, symbol::SecuritySymbol)
 	blotter = brokerage.blotter
 	
@@ -81,6 +117,9 @@ function cancelallorders!(brokerage::BacktestBrokerage, symbol::SecuritySymbol)
 	end
 end
 
+"""
+Function to cancel all orders
+"""
 function cancelallorders!(brokerage::BacktestBrokerage)
 	blotter = brokerage.blotter
 
@@ -89,14 +128,23 @@ function cancelallorders!(brokerage::BacktestBrokerage)
 	end
 end
 
+"""
+Function to get all open orders
+"""
 function getopenorders(brokerage::BacktestBrokerage)
 	[getopenorders(brokerage.blotter)]
 end
 
+"""
+Function to get open orders for a security
+"""
 function getopenorders(brokerage::BacktestBrokerage, security::SecuritySymbol)
 	[getopenorders(brokerage.blotter, security)]
 end
 
+"""
+Function to update pending orders
+"""
 function updatependingorders!(brokerage::BacktestBrokerage, universe::Universe)
 
 	blotter = brokerage.blotter
@@ -119,7 +167,7 @@ function updatependingorders!(brokerage::BacktestBrokerage, universe::Universe)
 		if haskey(universe.tradebars, order.securitysymbol)
 			latestprice = universe.tradebars[order.securitysymbol]
 		else
-			##Give a message
+			##Give a id
 			continue
 		end
 
@@ -153,6 +201,9 @@ function updatependingorders!(brokerage::BacktestBrokerage, universe::Universe)
 
 end
 
+"""
+Function to generate unique orderid
+"""
 generateorderid(order::Order) = object_id(order)
 
 

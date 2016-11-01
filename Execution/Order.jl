@@ -1,10 +1,17 @@
+# © AIMSQUANT PVT. LTD.
+# Author: Shiv Chawla
+# Email: shiv.chawla@aimsquant.com
+# Organization: AIMSQUANT PVT. LTD.
+
 include("../Security/Security.jl")
 
 @enum OrderType Limit StopLimit StopMarket MarketOnOpen MarketOnClose Market
  
 @enum OrderStatus New Submitted PartiallyFilled Filled Canceled Pending None 
 
-#Order
+"""
+Encapsulate the order characteristics    
+"""
 type Order 
   id::Integer # unique order id for submission/tracking
   securitysymbol::SecuritySymbol # security symbol (NIFTY, VOLTAS)
@@ -16,14 +23,20 @@ type Order
   orderstatus::OrderStatus # :pending :complete :cancelled
   stopprice::Float64 # stop price
   stopReached::Bool # :
-  tag::ASCIIString # custom string 
+  tag::String # custom string 
 end
 
+"""
+Empty Constructor
+"""
 Order() = Order(0, SecuritySymbol(), 0, 0,
                 0, OrderType(Market), DateTime(), 0, 
                 OrderDuration(EOD), OrderStatus(New), 
                 0, false, "")
 
+"""
+More Constructors
+"""
 Order(symbol::SecuritySymbol, quantity::Int64, time::DateTime, tag = "") = 
                               Order(0, symbol, quantity, quantity, 0,
                                     OrderType(Market), time,

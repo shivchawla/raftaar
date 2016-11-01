@@ -1,3 +1,7 @@
+# © AIMSQUANT PVT. LTD.
+# Author: Shiv Chawla
+# Email: shiv.chawla@aimsquant.com
+# Organization: AIMSQUANT PVT. LTD.
 
 
 @enum DayOfWeek Monday Tuesday Wednesday Thursday Friday Saturday Sunday 
@@ -24,8 +28,8 @@ type SecurityExchangeHours
 end
 
 type SecurityExchange
-  id::ASCIIString
-  name::ASCIIString	
+  id::String
+  name::String	
   #localfrontier::DateTime
   #hours::SecurityExchangeHours  
 end

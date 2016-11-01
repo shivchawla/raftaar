@@ -1,32 +1,41 @@
+# © AIMSQUANT PVT. LTD.
+# Author: Shiv Chawla
+# Email: shiv.chawla@aimsquant.com
+# Organization: AIMSQUANT PVT. LTD.
 
-__precompile__()
+
+#Backtesting module: Raftaar
+
+__precompile__(true)
 module Raftaar
 
 import Base: ==, getindex, setindex!
+
 include("../Algorithm/Algorithm.jl")
-include("../Data/History.jl")
+#include("../Data/History.jl")
 include("../Execution/Commission.jl")
 include("../Execution/Slippage.jl")
-
-#using Base.Cartesian, Compat, Reexport
 
 export Algorithm, Universe, Security, SecuritySymbol,
        Commission, Slippage, Order, TradeBar
 
-export Resolution, CancelPolicy, SecurityType
+export Resolution, CancelPolicy, SecurityType, MessageType
 
 for s in instances(Resolution)
-    @eval export $(symbol(s))
+    @eval export $(Symbol(s))
 end
 
 for s in instances(CancelPolicy)
-    @eval export $(symbol(s))
+    @eval export $(Symbol(s))
 end
 
 for s in instances(SecurityType)
-    @eval export $(symbol(s))
+    @eval export $(Symbol(s))
 end
 
+for s in instances(MessageType)
+    @eval export $(Symbol(s))
+end
 
 export  setstartdate!, 
         setenddate!,
@@ -36,14 +45,16 @@ export  setstartdate!,
         getstartdate,
         getenddate,
         getcurrentdatetime,
-        adduniverse1!,
+        adduniverse!,
+        setuniverse!,
+        #=adduniverse1!,
         adduniverse2!,
         adduniverse3!,
         adduniverse4!,
         setuniverse1!,
         setuniverse2!,
         setuniverse3!,
-        setuniverse4!,
+        setuniverse4!,=#
         getuniverse,
         cantrade,
         setcash!,
@@ -70,7 +81,11 @@ export  setstartdate!,
         updateprices!,
         updateaccounttracker!,
         calculateperformance,
-        createsymbol;
+        createsymbol,
+        log!,
+        addvariable!,
+        checkforparent,
+        reset;
 
 end #end of Module
 

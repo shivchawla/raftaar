@@ -1,15 +1,19 @@
+# © AIMSQUANT PVT. LTD.
+# Author: Shiv Chawla
+# Email: shiv.chawla@aimsquant.com
+# Organization: AIMSQUANT PVT. LTD.
 
-using Quandl
+#using Quandl
 using DataFrames
 
 include("../DataTypes/Price.jl")
 
-#=function historyfromquandl(security::ASCIIString, startdate, enddate, resolution::Resolution, field::FieldType)
+#=function historyfromquandl(security::String, startdate, enddate, resolution::Resolution, field::FieldType)
     quandlget(security, order="des", rows=0, frequency="daily", transformation="none",
                    from=startdate, to=enddate, format="DataFrame", api_key="")#["Close"]
 end
 
-function historyfromquandl(securities::Array{ASCIIString}, startdate, enddate, resolution::Resolution, field::FieldType)
+function historyfromquandl(securities::Array{String}, startdate, enddate, resolution::Resolution, field::FieldType)
     
     bigdf = DataFrame()
     for security in securities
@@ -22,7 +26,7 @@ function historyfromquandl(securities::Array{ASCIIString}, startdate, enddate, r
     end
 end=#
 
-function historyfromquandl(security::ASCIIString, period::Int64, resolution::Resolution, field::FieldType)
+function historyfromquandl(security::String, period::Int64, resolution::Resolution, field::FieldType)
     if field == FieldType(Close)
         quandlget(security, order="des", rows=period, frequency="daily", transformation="none",
                     from="", to="", format="DataFrame", api_key="")[[:Date, :Close]]
@@ -30,7 +34,7 @@ function historyfromquandl(security::ASCIIString, period::Int64, resolution::Res
 end
 
 
-function historyfromquandl(securities::Array{ASCIIString}, period::Int64, resolution::Resolution, field::FieldType)
+function historyfromquandl(securities::Array{String}, period::Int64, resolution::Resolution, field::FieldType)
     
     bigdf = DataFrame()
     for security in securities    
@@ -47,16 +51,16 @@ function historyfromquandl(securities::Array{ASCIIString}, period::Int64, resolu
     return bigdf
 end
 
-function current(symbol::ASCIIString, field::FieldType)
+function current(symbol::String, field::FieldType)
 end
 
-function current(symbol::ASCIIString, field::FieldType)
+function current(symbol::String, field::FieldType)
 end
 
-function last(symbol::ASCIIString)
+function last(symbol::String)
 end
 
-function last(symbol::ASCIIString)
+function last(symbol::String)
 end
 
 

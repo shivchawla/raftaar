@@ -1,3 +1,8 @@
+# © AIMSQUANT PVT. LTD.
+# Author: Shiv Chawla
+# Email: shiv.chawla@aimsquant.com
+# Organization: AIMSQUANT PVT. LTD.
+
 include("Order.jl")
 include("Commission.jl")
 include("../Account/Portfolio.jl")

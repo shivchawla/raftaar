@@ -1,43 +1,63 @@
+# © AIMSQUANT PVT. LTD.
+# Author: Shiv Chawla
+# Email: shiv.chawla@aimsquant.com
+# Organization: AIMSQUANT PVT. LTD.
 
 include("Position.jl")
 include("../DataTypes/Split.jl")
 
+"""
+Type to encapsulate the aggregated analytics like 
+various exposures and security counts
+"""
 type PortfolioMetrics
   netexposure::Float64
   grossexposure::Float64
   shortexposure::Float64
-  shortcount::Float64
   longexposure::Float64
+  shortcount::Float64
   longcount::Float64
 end
 
-PortfolioMetrics() = PortfolioMetrics(
-                      0.0, 0.0, 0.0, 
-                      0.0, 0.0, 0.0)
+PortfolioMetrics() = PortfolioMetrics(0.0, 0.0, 0.0, 0.0, 0, 0)
 
+"""
+Type to encapsulate positions and aggregated metrics
+"""
 type Portfolio
-  cash::Float64
   positions::Dict{SecuritySymbol, Position}
   metrics::PortfolioMetrics
 end
 
-Portfolio() = Portfolio(0.0, Dict(), PortfolioMetrics())
+Portfolio() = Portfolio(Dict(), PortfolioMetrics())
 
+"""
+Indexing function to get position based 
+on security symbol or security directly from portfolio
+"""
 getindex(portfolio::Portfolio, symbol::SecuritySymbol) = get(portfolio.positions, symbol, Position())
 getindex(portfolio::Portfolio, security::Security) = get(portfolio.positions, security.symbol, Position())
 setindex!(portfolio::Portfolio, position::Position, securitysymbol::SecuritySymbol) = 
                       setindex!(portfolio.positions, position, securitysymbol)
 
-
-function getindex(portfolio::Portfolio, ticker::ASCIIString) 
+"""
+Indexing function to get position based on ticker
+"""
+function getindex(portfolio::Portfolio, ticker::String) 
   symbol = createsymbol(ticker, SecurityType(Equity))
   get(portfolio, symbol, Position())
 end
 
+"""
+function to get all positions in a portfolio
+"""
 function getallpositions(portfolio::Portfolio)
   values(portfolio.positions)
 end
 
+"""
+function to update/set position with average price and quantity
+"""
 function setposition!(portfolio::Portfolio, security::Security, avgprice::Float64, quantity::Int64)
   position = getposition(portfolio, security)
 
@@ -49,6 +69,9 @@ function setposition!(portfolio::Portfolio, security::Security, avgprice::Float6
   end
 end
 
+"""
+function to update/set position with average price and quantity
+"""
 function setposition!(portfolio::Portfolio, symbol::SecuritySymbol, avgprice::Float64, quantity::Int64)
   position = getposition(portfolio, symbol)
 
@@ -60,6 +83,9 @@ function setposition!(portfolio::Portfolio, symbol::SecuritySymbol, avgprice::Fl
   end
 end
 
+"""
+function to get portfolio value
+"""
 function getportfoliovalue(portfolio::Portfolio)
   pv = 0
   for (sec, pos) in enumerate(portfolio.positions)
@@ -68,17 +94,23 @@ function getportfoliovalue(portfolio::Portfolio)
   return pv
 end
 
-
+"""
+function to get netexposure of the portfolio
+"""
 function getnetexposure(portfolio::Portfolio)
   portfolio.metrics.netexposure
 end
 
-
+"""
+function to get gross exposure
+"""
 function getgrossexposure(portfolio::Portfolio)
   portfolio.metrics.grossexposure
 end
 
-
+"""
+function to get absolute of holding cost
+"""
 function totalabsoluteholdingscost(portfolio::Portfolio)
   tahc = 0
   for (sec, pos) in enumerate(portfolio.positions)
@@ -87,6 +119,9 @@ function totalabsoluteholdingscost(portfolio::Portfolio)
   return tahc
 end
 
+"""
+function to update portfolio with multiple fills
+"""
 function updateportfolioforfills!(portfolio::Portfolio, fills::Vector{OrderFill})
   cash = 0.0 
   for fill in fills 
@@ -98,6 +133,9 @@ function updateportfolioforfills!(portfolio::Portfolio, fills::Vector{OrderFill}
   return cash
 end
 
+"""
+function to update portfolio for single fill
+"""
 function updateportfolioforfill!(portfolio::Portfolio, fill::OrderFill)
    
   securitysymbol = fill.securitysymbol  
@@ -113,6 +151,9 @@ function updateportfolioforfill!(portfolio::Portfolio, fill::OrderFill)
 
 end
 
+"""
+function to update portfolio for a split
+"""  
 function updateportfolioforsplit!(portfolio::Portfolio, split::Split)
   position = portfolio[split.symbol]
    
@@ -128,10 +169,9 @@ function updateportfolioforsplit!(portfolio::Portfolio, split::Split)
     end       
 end 
 
-function addcash!(portfolio::Portfolio, extraCash::Float64)
-  #portfolio.cash += extraCash;
-end
-
+"""
+function to update portfolio for a split
+"""
 function updateportfolioforprice!(portfolio::Portfolio, tradebars::Dict{SecuritySymbol, Vector{TradeBar}}, datetime::DateTime)
 
   for position in getallpositions(portfolio)
@@ -144,7 +184,9 @@ function updateportfolioforprice!(portfolio::Portfolio, tradebars::Dict{Security
   updateportfoliometrics!(portfolio::Portfolio)
 end
 
-
+"""
+function to update portfolio metrics
+"""
 function updateportfoliometrics!(portfolio::Portfolio) 
   
   portfolio.metrics = PortfolioMetrics()

@@ -1,5 +1,10 @@
+# © AIMSQUANT PVT. LTD.
+# Author: Shiv Chawla
+# Email: shiv.chawla@aimsquant.com
+# Organization: AIMSQUANT PVT. LTD.
+
 type Trade
-  id::ASCIIString
+  id::String
   security::Security
   quantity::Int64
   entryPrice::Float64

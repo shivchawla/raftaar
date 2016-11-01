@@ -1,7 +1,16 @@
+# © AIMSQUANT PVT. LTD.
+# Author: Shiv Chawla
+# Email: shiv.chawla@aimsquant.com
+# Organization: AIMSQUANT PVT. LTD.
 
 include("../Security/Security.jl")
 include("../Execution/OrderFill.jl")
 
+"""
+Position Type
+Type to encapsulate details like underlying symbol,
+quantity, price etc. 
+"""
 type Position
   securitysymbol::SecuritySymbol
   quantity::Int64
@@ -13,6 +22,9 @@ type Position
   totaltradedvolume::Float64
 end
 
+"""
+Constructors
+"""
 Position() = Position(SecuritySymbol())
 
 Position(securitysymbol::SecuritySymbol) = Position(securitysymbol, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
@@ -23,49 +35,81 @@ Position(symbol::SecuritySymbol, quantity::Int64, averageprice::Float64, totalfe
 
 empty(position::Position) = empty(position.securitysymbol) && position.quantity == 0 && position.averageprice==0.0
 
+"""
+Holding cost of position based on average price
+"""
 function holdingcost(position::Position)
   position.quantity * position.avgprice
 end
 
+"""
+Absolute of the holding cost
+"""
 function absholdingcost(position::Position)
-  abs(position.quantity * position.avgprice)
+  abs(holdingcost(position))
 end
 
+"""
+Holding value of the position based on the last price
+"""
 function holdingvalue(position::Position)
   position.quantity * position.lastprice
 end
 
+"""
+Absolute of the holding value
+"""
 function absholdingvalue(position::Position)
-  abs(position.quantity * position.lastprice)
+  abs(holdingvalue(position))
 end
 
+"""
+Flag whether a long position
+"""
 function islong(position::Position)
   position.quantity > 0
 end
 
+"""
+Flag whether a short position
+"""
 function isshort(position::Position)
   position.quantity < 0
 end
 
+"""
+Unrealized profit % of the position 
+"""
 function unrealizedprofitpercent(position::Position)
-  absholdingcost(position) == 0.0 ? 0.0 : unrealizedpnl(position)/absholdingcost(position)
+  absholdingcost(position) == 0.0 ? 0.0 : 100.0 * unrealizedpnl(position)/absholdingcost(position)
 end
 
+"""
+Unrealized profit in position (value) 
+"""
 function unrealizedpnl(position::Position)
   orderFee = getfees(MarketOrder(position.Security, -position.quantity))
   return position.quantity * (position.lastprice -position.avgprice)  - orderFee
 end
 
+"""
+Total pnl in the position (value)
+"""
 function totalpnl(position::Position)
   return position.realizedpnl + unrealizedpnl(position)
 end
 
-
+"""
+Function to update position for latest price
+"""
 function updatepositionforprice!(position::Position, tradebar::TradeBar)
   position.lastprice = tradebar.close
   position.lasttradepnl = position.quantity * (position.lastprice - position.averageprice)
 end
 
+"""
+Function to update position for order fill
+"""
 function updatepositionforfill!(position::Position, fill::OrderFill)
 
   #apply sales value to holdings
@@ -87,15 +131,23 @@ function updatepositionforfill!(position::Position, fill::OrderFill)
 
 end    
 
+"""
+function to update totoal fee for the position
+"""
 function updatefee!(position::Position, fee::Float64)
   position.totalfees += fee
 end
 
-
+"""
+function to find whether a closing trade or extending trade
+"""
 function isclosingtrade(position::Position, fill::OrderFill)
   return (islong(position) && fill.fillquantity < 0) || (isshort(position) && fill.fillquantity > 0)
 end
 
+"""
+function to update the trade profit
+"""
 function updatetradeprofit!(position::Position, fill::OrderFill)
   #did we close or open a position further?
 
@@ -112,6 +164,9 @@ function updatetradeprofit!(position::Position, fill::OrderFill)
   
 end
 
+"""
+funtion to update the average price after an order fill
+"""
 function updateaverageprice!(position::Position, fill::OrderFill)
   
   if position.quantity == 0  

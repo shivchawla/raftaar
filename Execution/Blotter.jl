@@ -1,16 +1,30 @@
+# © AIMSQUANT PVT. LTD.
+# Author: Shiv Chawla
+# Email: shiv.chawla@aimsquant.com
+# Organization: AIMSQUANT PVT. LTD.
+
 include("Order.jl")
 include("Slippage.jl")
 include("Commission.jl")
 include("OrderFill.jl")
 
+"""
+Type to encapsulate the open orders, all orders and transactions
+"""
 type Blotter
 	openorders::Dict{SecuritySymbol, Vector{Order}}
 	orders::Vector{Order}
 	transactions::Vector{OrderFill}
 end 
 
+"""
+Empty blotter construction
+"""
 Blotter() = Blotter(Dict(), Vector(), Vector())
 
+"""
+Function to add order to the blotter
+"""
 function addorder!(blotter::Blotter, order::Order)
     
     if !haskey(blotter.openorders, order.securitysymbol)
@@ -21,10 +35,15 @@ function addorder!(blotter::Blotter, order::Order)
     push!(blotter.orders, order)
 end
 
-
+"""
+Function to get all the transactions
+"""
 function gettransactions(blotter::Blotter)
 end
 
+"""
+Function to get all the open orders
+"""
 function getopenorders(blotter::Blotter)
     openorders = Vector{Order}()
     for (symbol, orders) in blotter.openorders
@@ -33,15 +52,20 @@ function getopenorders(blotter::Blotter)
     return openorders
 end
 
+"""
+Function to get all the open orders
+"""
 function getopenorders(blotter::Blotter, symbol::SecuritySymbol)
     if haskey(blotter.openorders, symbol)
         return blotter.openorders[symbol]
     else 
         Vector{Order}()    
     end
-
 end
 
+"""
+Function to remove single order from the blotter
+"""
 function removeopenorder!(blotter::Blotter, orderid::Integer)
     for (sec, orders) in blotter.openorders
         ind = find(order->(order.id == orderid), orders)
@@ -54,12 +78,16 @@ function removeopenorder!(blotter::Blotter, orderid::Integer)
     end   
 end
 
-
+"""
+Function to remove all open orders for a security from the blotter
+"""
 function removeallopenorders!(blotter::Blotter, symbol::SecuritySymbol)
     openorders = delete!(blotter.openorders, symbol)
 end
 
-
+"""
+Function to generate fill for an order based on latest price, slippage and commission model
+"""
 function getorderfill(order::Order, slippage::Slippage, commission::Commission, participationrate::Float64, latesttradebar::TradeBar)
     fill = OrderFill(order, latesttradebar.datetime)
 
