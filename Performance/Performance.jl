@@ -4,13 +4,184 @@
 # Organization: AIMSQUANT PVT. LTD.
 
 include("PortfolioStats.jl")
+include("../Account/Account.jl")
 #include("TradeStats.jl")
 #include("../DataTypes/Trade.jl")
 
+type Performance
+    netvalue::Float64
+    dailyreturn::Float64
+    averagedailyreturn::Float64
+    annualreturn::Float64
+    totalreturn::Float64
+    annualstandarddeviation::Float64
+    annualvariance::Float64
+    sharperatio::Float64
+    informationratio::Float64
+    drawdown::Float64
+    maxdrawdown::Float64
+    period::Int
+    squareddailyreturn::Float64
+    sumsquareddailyreturn::Float64
+    sumdailyreturn::Float64
+    peaknetvalue::Float64
+end
 
-typealias AccountTracker Dict{DateTime, Account}
-typealias CashTracker Dict{DateTime, Float64}
-typealias PortfolioStatsTracker Dict{DateTime, PortfolioStats}  
+Performance() = Performance(0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0)
+
+typealias AccountTracker Dict{Date, Account}
+typealias CashTracker Dict{Date, Float64}
+typealias PerformanceTracker Dict{Date, Performance}  
+
+"""
+Updates performance of rolling window of 252 days
+"""
+function updateperformance(accounttracker::AccountTracker, cashtracker::CashTracker, performancetracker::PerformanceTracker, date::Date)
+
+    currentperformance = Performance()
+    
+    #use past performance and new netvalue and update the performance
+    sorteddates = sort(collect(keys(performancetracker)))
+
+    # Now, we need latest returns
+    # But insted we calculate the whole series again
+    # PERFORMANCE IMPROVEMENT
+    returns = computereturns(accounttracker, cashtracker)
+
+    if !isempty(sorteddates)
+        
+        #Get Latest Performance
+        lastperformance = performancetracker[sorteddates[end]]
+        
+        if length(returns) == length(sorteddates) + 1
+            latestreturn = returns[end]
+
+            if length(sorteddates) >= 252
+                firstperformance = performancetracker[sorteddates[length(sorteddates) - 252 + 1]]
+            else
+                firstperformance = performancetracker[sorteddates[1]]
+            end
+
+            currentperformance = _computecurrentperformance(firstperformance, lastperformance, latestreturn) 
+
+        end
+    
+    else
+        actkeys = sort(collect(keys(accounttracker)))
+        currentperformance = _intializepeformance(accounttracker[actkeys[1]].cash)    
+    end
+
+    performancetracker[date] = currentperformance
+
+end
+
+export updateperformance
+
+
+function _intializepeformance(netvalue::Float64)
+    performance = Performance()
+
+    performance.netvalue = netvalue    
+    performance.peaknetvalue = netvalue
+    performance.period = 1
+
+    return performance
+end
+
+function _computecurrentperformance(firstperformance::Performance, lastperformance::Performance, latestreturn::Float64)
+
+    performance = Performance()
+    
+    performance.dailyreturn = 100.0 * latestreturn
+    performance.squareddailyreturn =  performance.dailyreturn * performance.dailyreturn
+    performance.totalreturn = 100.0 * ((1.0 + lastperformance.totalreturn/100.0) * (1 + performance.dailyreturn/100.0) - 1.0)
+    performance.netvalue = lastperformance.netvalue * (1.0 + performance.dailyreturn/100.0)    
+
+    if (performance.netvalue > lastperformance.peaknetvalue) 
+        performance.peaknetvalue = performance.netvalue
+    else
+        performance.peaknetvalue = lastperformance.peaknetvalue    
+    end
+    
+    performance.drawdown = 100.0 * (performance.peaknetvalue - performance.netvalue) / performance.peaknetvalue   
+
+    if (performance.drawdown > lastperformance.maxdrawdown) 
+        performance.maxdrawdown = performance.drawdown
+    else
+        performance.maxdrawdown = lastperformance.maxdrawdown
+    end
+
+    # Now here we run a specialized algorithm that updates performance based on 
+    if lastperformance.period < 252
+        performance. period = lastperformance.period + 1
+        
+        performance.sumdailyreturn = lastperformance.sumdailyreturn + performance.dailyreturn
+        performance.sumsquareddailyreturn = lastperformance.sumsquareddailyreturn + performance.squareddailyreturn
+        
+        #annualvariance and annual standard deviation
+        performance.averagedailyreturn = (performance.sumdailyreturn / performance.period)
+        
+        performance.annualreturn = 100.0 * ((1 + performance.averagedailyreturn/100.0)^252 - 1.0)
+
+        performance.annualvariance = 252 * ((performance.sumsquareddailyreturn/performance.period) - performance.averagedailyreturn^2.0)
+        performance.annualstandarddeviation = sqrt(performance.annualvariance)
+
+        performance.sharperatio = sqrt(252) * (performance.averagedailyreturn / performance.annualstandarddeviation)
+        performance.informationratio = performance.sharperatio
+        
+    elseif lastperformance.period >= 252
+
+        performance.period = 252
+
+        performance.sumdailyreturn = lastperformance.sumdailyreturn + performance.dailyreturn - firstperformance.dailyreturn
+        performance.sumsquareddailyreturn = lastperformance.sumsquareddailyreturn + performance.squareddailyreturn - firstperformance.squareddailyreturn   
+        
+        performance.averagedailyreturn = performance.sumdailyreturn/performance.period
+        performance.annualreturn = 100.0 * ((1 + performance.averagedailyreturn/100.0)^252 - 1.0)
+        
+        performance.annualvariance = 252 * ((performance.sumsquareddailyreturn/performance.period) - performance.averagedailyreturn^2.0)
+
+        performance.annualstandarddeviation = sqrt(performance.annualvariance)
+
+        performance.sharperatio = sqrt(252) * (performance.averagedailyreturn / performance.annualstandarddeviation)
+
+        performance.informationratio = performance.sharperatio
+        performance.drawdown
+        
+    end
+
+    return performance
+
+end
+
+
+function computereturns(accounttracker, cashtracker)
+    sortedkeys = sort(collect(keys(accounttracker)))
+    returns = Vector{Float64}(1)
+
+    #push!(returns, 0.0)
+
+    if !isempty(sortedkeys)
+        firstdate = sortedkeys[1]
+        startingcaptital = accounttracker[firstdate].cash
+        netvalue = startingcaptital
+
+        for date in sortedkeys[2:end]
+            oldnetvalue = netvalue
+
+            netvalue = accounttracker[date].netvalue
+            newfunds = haskey(cashtracker, date) ? cashtracker[date] : 0.0
+            adjustednetvalue = netvalue - newfunds
+
+            rt = oldnetvalue > 0.0 ? (netvalue - newfunds - oldnetvalue)/ oldnetvalue : 0.0
+
+            push!(returns, rt)  
+
+        end
+    end
+    return returns
+end
+
 
 """
 Function to calculate performance based on account and cash history

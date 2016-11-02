@@ -37,8 +37,9 @@ type Algorithm
 	universe::Universe
 	tradeenv::TradingEnvironment
 	brokerage::BacktestBrokerage
-    accounttracker::AccountTracker #To track evolution of account with time
+    accounttracker::AccountTracker
     cashtracker::CashTracker
+    performancetracker::PerformanceTracker
     variabletracker::VariableTracker
 end
 
@@ -47,8 +48,8 @@ Algorithm empty constructor
 """
 Algorithm() = Algorithm("", AlgorithmStatus(Initializing), Account(), 
                                             Universe(), TradingEnvironment(), 
-                                            BacktestBrokerage(),AccountTracker(), 
-                                            CashTracker(), VariableTracker())
+                                            BacktestBrokerage(), AccountTracker(), 
+                                            CashTracker(), PerformanceTracker(), VariableTracker())
 
 
 """

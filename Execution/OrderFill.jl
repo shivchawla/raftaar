@@ -11,7 +11,7 @@ include("Order.jl")
 Encapsulate the characteristics of the order fill
 """
 type OrderFill
-	orderid::Int
+	orderid::UInt64
 	securitysymbol::SecuritySymbol
 	datetime::DateTime
 	orderfee::Float64
@@ -26,7 +26,7 @@ OrderFill(order::Order, datetime::DateTime, orderfee::Float64, message = "") =
 OrderFill(order::Order, datetime::DateTime) = OrderFill(order, datetime, 0.0)
 
 """
-Function to check if fill closes the order
+Function to check if order fill is complete
 """	
 function isclosed(fill::OrderFill) 
   return fill.status == OrderStatus(Filled) ||

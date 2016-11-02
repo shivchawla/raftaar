@@ -11,16 +11,18 @@ include("OrderFill.jl")
 """
 Type to encapsulate the open orders, all orders and transactions
 """
+typealias OrderTracker Dict{Date, Vector{Order}}
+
 type Blotter
 	openorders::Dict{SecuritySymbol, Vector{Order}}
-	orders::Vector{Order}
+	ordertracker::OrderTracker
 	transactions::Vector{OrderFill}
 end 
 
 """
 Empty blotter construction
 """
-Blotter() = Blotter(Dict(), Vector(), Vector())
+Blotter() = Blotter(Dict(), OrderTracker(), Vector())
 
 """
 Function to add order to the blotter
@@ -32,7 +34,16 @@ function addorder!(blotter::Blotter, order::Order)
     end 
 
     push!(blotter.openorders[order.securitysymbol], order)
-    push!(blotter.orders, order)
+    
+    #=ordertracker = blotter.ordertracker
+
+    dateoforder = Date(order.datetime)
+    if !haskey(ordertracker, dateoforder)
+        ordertracker[dateoforder] = [order]
+    end
+    
+    push!(ordertracker[dateoforder], order)=#
+
 end
 
 """
@@ -46,9 +57,10 @@ Function to get all the open orders
 """
 function getopenorders(blotter::Blotter)
     openorders = Vector{Order}()
-    for (symbol, orders) in blotter.openorders
-        append!(openorders, orders)
+    for (symbol, oos) in blotter.openorders
+        append!(openorders, oos)
     end
+
     return openorders
 end
 

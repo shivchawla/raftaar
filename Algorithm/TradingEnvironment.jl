@@ -4,7 +4,9 @@
 # Organization: AIMSQUANT PVT. LTD.
 
 include("../Security/Security.jl")
-include("../Logger/Logger.jl")
+include("../Output/Logger.jl")
+include("../Output/outputJSON.jl")
+include("../Performance/Performance.jl")
 
 """
 Trading Environment for the algorithm
@@ -82,10 +84,22 @@ end
 """
 Function to log values or string from the algorithms
 """
-function logg!(tradeenv::TradingEnvironment, msg::String, msgType::MessageType)
+function log!(tradeenv::TradingEnvironment, msg::String, msgType::MessageType)
     dt = getcurrentdatetime(tradeenv)
-    logg!(tradeenv.logger, dt, msg, msgType)
+    
+    logJSON!(tradeenv.logger, dt, msg, msgType)
+    #log!(tradeenv.logger, dt, msg, msgType)
 end
+
+
+"""
+Function to output performance in a specified format
+"""
+function outputperformance(tradeenv::TradingEnvironment, performancetracker::PerformanceTracker, date::Date = Date())
+    outputperformanceJSON(performancetracker, date)
+end
+
+export outputperformance
 
 """
 Function to find the parent function of a the called function

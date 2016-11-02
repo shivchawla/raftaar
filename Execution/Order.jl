@@ -13,7 +13,7 @@ include("../Security/Security.jl")
 Encapsulate the order characteristics    
 """
 type Order 
-  id::Integer # unique order id for submission/tracking
+  id::UInt64 # unique order id for submission/tracking
   securitysymbol::SecuritySymbol # security symbol (NIFTY, VOLTAS)
   quantity::Int64 # value of position change targeted
   remainingquantity::Int64

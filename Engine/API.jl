@@ -311,6 +311,14 @@ function _calculateperformance()
     Raftaar.reset(algorithm)
 end
 
+function _updateperformance()
+    updateperformance(algorithm.accounttracker, algorithm.cashtracker, algorithm.performancetracker, Date(getcurrentdatetime()))
+end
+
+function _outputperformance()
+    outputperformance(algorithm.tradeenv, algorithm.performancetracker, Date(getcurrentdatetime()))
+end
+
 function updateuniverse(date::String)
     updateuniverseforid()
     updateuniverseforprices(date)

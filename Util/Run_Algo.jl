@@ -20,7 +20,7 @@ include("../Examples/firstalgorithm.jl")
 
 
 sym = "CNX_BANK"
-alldata = history("CNX_BANK", "Close", :A, 10, enddate = "2016-01-01")
+alldata = history("CNX_BANK", "Close", :A, 1000, enddate = "2016-01-01")
 
 setstartdate(DateTime(alldata[:Date][end]))
 setenddate(DateTime(alldata[:Date][1]))
@@ -38,6 +38,7 @@ updateuniverseforids()
 
 for i = size(alldata,1):-1:1   
   
+  log("This is going to be big", MessageType(INFO))
   date = DateTime(alldata[i,:Date])
   setcurrentdatetime(date)
 
@@ -48,7 +49,7 @@ for i = size(alldata,1):-1:1
     updatepricestores(date, alldata[i,:])
   end
 
-  println(alldata[i,:CNX_BANK][1])
+  #println(alldata[i,:CNX_BANK][1])
 
 
   
@@ -91,9 +92,13 @@ for i = size(alldata,1):-1:1
 
   #this should only be called once a day in case of high frequency data
   _updateaccounttracker()
+
+  _updateperformance()
+
+  _outputperformance()
 end  
 
-_calculateperformance()
+#_calculateperformance()
  
 
 #initialize()
