@@ -6,102 +6,80 @@
 include("Order.jl")
 include("Commission.jl")
 include("../Account/Portfolio.jl")
+include("../Account/Position.jl")
+
 
 type Margin
-	maintenancemargin::Float64
 	initialmargin::Float64
+  maintenancemargin::Float64
 end
 
-Margin() = Margin(0.0, 0.0)
+Margin() = Margin(1.0, 1.0)
 
 function getmaintenancemargin(position::Position, margin::Margin)
-	return  position.absholdingcost * margin.maintenancemargin	
+	return  absholdingcost(position) * margin.maintenancemargin	
 end
 
 
 function totalmarginused(portfolio::Portfolio, margin::Margin)
-	totalmargin = 0;
-  for (security, position) in enumerate(portfolio)
-    	totalmargin += getmaintenancemargin(position, margin)
+	totalmargin = 0
+  for (security, position) in enumerate(portfolio.positions)
+    	totalmargin = getmaintenancemargin(position, margin)
 	end
                    
     return totalmargin
 end
 
 
-function marginremaining(portfolio::Portfolio, margin::Margin)
-	return totalportfoliovalue(portfolio) - unsettledcash(portfolio) - totalmarginused(portfolio, margin)
+function marginremaininginaccount(account::Account, margin::Margin)
+	return getaccountnetvalue(account) - totalmarginused(account.portfolio, margin)
 end
 
-
-function getmarginremaining(portfolio::Portfolio, order::Order, margin::Margin)
-			
-	position = portfolio[order.symbol]
+function getmarginremaining(account::Account, margin::Margin, order::Order)
+    
+    position = account.portfolio[order.securitysymbol]
    
     direction = order.quantity < 0 ? :sell : :buy
     
-    #Case 1: marginleft = remaining cash if order direction is same as position
     #Case2 : marginleft = 2 * current value of asset + cash if order direction is opposite to the position
     if islong(position)
       
         if direction == :buy 
-          return marginremaining(portfolio, margin)
+          return marginremaininginaccount(account, margin)
         
         elseif direction == :sell
           return 
               #portion of margin to close the existing position
               # + portion of margin to open the new position
               getmaintenancemargin(position, margin) +
-                absholdingsvalue(position) * margin.initialmargin  +
-                marginremaining(portfolio, margin)
+                #absholdingsvalue(position) * margin.initialmargin  +
+                marginremaininginaccount(account, margin)
         end
         
-    elseif ishort(position)
+    elseif isshort(position)
    
         if direction == :buy
             return
               #portion of margin to close the existing position
               #+ portion of margin to open the new position
               getmaintenancemargin(position) +
-              absholdingsvalue(position) * margin.initialmargin +
-              marginremaining(portfolio, margin)
+              #absholdingsvalue(position) * margin.initialmargin +
+              marginremaininginaccount(account, margin)
         end
 
 		else direction == :sell
-        return marginremaining(portfolio, margin)
+        return marginremaininginaccount(account, margin)
 
     end
 end
 
 
-function getinitialmarginfororder(order::Order, margin::Margin, commission::Commission)
-	orderfee = getorderfees(order, commission)
+function getinitialmarginfororder(margin::Margin, order::Order, commission::Commission)
+	orderfee = getcommission(order, commission)
 	ordervalue = getordervalue(order) * margin.initialmargin
 	return ordervalue + sign(ordervalue) * orderfee
 end
 
-function getsufficientcapitalfororder(portfolio::Portfolio, order::Order, margin::Margin, commission::Commission)
-
-	if order.quantity == 0 
-    return true
-  end
-    
-	freemargin = getmarginremaining(portfolio, security,  order, margin)
-    initialmarginfororder = getinitialmarginfororder(order, margin, commission)
-
-    #pro-rate the initial margin required for order based on how much has already been filled
-    #percentunfilled = (abs(order.quantity) - abs(ticket.quantityfilled))/abs(order.quantity) 
-      
-    initialmarginrequiredforremainderoforder = percentunfilled*initialMarginRequiredForOrder
-
-    if abs(initialmarginrequiredforremainderoforder) > freemargin 
-    	#MSG
-      return false
-	  end
-
-	return true     
-
-end
 
 function scanformargincall(portfolio::Portfolio, margin::Margin)
 		

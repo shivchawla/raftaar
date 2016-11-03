@@ -20,15 +20,7 @@ end
 
 function ondata()
 
-	port = getportfolio()
-	for security in getuniverse()
-		port = getportfolio()
-		
-		if port[security].quantity == 0
-			
-			placeorder(security, 1)
-		end
-	end	
+	setholdingvalue(securitysymbol("CNX_BANK"),50000000.0)	
 	
 	track("portfoliovalue", getportfoliovalue())
 

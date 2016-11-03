@@ -32,14 +32,15 @@ TradeBar(datetime::DateTime, open::Float64, high::Float64, low::Float64, close::
 type to encapuslate securities and latest prices of the securities
 """
 type Universe 
-	securities::Vector{Security}
+	#securities::Vector{Security}
+    securities::Dict{SecuritySymbol, Security}
 	tradebars::Dict{SecuritySymbol, Vector{TradeBar}}
 end
 
 """
 Empty constructor
 """
-Universe() = Universe(Vector{Security}(), Dict())
+Universe() = Universe(Dict(), Dict())
 
 """
 Index function to retrieve the security based on symbol
@@ -63,7 +64,8 @@ function adduniverse!(universe::Universe, ticker::String;
                         securitytype = securitytype,
                         exchange = exchange)
     
-    push!(universe.securities, security)
+    #push!(universe.securities, security)
+    universe.securities[security.symbol] = security
 end
 
 """
@@ -73,7 +75,7 @@ function setuniverse!(universe::Universe, tickers::Vector{String};
                                           securitytype::String="EQ",
                                           exchange::String="NSE")
     
-    universe.securities = []
+    universe.securities = Dict()
 
     for ticker in tickers
         adduniverse!(universe, ticker, securitytype = securitytype, exchange = exchange)
@@ -164,7 +166,7 @@ end
 Function to update prices of the securities in the universe
 """
 function updateprices!(universe::Universe, newtradebars::Dict{SecuritySymbol, Vector{TradeBar}})
-	universe.tradebars = newtradebars 
+    universe.tradebars = newtradebars 
 end	
 
 """
@@ -186,19 +188,27 @@ end
 Function to get the latest price of the security
 """
 function getlatestprice(universe::Universe, symbol::SecuritySymbol, field::FieldType=FieldType(Close))
-    bar = universe.tradebars[symbol]
+    tradebars = universe.tradebars
+    
+    if haskey(tradebars, symbol)
+        if length(tradebars[symbol]) > 0
+            # Latest Bar
+            bar = tradebars[symbol][1]
+            if(field==FieldType(Open))
+           		return bar.open	
+            elseif(field==FieldType(High))
+           		return bar.high
+        	elseif(field==FieldType(Low))
+           		return bar.low
+           	elseif(field==FieldType(Close))
+           		return bar.close
+           	elseif(field==FieldType(Volume))
+           		return bar.volume
+        	end
+        end
+    end
 
-    if(field==FieldType(Open))
-   		return bar.open	
-    elseif(field==FieldType(High))
-   		return bar.high
-	elseif(field==FieldType(Low))
-   		return bar.low
-   	elseif(field==FieldType(Close))
-   		return bar.close
-   	elseif(field==FieldType(Volume))
-   		return bar.volume
-	end
+    return -999
 end
 
 """
@@ -233,7 +243,7 @@ end
 Function to get all securities in the universe
 """
 function getuniverse(universe::Universe)
-	return universe.securities
+	return values(universe.securities)
 end
 
 """
@@ -242,6 +252,16 @@ Function to reset the universe (empty)
 function resetuniverse!(universe::Universe)
 	universe.securities = Dict()
 end
+
+function updatesecurity!(universe::Universe, security::Security, id::Int)
+    
+    if haskey(universe.securities, security.symbol)
+        delete!(universe.securities, security.symbol)
+        security.symbol.id = id
+        universe.securities[security.symbol] = security
+    end
+end
+export updatesecurity!
 
 
 

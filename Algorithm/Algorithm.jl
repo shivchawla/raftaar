@@ -73,7 +73,7 @@ Function to track the account at each time step
 """
 function updateaccounttracker!(algorithm::Algorithm)
     accountcopy = deepcopy(algorithm.account)
-    algorithm.accounttracker[getcurrentdatetime(algorithm.tradeenv)] = accountcopy
+    algorithm.accounttracker[Date(getcurrentdatetime(algorithm.tradeenv))] = accountcopy
 end
 
 """
@@ -88,7 +88,7 @@ end
 Function to add more cash to the algorithm
 """ 
 function addcash!(algorithm::Algorithm, cash::Float64)
-    algorithm.cashtracker[getcurrentdatetime(algorithm.tradeenv)] = cash    
+    algorithm.cashtracker[Date(getcurrentdatetime(algorithm.tradeenv))] = cash    
     addcash!(algorithm.account, cash)
 end
 

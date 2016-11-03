@@ -35,8 +35,8 @@ Portfolio() = Portfolio(Dict(), PortfolioMetrics())
 Indexing function to get position based 
 on security symbol or security directly from portfolio
 """
-getindex(portfolio::Portfolio, symbol::SecuritySymbol) = get(portfolio.positions, symbol, Position())
-getindex(portfolio::Portfolio, security::Security) = get(portfolio.positions, security.symbol, Position())
+getindex(portfolio::Portfolio, symbol::SecuritySymbol) = get(portfolio.positions, symbol, Position(symbol))
+getindex(portfolio::Portfolio, security::Security) = get(portfolio.positions, security.symbol, Position(security.symbol))
 setindex!(portfolio::Portfolio, position::Position, securitysymbol::SecuritySymbol) = 
                       setindex!(portfolio.positions, position, securitysymbol)
 
@@ -54,6 +54,12 @@ function to get all positions in a portfolio
 function getallpositions(portfolio::Portfolio)
   values(portfolio.positions)
 end
+
+
+function getposition(portfolio::Portfolio, ss::SecuritySymbol)
+  return portfolio[ss]
+end
+export getposition
 
 """
 function to update/set position with average price and quantity

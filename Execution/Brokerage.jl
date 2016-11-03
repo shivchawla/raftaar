@@ -10,6 +10,9 @@ include("Margin.jl")
 include("Slippage.jl")
 include("Order.jl")
 include("../Algorithm/Universe.jl")
+include("../Account/Account.jl")
+#include("../Account/Account.jl")
+
 
 @enum CancelPolicy EOD GTC 
 
@@ -145,7 +148,7 @@ end
 """
 Function to update pending orders
 """
-function updatependingorders!(brokerage::BacktestBrokerage, universe::Universe)
+function updatependingorders!(brokerage::BacktestBrokerage, universe::Universe, account::Account)
 
 	blotter = brokerage.blotter
 	#Step 1: Get all pending orders
@@ -153,14 +156,21 @@ function updatependingorders!(brokerage::BacktestBrokerage, universe::Universe)
 
 	fills = Vector{OrderFill}()
 
-	#Step 2: Check if the orders ae actually pending nd not Canceled
-	#this may not happen but a good sanity check
+	#Step 2: Check if the orders ae actually pending and not Canceled
+	#This will not happen but a good sanity check
 	for order in openorders
 		if order.orderstatus == OrderStatus(Canceled)
 			removeopenorder!(blotter, order.id)
 			continue
-		#else
+		#=else
 			#Step 3 check if account has sufficient capital to execute the order
+			if !checkforsufficientcapital(brokerage.margin, 
+											brokerage.commission, 
+											account, order)
+				
+				removeopenorder!(blotter, order.id)
+				continue
+			end	=#
 		end
 
 
@@ -171,13 +181,17 @@ function updatependingorders!(brokerage::BacktestBrokerage, universe::Universe)
 			continue
 		end
 
-		####compare the time of latestprice vs order time
-
+		# Get fill based on size or order and latest price
 		fill = getorderfill(order, brokerage.slippage, 
 							brokerage.commission, brokerage.participationrate, 
 							latestprice[1])
 
+		#Append fill with other fills
 		push!(fills, fill)
+
+		#Also, update blotter with fill history
+		addtransaction!(blotter, fill)
+
 		#Here create a signal to up .... 
 
 		fillquantity = fill.fillquantity
@@ -198,6 +212,35 @@ function updatependingorders!(brokerage::BacktestBrokerage, universe::Universe)
 	end	
 
 	return fills
+
+end
+
+"""
+Check if sufficient cash/margin is available to complete the transaction
+Logic taken from LEAN
+"""
+function checkforsufficientcapital(margin::Margin, commission::Commission, account::Account, order::Order)
+	
+	if order.quantity == 0 
+		return true
+	end
+
+	# When order only reduces or closes a security position, capital is always sufficient
+    if (account.portfolio[order.securitysymbol].quantity * order.quantity < 0 
+    		&& abs(account.portfolio[order.securitysymbol].quantity) >= abs(order.quantity)) 
+    	return true
+	end
+
+	freemargin = getmarginremaining(account, margin, order)
+	
+	#Pro-rate the initial margin required for order based on how much has already been filled
+    initialmarginrequired = abs(order.remainingquantity)/abs(order.quantity) * getinitialmarginfororder(margin, order, commission)
+   
+    if initialmarginrequired > freemargin
+    	return false
+	end
+
+	return true
 
 end
 

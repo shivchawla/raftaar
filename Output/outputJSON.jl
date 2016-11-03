@@ -13,7 +13,7 @@ function outputperformanceJSON(performancetracker::PerformanceTracker, date::Dat
 
     performance = performancetracker[date]
 
-    jsondict = Dict{String, Any}("ouputtype" => "performance",
+    jsondict = Dict{String, Any}("outputtype" => "performance",
                                 "date" => date,
                                 "dailyreturn" => performance.dailyreturn,
                                 "netvalue" => performance.netvalue,
@@ -29,6 +29,7 @@ function outputperformanceJSON(performancetracker::PerformanceTracker, date::Dat
     JSON.print(jsondict)
 
 end
+
 
 
 

@@ -99,9 +99,9 @@ setcanceled!(order::Order) order.status = OrderStatus(Canceled)
 #Change order status to invalid
 setinvalid!(order::Order) order.status = OrderStatus(Invalid)
 
-
+=#
 function getordervalue(order::Order)
-  #return order.quantity  
-end=#
+  return order.quantity  
+end
 
 

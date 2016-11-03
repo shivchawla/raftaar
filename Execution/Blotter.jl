@@ -12,17 +12,18 @@ include("OrderFill.jl")
 Type to encapsulate the open orders, all orders and transactions
 """
 typealias OrderTracker Dict{Date, Vector{Order}}
+typealias TransactionTracker Dict{Date, Vector{OrderFill}}
 
 type Blotter
 	openorders::Dict{SecuritySymbol, Vector{Order}}
 	ordertracker::OrderTracker
-	transactions::Vector{OrderFill}
+	transactiontracker::TransactionTracker
 end 
 
 """
 Empty blotter construction
 """
-Blotter() = Blotter(Dict(), OrderTracker(), Vector())
+Blotter() = Blotter(Dict(), OrderTracker(), TransactionTracker())
 
 """
 Function to add order to the blotter
@@ -35,14 +36,14 @@ function addorder!(blotter::Blotter, order::Order)
 
     push!(blotter.openorders[order.securitysymbol], order)
     
-    #=ordertracker = blotter.ordertracker
+    ordertracker = blotter.ordertracker
 
     dateoforder = Date(order.datetime)
     if !haskey(ordertracker, dateoforder)
         ordertracker[dateoforder] = [order]
     end
     
-    push!(ordertracker[dateoforder], order)=#
+    push!(ordertracker[dateoforder], order)
 
 end
 
@@ -50,6 +51,7 @@ end
 Function to get all the transactions
 """
 function gettransactions(blotter::Blotter)
+    blotter.transactiontracker
 end
 
 """
@@ -130,7 +132,22 @@ function getorderfill(order::Order, slippage::Slippage, commission::Commission, 
         fill.fillquantity = sign(order.remainingquantity) * availablequantity
     end
 
-    #append!(transactions, fill)
     return fill 
 end 
+
+
+"""
+Function to record fill history
+"""
+function addtransaction!(blotter::Blotter, fill::OrderFill)
+
+    dateoffill = Date(fill.datetime) 
+    
+    if haskey(blotter.transactiontracker, dateoffill)
+        push!(blotter.transactiontracker[dateoffill], fill)
+    else
+        blotter.transactiontracker[dateoffill] = [fill]
+    end
+
+end
 

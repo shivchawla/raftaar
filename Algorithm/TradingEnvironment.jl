@@ -4,7 +4,7 @@
 # Organization: AIMSQUANT PVT. LTD.
 
 include("../Security/Security.jl")
-include("../Output/Logger.jl")
+#include("../Output/Logger.jl")
 include("../Output/outputJSON.jl")
 include("../Performance/Performance.jl")
 
@@ -22,7 +22,6 @@ type TradingEnvironment
   fullrun::Bool
   defaultsecuritytype::SecurityType
   defaultmarket::String
-  logger::Logger
 
   #calendar::TradingCalendar
   #WHAT IS A TRADING CALENDAR
@@ -34,7 +33,7 @@ Empty constructor for the trading environment
 TradingEnvironment() = TradingEnvironment(
                           DateTime(), DateTime(), DateTime(), false, 
                           SecuritySymbol(), Resolution(Daily), true,
-                          SecurityType(Equity), "IN", Logger())
+                          SecurityType(Equity), "IN")
 
 """
 Function to set time resolution of the backtest
@@ -81,7 +80,7 @@ function getcurrentdatetime(tradeenv::TradingEnvironment)
   tradeenv.currentdatetime
 end
 
-"""
+#="""
 Function to log values or string from the algorithms
 """
 function log!(tradeenv::TradingEnvironment, msg::String, msgType::MessageType)
@@ -89,7 +88,7 @@ function log!(tradeenv::TradingEnvironment, msg::String, msgType::MessageType)
     
     logJSON!(tradeenv.logger, dt, msg, msgType)
     #log!(tradeenv.logger, dt, msg, msgType)
-end
+end=#
 
 
 """

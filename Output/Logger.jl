@@ -3,69 +3,71 @@
 # Email: shiv.chawla@aimsquant.com
 # Organization: AIMSQUANT PVT. LTD.
 
-@enum MessageType INFO WARNING
+__precompile__()
 
-import Base: log
+module Logger
+
+@enum MessageType INFO WARN
+
+import Base: info
 using JSON
 
-"""
-Message contents
-"""
-type Message 
-    datetime::DateTime
-    message::String 
-    messagetype::MessageType
-end
+const mode = :json
+datetime = now()
 
-typealias Logger Vector{Message}
+"""
+Function to configure mode of the logger and change the datetime
+"""
+function configure(;print_mode::Symbol = :json, algo_clock::DateTime = now())
+    global mode = print_mode
+    global datetime = algo_clock
+end
 
 """
 Function to record and print log messages
 """
-function log!(logger::Logger, datetime::DateTime, msg::String, msgtype::MessageType)
-    push!(logger, Message(datetime, msg, msgtype))
-    _log(datetime, msg, msgtype)
+function info(msg::String)
+    _log(msg, MessageType(INFO))
 end
 
-
-"""
-Function to record and print log messages as JSON
-"""
-function logJSON!(logger::Logger, datetime::DateTime, msg::String, msgtype::MessageType)
-    push!(logger, Message(datetime, msg, msgtype))
-    _logJSON(datetime, msg, msgtype)
+function warn(msg::String)
+    _log(msg, MessageType(WARN))
 end
+
+function _log(msg::String, msgtype::MessageType)
+    if mode == :console
+        _logstandard(msg, msgtype)
+    elseif mode == :json
+        _logJSON(msg, msgtype)
+    end
+end
+
 
 """
 Function to log message (with timestamp) based on message type
 """
-function _log(datetime::DateTime, msg::String, msgtype::MessageType) 
-    if msgtype == MessageType(INFO)
-        print(datetime)
-        info(msg)
-    elseif msgtype == MessageType(WARNING)
-        print(datetime)
-        warn(msg)
+function _logstandard(msg::String, msgtype::MessageType) 
+    if msgtype == MessageType(INFO)     
+        print_with_color(:blue,  "$(string(datetime))"* "INFO:"*" "*msg*"\n")
+    elseif msgtype == MessageType(WARN)
+        print_with_color(:red, "WARNING:" * "$(string(datetime))" *" "*msg*"\n")
     end
 end 
 
 """
 Function to log message AS JSON (with timestamp) based on message type
 """
-function _logJSON(datetime::DateTime, msg::String, msgtype::MessageType) 
+function _logJSON(msg::String, msgtype::MessageType) 
     
+    msgtype = (msgtype == MessageType(INFO)) ? "info" : "warning"
+
     messagedict = Dict{String, String}("outputtype" => "log",
+                                        "messagetype" => msgtype,
                                         "datetime" => string(datetime), 
                                         "message" => msg)
-    if msgtype == MessageType(INFO)
-        messagedict["msgtype"] = "INFO"
-        
-    elseif msgtype == MessageType(WARNING)
-        messagedict["msgtype"] = "WARNING"
-    end
-    
+
     JSON.print(messagedict)
 
 end 
 
-
+end

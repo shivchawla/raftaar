@@ -15,15 +15,18 @@ and latest prices
 using DataFrames
 using DataStructures
 
-include("../Engine/API.jl")
-include("../Examples/firstalgorithm.jl")
+include("../API/API.jl")
+#include("../Examples/firstalgorithm.jl")
+include("../Examples/constantvalue.jl")
 
 
 sym = "CNX_BANK"
-alldata = history("CNX_BANK", "Close", :A, 1000, enddate = "2016-01-01")
+alldata = history("CNX_BANK", "Close", :A, 100, enddate = "2016-01-01")
 
 setstartdate(DateTime(alldata[:Date][end]))
 setenddate(DateTime(alldata[:Date][1]))
+
+setlogmode(:json)
 
 initialize()
 
@@ -38,13 +41,13 @@ updateuniverseforids()
 
 for i = size(alldata,1):-1:1   
   
-  log("This is going to be big", MessageType(INFO))
+  Logger.warn("This is going to be big")
   date = DateTime(alldata[i,:Date])
   setcurrentdatetime(date)
 
   if dynamic > 0
     updateuniverseforids()
-    updatepricestores(date, getprices(date))
+    updatepricestores(date, fetchprices(date))
   else
     updatepricestores(date, alldata[i,:])
   end
@@ -96,6 +99,7 @@ for i = size(alldata,1):-1:1
   _updateperformance()
 
   _outputperformance()
+  println(getallpositions())
 end  
 
 #_calculateperformance()
@@ -187,7 +191,13 @@ Now, define your algorithm and tehen try to setup in terms in signals
 =#
 
 
+function run_algo()
+  algorithm = Algorithm()
 
+  initialize()
+
+
+end
 
 
 

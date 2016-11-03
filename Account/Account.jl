@@ -3,7 +3,6 @@
 # Email: shiv.chawla@aimsquant.com
 # Organization: AIMSQUANT PVT. LTD.
  
-
 include("Portfolio.jl")
 
 """
@@ -39,7 +38,7 @@ end
 """
 function to get the net portfolio value of the account
 """
-function getportfoliovalue(account::Account)
+function getaccountnetvalue(account::Account)
     account.netvalue
 end
 

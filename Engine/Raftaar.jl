@@ -16,10 +16,11 @@ include("../Algorithm/Algorithm.jl")
 include("../Execution/Commission.jl")
 include("../Execution/Slippage.jl")
 
-export Algorithm, Universe, Security, SecuritySymbol,
+export Universe, Security, SecuritySymbol,
        Commission, Slippage, Order, TradeBar
 
-export Resolution, CancelPolicy, SecurityType, MessageType
+
+export Resolution, CancelPolicy, SecurityType
 
 for s in instances(Resolution)
     @eval export $(Symbol(s))
@@ -33,10 +34,6 @@ for s in instances(SecurityType)
     @eval export $(Symbol(s))
 end
 
-for s in instances(MessageType)
-    @eval export $(Symbol(s))
-end
-
 export  setstartdate!, 
         setenddate!,
         setresolution!,
@@ -47,14 +44,6 @@ export  setstartdate!,
         getcurrentdatetime,
         adduniverse!,
         setuniverse!,
-        #=adduniverse1!,
-        adduniverse2!,
-        adduniverse3!,
-        adduniverse4!,
-        setuniverse1!,
-        setuniverse2!,
-        setuniverse3!,
-        setuniverse4!,=#
         getuniverse,
         cantrade,
         setcash!,

@@ -22,6 +22,8 @@ type Position
   totaltradedvolume::Float64
 end
 
+export Position
+
 """
 Constructors
 """

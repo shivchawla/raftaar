@@ -123,7 +123,8 @@ function _computecurrentperformance(firstperformance::Performance, lastperforman
         
         performance.annualreturn = 100.0 * ((1 + performance.averagedailyreturn/100.0)^252 - 1.0)
 
-        performance.annualvariance = 252 * ((performance.sumsquareddailyreturn/performance.period) - performance.averagedailyreturn^2.0)
+        #Unbiased estimator
+        performance.annualvariance = 252 * (performance.period/(performance.period - 1)) * ((performance.sumsquareddailyreturn/performance.period) - performance.averagedailyreturn^2.0)
         performance.annualstandarddeviation = sqrt(performance.annualvariance)
 
         performance.sharperatio = sqrt(252) * (performance.averagedailyreturn / performance.annualstandarddeviation)
@@ -139,7 +140,8 @@ function _computecurrentperformance(firstperformance::Performance, lastperforman
         performance.averagedailyreturn = performance.sumdailyreturn/performance.period
         performance.annualreturn = 100.0 * ((1 + performance.averagedailyreturn/100.0)^252 - 1.0)
         
-        performance.annualvariance = 252 * ((performance.sumsquareddailyreturn/performance.period) - performance.averagedailyreturn^2.0)
+        #Unbiased estimator 
+        performance.annualvariance = 252 * (performance.period/(performance.period - 1)) * ((performance.sumsquareddailyreturn/performance.period) - performance.averagedailyreturn^2.0)
 
         performance.annualstandarddeviation = sqrt(performance.annualvariance)
 
