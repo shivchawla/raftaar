@@ -12,6 +12,7 @@ using DataFrames
 
 import Logger: warn, info
 
+
 #Import list of functions to be overloaded
 import Raftaar: getuniverse
 
@@ -21,8 +22,8 @@ function setlogmode(mode::Symbol)
     Logger.configure(print_mode = mode) 
 end
 
-include("YojakAPI.jl")
 include("TradingEnvAPI.jl")
+include("HistoryAPI.jl")
 include("AccountAPI.jl")
 include("UniverseAPI.jl")
 include("BrokerageAPI.jl")
@@ -45,7 +46,7 @@ function _updateaccountforprice()
     updateaccountforprice!(algorithm.account, algorithm.universe.tradebars, algorithm.tradeenv.currentdatetime)
 end
 
-function _updateprices(tradebars::Dict{SecuritySymbol, Vector{TradeBar}})
+function _updateprices(tradebars::Dict{SecuritySymbol, TradeBar})
     updateprices!(algorithm.universe, tradebars)
 end 
 
@@ -127,16 +128,15 @@ end
 
 function updatepricestores(date::DateTime, prices::DataFrame)
     
-    tradebars = Dict{SecuritySymbol, Vector{TradeBar}}()
+    tradebars = Dict{SecuritySymbol, TradeBar}()
     for security in getuniverse()
     
         close = prices[Symbol(security.symbol.ticker)][1]
 
-        tradebar = TradeBar(date, close, close, close, close, 1000000)
-      
+        #check if price is DataArray NA
+        tradebar =  isna(close) ? TradeBar() : TradeBar(date, close, close, close, close, 1000000)
         ss = security.symbol
-        tradebars[ss] = Vector{TradeBar}()
-        push!(tradebars[ss], tradebar) 
+        tradebars[ss] = tradebar
     end
 
   _updateprices(tradebars)

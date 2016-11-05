@@ -25,9 +25,11 @@ type Performance
     sumsquareddailyreturn::Float64
     sumdailyreturn::Float64
     peaknetvalue::Float64
+    adjustednetvalue::Float64
+    leverage::Float64
 end
 
-Performance() = Performance(0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0)
+Performance() = Performance(0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0)
 
 typealias AccountTracker Dict{Date, Account}
 typealias CashTracker Dict{Date, Float64}
@@ -46,26 +48,20 @@ function updateperformance(accounttracker::AccountTracker, cashtracker::CashTrac
     # Now, we need latest returns
     # But insted we calculate the whole series again
     # PERFORMANCE IMPROVEMENT
-    returns = computereturns(accounttracker, cashtracker)
-
+    
     if !isempty(sorteddates)
         
         #Get Latest Performance
         lastperformance = performancetracker[sorteddates[end]]
         
-        if length(returns) == length(sorteddates) + 1
-            latestreturn = returns[end]
-
-            if length(sorteddates) >= 252
-                firstperformance = performancetracker[sorteddates[length(sorteddates) - 252 + 1]]
-            else
-                firstperformance = performancetracker[sorteddates[1]]
-            end
-
-            currentperformance = _computecurrentperformance(firstperformance, lastperformance, latestreturn) 
-
+        if length(sorteddates) >= 252
+            firstperformance = performancetracker[sorteddates[length(sorteddates) - 252 + 1]]
+        else
+            firstperformance = performancetracker[sorteddates[1]]
         end
-    
+
+        currentperformance = _computecurrentperformance(firstperformance, lastperformance, accounttracker, cashtracker) 
+
     else
         actkeys = sort(collect(keys(accounttracker)))
         currentperformance = _intializepeformance(accounttracker[actkeys[1]].cash)    
@@ -88,19 +84,23 @@ function _intializepeformance(netvalue::Float64)
     return performance
 end
 
-function _computecurrentperformance(firstperformance::Performance, lastperformance::Performance, latestreturn::Float64)
+function _computecurrentperformance(firstperformance::Performance, lastperformance::Performance, accounttracker::AccountTracker, cashtracker::CashTracker)
+
+    (latestreturn, netvalue, newcash, leverage)  = computereturns(accounttracker, cashtracker)
 
     performance = Performance()
     
     performance.dailyreturn = 100.0 * latestreturn
     performance.squareddailyreturn =  performance.dailyreturn * performance.dailyreturn
     performance.totalreturn = 100.0 * ((1.0 + lastperformance.totalreturn/100.0) * (1 + performance.dailyreturn/100.0) - 1.0)
-    performance.netvalue = lastperformance.netvalue * (1.0 + performance.dailyreturn/100.0)    
+    performance.netvalue = netvalue
+    performance.adjustednetvalue = netvalue - newcash
+    performance.leverage = leverage
 
-    if (performance.netvalue > lastperformance.peaknetvalue) 
+    if (performance.adjustednetvalue > lastperformance.peaknetvalue) 
         performance.peaknetvalue = performance.netvalue
     else
-        performance.peaknetvalue = lastperformance.peaknetvalue    
+        performance.peaknetvalue = lastperformance.peaknetvalue + newcash   
     end
     
     performance.drawdown = 100.0 * (performance.peaknetvalue - performance.netvalue) / performance.peaknetvalue   
@@ -127,7 +127,8 @@ function _computecurrentperformance(firstperformance::Performance, lastperforman
         performance.annualvariance = 252 * (performance.period/(performance.period - 1)) * ((performance.sumsquareddailyreturn/performance.period) - performance.averagedailyreturn^2.0)
         performance.annualstandarddeviation = sqrt(performance.annualvariance)
 
-        performance.sharperatio = sqrt(252) * (performance.averagedailyreturn / performance.annualstandarddeviation)
+        # Multiply by 252 because denominator is already annualized
+        performance.sharperatio = 252 * (performance.averagedailyreturn / performance.annualstandarddeviation)
         performance.informationratio = performance.sharperatio
         
     elseif lastperformance.period >= 252
@@ -145,10 +146,10 @@ function _computecurrentperformance(firstperformance::Performance, lastperforman
 
         performance.annualstandarddeviation = sqrt(performance.annualvariance)
 
-        performance.sharperatio = sqrt(252) * (performance.averagedailyreturn / performance.annualstandarddeviation)
+        # Multiply by 252 because denominator is already annualized
+        performance.sharperatio = 252 * (performance.averagedailyreturn / performance.annualstandarddeviation)
 
         performance.informationratio = performance.sharperatio
-        performance.drawdown
         
     end
 
@@ -159,16 +160,17 @@ end
 
 function computereturns(accounttracker, cashtracker)
     sortedkeys = sort(collect(keys(accounttracker)))
-    returns = Vector{Float64}(1)
+    returns = Vector{Float64}(length(sortedkeys))
 
     #push!(returns, 0.0)
-
     if !isempty(sortedkeys)
         firstdate = sortedkeys[1]
         startingcaptital = accounttracker[firstdate].cash
         netvalue = startingcaptital
 
-        for date in sortedkeys[2:end]
+
+        for i in 2:length(sortedkeys)
+            date = sortedkeys[i]
             oldnetvalue = netvalue
 
             netvalue = accounttracker[date].netvalue
@@ -177,11 +179,18 @@ function computereturns(accounttracker, cashtracker)
 
             rt = oldnetvalue > 0.0 ? (netvalue - newfunds - oldnetvalue)/ oldnetvalue : 0.0
 
-            push!(returns, rt)  
+            returns[i] = rt   
 
         end
     end
-    return returns
+
+    lastdate = sortedkeys[end]
+    newfunds = haskey(cashtracker, lastdate) ? cashtracker[date] : 0.0
+    netvalue = accounttracker[lastdate].netvalue
+    leverage = accounttracker[lastdate].leverage
+    #adjustednetvalue = netvalue - newfunds    
+
+    return returns[end], netvalue, newfunds, leverage
 end
 
 
@@ -208,7 +217,6 @@ function calculateperformance(accounttracker::AccountTracker, cashtracker::CashT
             rt = oldnetvalue > 0.0 ? (netvalue - newfunds - oldnetvalue)/ oldnetvalue : 0.0
 
             push!(returns, rt)  
-            println(netvalue) 
         end
     end
 

@@ -90,6 +90,9 @@ function log!(tradeenv::TradingEnvironment, msg::String, msgType::MessageType)
     #log!(tradeenv.logger, dt, msg, msgType)
 end=#
 
+using Logger
+
+import Logger: warn, info
 
 """
 Function to output performance in a specified format
@@ -111,9 +114,26 @@ function checkforparent(func::Symbol, reqparent::Symbol)
     for i in 1:len 
         parent = frames[i].func
         if (parent != reqparent) && i==len
-            error(string(func), " can only be called within the context ", string(reqparent))
+            Logger.warn(string(func)*"() can only be called within the context of "*string(reqparent)*"()")
+            return
         elseif parent == reqparent
             break
         end
     end
 end
+export checkforparent
+
+function hasparent(reqparent::Symbol)
+    frames = Base.stacktrace()
+    len = length(frames)
+
+    for i in 1:len 
+        parent = frames[i].func
+        if parent == reqparent
+            return true
+        end
+    end
+
+    return false
+end
+export hasparent

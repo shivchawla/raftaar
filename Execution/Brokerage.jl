@@ -173,18 +173,12 @@ function updatependingorders!(brokerage::BacktestBrokerage, universe::Universe, 
 			end	=#
 		end
 
-
-		if haskey(universe.tradebars, order.securitysymbol)
-			latestprice = universe.tradebars[order.securitysymbol]
-		else
-			##Give a id
-			continue
-		end
+		latesttradebar = getlatesttradebar(universe, order.securitysymbol)
 
 		# Get fill based on size or order and latest price
 		fill = getorderfill(order, brokerage.slippage, 
 							brokerage.commission, brokerage.participationrate, 
-							latestprice[1])
+							latesttradebar)
 
 		#Append fill with other fills
 		push!(fills, fill)

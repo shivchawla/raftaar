@@ -5,8 +5,15 @@
 
 include("../Security/Security.jl")
 
+import Base: contains
+
 @enum Resolution Tick Second Minute Hour Daily
 @enum FieldType Open High Low Close Last Volume 
+
+
+import Base: empty
+
+const SIZE = 5
 
 """
 Type to encapsulate latest trade price
@@ -24,9 +31,12 @@ immutable TradeBar
   #askSize::Int64
 end
 
+
+empty(tradebar::TradeBar) = tradebar.datetime == DateTime() && tradebar.open == 0.0 && tradebar.high == 0.0 && tradebar.low == 0.0 && tradebar.close == 0.0 && tradebar.volume == 0
 TradeBar(datetime::DateTime, open::Float64, high::Float64, low::Float64, close::Float64) = 
 				TradeBar(datetime, open, high, low, close, 0)
 
+TradeBar() = TradeBar(DateTime(), 0.0, 0.0, 0.0, 0.0, 0)
 
 """
 type to encapuslate securities and latest prices of the securities
@@ -45,13 +55,20 @@ Universe() = Universe(Dict(), Dict())
 """
 Index function to retrieve the security based on symbol
 """
-getindex(universe::Universe, symbol::SecuritySymbol) = getindex(universe.securities, symbol)
+getindex(universe::Universe, symbol::SecuritySymbol) = get(universe.securities, symbol, Security())
 getindex(universe::Universe, security::Security) = get(universe.securities, security.symbol, Security())
 setindex!(universe::Universe, security::Security, symbol::SecuritySymbol) = setindex!(universe.securities, security, symbol)
 
 function contains(universe::Universe, symbol::SecuritySymbol) 
-    #haskey(universe.securities, symbol)
+    return !empty(universe[symbol])
 end
+
+function contains(universe::Universe, security::Security)
+    return !empty(universe[security.symbol])
+end 
+export contains
+
+
 
 """
 Function to add security to the universe 
@@ -75,8 +92,7 @@ function setuniverse!(universe::Universe, tickers::Vector{String};
                                           securitytype::String="EQ",
                                           exchange::String="NSE")
     
-    universe.securities = Dict()
-
+    resetuniverse!(universe)
     for ticker in tickers
         adduniverse!(universe, ticker, securitytype = securitytype, exchange = exchange)
     end
@@ -102,34 +118,34 @@ end
 function setuniverse2!(universe::Universe, tickers::Vector{String}, securitytype::SecurityType)
 	resetuniverse!(universe)
 	adduniverse2!(universe, tickers, securitytype)
-end
+end=#
 
 ####################
 
-function adduniverse3!(universe::Universe, security::Security)	
-	if !empty(security)
-		if !contains(universe, security.symbol)
+function adduniverse!(universe::Universe, security::Security)	
+    if !empty(security)
+		if !haskey(universe.securities, security.symbol)
 			universe[security.symbol] = security
 		end
 	end
 end
 
-function adduniverse4!(universe::Universe, securities::Vector{Security})
+function adduniverse!(universe::Universe, securities::Vector{Security})
 	for security in securities
-		adduniverse3!(universe, security)
+		adduniverse!(universe, security)
 	end
 end
 
-function setuniverse3!(universe::Universe, security::Security)
+function setuniverse!(universe::Universe, security::Security)
 	resetuniverse!(universe)
-	adduniverse3!(universe, security)
+	adduniverse!(universe, security)
 end
 
-function setuniverse4!(universe::Universe, securities::Vector{Security})
+function setuniverse!(universe::Universe, securities::Vector{Security})
 	resetuniverse!(universe) 
-	adduniverse4!(universe, securities)
+	adduniverse!(universe, securities)
 end
-
+#=
 function getsecurity(universe::Universe, ticker::String, securitytype::SecurityType)
 	symbol = createsymbol(ticker, securitytype)
 	getsecurity(symbol, universe)
@@ -154,19 +170,27 @@ function removesecurity!(universe::Universe, ticker::String, securitytype::Secur
 	removesecurity(symbol, universe)
 end
 
-function contains(universe::Universe, ticker::String, securitytype::SecurityType)
-	contains(universe, createsymbol(ticker, securitytype))
-end
-
-function contains(universe::Universe, security::Security)
-	contains(universe, security.symbol)
-end 
-
 """
 Function to update prices of the securities in the universe
 """
-function updateprices!(universe::Universe, newtradebars::Dict{SecuritySymbol, Vector{TradeBar}})
-    universe.tradebars = newtradebars 
+function updateprices!(universe::Universe, newtradebars::Dict{SecuritySymbol, TradeBar})
+    
+    for symbol in keys(universe.securities)
+        
+        if !haskey(universe.tradebars, symbol)     
+            
+            universe.tradebars[symbol] = Vector{TradeBar}(SIZE)
+            for i = 1:SIZE
+               universe.tradebars[symbol][i] = TradeBar()
+            end 
+        end    
+        
+        tradebar = haskey(newtradebars, symbol) ? newtradebars[symbol] : TradeBar() 
+        
+        shiftforwardandinsert!(universe.tradebars[symbol], tradebar)
+        
+    end
+
 end	
 
 """
@@ -211,6 +235,18 @@ function getlatestprice(universe::Universe, symbol::SecuritySymbol, field::Field
     return -999
 end
 
+
+function getlatesttradebar(universe::Universe, symbol::SecuritySymbol)
+    tradebars = universe.tradebars
+    
+    if haskey(tradebars, symbol)
+        return deepcopy(tradebars[symbol][1])
+    end
+
+    return TradeBar()
+end 
+export getlatesttradebar
+
 """
 Function to check whether price is fresh and security is tradeable
 """
@@ -243,7 +279,7 @@ end
 Function to get all securities in the universe
 """
 function getuniverse(universe::Universe)
-	return values(universe.securities)
+	return collect(values(universe.securities))
 end
 
 """
@@ -251,6 +287,7 @@ Function to reset the universe (empty)
 """
 function resetuniverse!(universe::Universe)
 	universe.securities = Dict()
+    universe.tradebars = Dict()
 end
 
 function updatesecurity!(universe::Universe, security::Security, id::Int)
@@ -263,5 +300,16 @@ function updatesecurity!(universe::Universe, security::Security, id::Int)
 end
 export updatesecurity!
 
+function shiftforwardandinsert!(tradebars::Vector{TradeBar}, newtradebar::TradeBar)
+    
+    for i = SIZE:-1:2
+        tradebars[i] = tradebars[i-1]
+    end
+
+    if !empty(newtradebar)
+        tradebars[1] = newtradebar
+    end 
+
+end
 
 

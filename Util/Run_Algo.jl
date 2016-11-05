@@ -17,12 +17,20 @@ using DataStructures
 
 include("../API/API.jl")
 #include("../Examples/firstalgorithm.jl")
-include("../Examples/constantvalue.jl")
+#include("../Examples/constantvalue.jl")
+#include("../Examples/constantpct.jl")
+#include("../Examples/constantshares.jl")
+#include("../Examples/uniformportfolio.jl")
+include("../Examples/smacrossover.jl")
 
+import Logger: warn, info
 
 sym = "CNX_BANK"
-alldata = history("CNX_BANK", "Close", :A, 100, enddate = "2016-01-01")
+alldata = history(["CNX_BANK","CNX_100","CNX_ENERGY"], "Close", :Day, 500, enddate = "2016-01-01")
+#alldata = history(["CNX_ENERGY"], "Close", :A, 200, enddate = "2016-01-01")
 
+
+#df[ isna(df[:A]), :A] = 0
 setstartdate(DateTime(alldata[:Date][end]))
 setenddate(DateTime(alldata[:Date][1]))
 
@@ -37,16 +45,17 @@ i = 0
 
 dynamic = 0
 
-updateuniverseforids()
+#updateuniverseforids()
+
+alldata = sort(alldata,cols = :Date, rev=true)
 
 for i = size(alldata,1):-1:1   
   
-  Logger.warn("This is going to be big")
   date = DateTime(alldata[i,:Date])
   setcurrentdatetime(date)
 
   if dynamic > 0
-    updateuniverseforids()
+    #updateuniverseforids()
     updatepricestores(date, fetchprices(date))
   else
     updatepricestores(date, alldata[i,:])
@@ -86,7 +95,9 @@ for i = size(alldata,1):-1:1
   #beforeclose()
 
   #once orders are placed, internal system calls onData();
-  ondata() #this is called every data stamp, user can 
+  
+  ondata()
+   #this is called every data stamp, user can 
   # user defines this functions where he sets universe, 
   #creates new orders for the next session 
   #(give option to trading at open/close/or worst price)
@@ -99,7 +110,7 @@ for i = size(alldata,1):-1:1
   _updateperformance()
 
   _outputperformance()
-  println(getallpositions())
+  #println(getallpositions())
 end  
 
 #_calculateperformance()
@@ -189,15 +200,6 @@ Now, define your algorithm and tehen try to setup in terms in signals
     Step 10: Calculate new portfolio stats based on portfolio as EOD
 
 =#
-
-
-function run_algo()
-  algorithm = Algorithm()
-
-  initialize()
-
-
-end
 
 
 

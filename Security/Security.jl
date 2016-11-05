@@ -3,7 +3,7 @@
 # Email: shiv.chawla@aimsquant.com
 # Organization: AIMSQUANT PVT. LTD.
 
-
+import Base: ==
 #include("SecurityExchange.jl")
 
 """
@@ -39,12 +39,23 @@ type Security
   symbol::SecuritySymbol
   name::String
   exchange::String
+  country::String
   securitytype::String
   startdate::DateTime
   enddate::DateTime
   #currency::Symbol
 end
 
+empty(security::Security) = empty(security.symbol) 
+
+Security() = Security(SecuritySymbol(),"","","","", DateTime(), DateTime())
+Security(ticker::String; securitytype::String = "EQ", exchange::String="NSE", country::String="IN") = 
+                  Security(SecuritySymbol(0,ticker), "",
+                            exchange, securitytype,
+                            DateTime(), DateTime())
+
+Security(id::Int64, ticker::String, name::String; exchange::String="NSE", country::String = "IN", securitytype::String = "EQ") = 
+          Security(SecuritySymbol(id, ticker), name, exchange, country, securitytype, DateTime(), DateTime())
 
 #Security(ticker::String) = Security(SecuritySymbol(0,ticker), "", "EQ", "NSE",DateTime(), DateTime())
             
@@ -52,17 +63,12 @@ end
                           exchange = exchange, DateTime(), DateTime())=#
 #; securitytype::String = "EQ", exchange::String="NSE")
 
-Security(ticker::String; securitytype::String = "EQ", exchange::String="NSE") = 
-                  Security(SecuritySymbol(0,ticker), "",
-                            exchange, securitytype,
-                            DateTime(), DateTime())
             
-
 """
 Function to set security id for security
 """        
 function setsecurityid!(security::Security, id::Int)
-    setsecurityid(security.symbol, id)
+    setsecurityid!(security.symbol, id)
 end
 
 """

@@ -24,7 +24,8 @@ function outputperformanceJSON(performancetracker::PerformanceTracker, date::Dat
                                 "sharperatio" => performance.sharperatio,
                                 "informationratio" => performance.informationratio,
                                 "drawdown" => performance.drawdown,
-                                "maxdrawdown" => performance.maxdrawdown)
+                                "maxdrawdown" => performance.maxdrawdown,
+                                "leverage" => performance.leverage)
                                 
     JSON.print(jsondict)
 

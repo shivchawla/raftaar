@@ -9,7 +9,7 @@
 function initialize()	
 	#setstartdate(DateTime("01/01/2016","dd/mm/yyyy"))
 	#setenddate(DateTime("20/07/2016","dd/mmm/yyyy"))
-	setcash(100000.0)
+	setcash(1000000.0)
 	setresolution(Resolution(Daily))
 	setcancelpolicy(CancelPolicy(EOD))
 	setuniverse(["CNX_BANK"])#,"CNX_100","CNX_ENERGY"]])
@@ -20,7 +20,7 @@ end
 
 function ondata()
 
-	setholdingvalue(securitysymbol("CNX_BANK"),5000000.0)	
+	setholdingpct(securitysymbol("CNX_BANK"),2.0)	
 	
 	track("portfoliovalue", getportfoliovalue())
 

@@ -106,7 +106,7 @@ function getorderfill(order::Order, slippage::Slippage, commission::Commission, 
     fill = OrderFill(order, latesttradebar.datetime)
 
     #can't process order with stale data
-    if (order.datetime > latesttradebar.datetime) || (order.orderstatus == OrderStatus(Canceled))
+    if (order.datetime > latesttradebar.datetime) || (order.orderstatus == OrderStatus(Canceled)) || latesttradebar.datetime == DateTime()
         return fill
     end
         

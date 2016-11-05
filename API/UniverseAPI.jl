@@ -6,9 +6,10 @@ Functions to expose Universe API
 function adduniverse(ticker::String;
                         securitytype::String="EQ",
                         exchange::String="NSE")
-    adduniverse!(algorithm.universe, ticker, 
-                    securitytype = securitytype,
-                    exchange = exchange)
+    
+    security = getsecurity(ticker, securitytype=securitytype, exchange=exchange)
+    adduniverse!(algorithm.universe, security)
+   
 end
 
 function adduniverse(tickers::Vector{String};
@@ -16,7 +17,7 @@ function adduniverse(tickers::Vector{String};
                         exchange::String="NSE")
     
     for ticker in tickers
-        adduniverse(tickers, securitytype = securitytype, exchange = exchange)
+        adduniverse(ticker, securitytype = securitytype, exchange = exchange)
     end
 end
 
@@ -26,9 +27,10 @@ function setuniverse(ticker::String;
     
     #checkforparent(:setuniverse, :initialize)
    
-    setuniverse!(algorithm.universe, [ticker],
-                    securitytype = securitytype,
-                    exchange = exchange)
+    # Get security id for the ticker before adding to the Raftaar
+    security = getsecurity(ticker, securitytype=securitytype, exchange=exchange)
+    setuniverse!(algorithm.universe, security)
+   
 end
 
 function setuniverse(tickers::Vector{String};
@@ -36,10 +38,14 @@ function setuniverse(tickers::Vector{String};
                         exchange::String="NSE")
     
     #checkforparent(:setuniverse, :initialize)
-   
-    setuniverse!(algorithm.universe, tickers,
-                    securitytype = securitytype,
-                    exchange = exchange)
+    securities = Vector{Security}(length(tickers))
+    
+    for i in 1:length(tickers)
+        security = getsecurity(tickers[i], securitytype=securitytype, exchange=exchange)
+        securities[i] = security    
+    end
+
+    setuniverse!(algorithm.universe, securities)
 end
 
 
@@ -113,3 +119,10 @@ end
 function getlatestprice(symbol::SecuritySymbol)
     return getlatestprice(algorithm.universe, symbol)
 end
+
+function ispartofuniverse(symbol::SecuritySymbol)
+    return contains(algorithm.universe, symbol) 
+end
+
+
+
