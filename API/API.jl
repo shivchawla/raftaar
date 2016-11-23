@@ -35,12 +35,14 @@ function track(name::String, value::Float64)
     addvariable!(algorithm, name, value)
 end
 
+
 """
 Functions to support the backtest logic
 """ 
 function _updatependingorders()
    updateaccountforfills!(algorithm.account, updatependingorders!(algorithm.brokerage, algorithm.universe, algorithm.account))
 end
+
     
 function _updateaccountforprice()
     updateaccountforprice!(algorithm.account, algorithm.universe.tradebars, algorithm.tradeenv.currentdatetime)
@@ -49,6 +51,7 @@ end
 function _updateprices(tradebars::Dict{SecuritySymbol, TradeBar})
     updateprices!(algorithm.universe, tradebars)
 end 
+
 
 function _updateaccounttracker()
     updateaccounttracker!(algorithm)
@@ -59,11 +62,16 @@ function _calculateperformance()
     Raftaar.reset(algorithm)
 end
 
-function _updateperformance()
-    updateperformance(algorithm.accounttracker, algorithm.cashtracker, algorithm.performancetracker, Date(getcurrentdatetime()))
+function _updatedailyperformance()
+    updateaccounttracker!(algorithm)
+    updateperformancetracker!(algorithm)
 end
 
-function _outputperformance()
+function _outputbackteststatistics()
+    outputbackteststatistics(algorithm)
+end    
+
+function _outputdailyperformance()
     outputperformance(algorithm.tradeenv, algorithm.performancetracker, Date(getcurrentdatetime()))
 end
 
@@ -71,7 +79,6 @@ function _updateuniverse(date::String)
     updateuniverseforid()
     updateuniverseforprices(date)
 end
-
 
 function securitysymbol(ticker::String)
     id = getsecurityid(ticker)
@@ -141,3 +148,15 @@ function updatepricestores(date::DateTime, prices::DataFrame)
 
   _updateprices(tradebars)
 end
+
+function handleexception(e::Exception) 
+    println(isa(e, LoadError))
+    if isa(e, UndefVarError)
+        msg = string(split(string(e),':')[2])[1:end-1]
+        Logger.error("Variable or Function not defined: $msg")
+    elseif isa(e, LoadError)
+        msg = string(split(string(e.error), ',')[3])[1:end-1]
+        Logger.error("Line:$(e.error.line): $msg")
+    end
+end 
+

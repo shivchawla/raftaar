@@ -11,14 +11,26 @@ module Raftaar
 
 import Base: ==, getindex, setindex!
 
-include("../Algorithm/Algorithm.jl")
-#include("../Data/History.jl")
+include("../DataTypes/Split.jl")
+include("../Security/Security.jl")
+include("../Execution/Order.jl") 
+include("../Execution/OrderFill.jl")
+include("../Algorithm/Universe.jl")
+include("../Account/Position.jl")
+include("../Account/Portfolio.jl")
+include("../Account/Account.jl")
+include("../Performance/Performance.jl")
 include("../Execution/Commission.jl")
 include("../Execution/Slippage.jl")
+include("../Execution/Blotter.jl")
+include("../Execution/Margin.jl")
+include("../Performance/Statistics.jl")
+include("../Execution/Brokerage.jl")
+include("../Algorithm/TradingEnvironment.jl")
+include("../Algorithm/Algorithm.jl")
 
 export Universe, Security, SecuritySymbol,
        Commission, Slippage, Order, TradeBar
-
 
 export Resolution, CancelPolicy, SecurityType
 

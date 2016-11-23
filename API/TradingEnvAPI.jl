@@ -6,12 +6,12 @@ function setresolution(resolution::Resolution)
     setresolution!(algorithm.tradeenv, resolution)
 end
 
-function setstartdate(datetime::DateTime)    
-    setstartdate!(algorithm.tradeenv, datetime)
+function setstartdate(date::Date)    
+    setstartdate!(algorithm.tradeenv, date)
 end
 
-function setenddate(datetime::DateTime)
-    setenddate!(algorithm.tradeenv, datetime)
+function setenddate(date::Date)
+    setenddate!(algorithm.tradeenv, date)
 end
 
 function setcurrentdatetime(datetime::DateTime)

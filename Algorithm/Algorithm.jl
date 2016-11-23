@@ -16,21 +16,18 @@
     Initializing = 11  #The algorithm is initializing
 =#
 
-include("Universe.jl")
-include("TradingEnvironment.jl")
-include("../Account/Account.jl")
-include("../Execution/Brokerage.jl")
-include("../Performance/Performance.jl")
+#include("../Performance/Statistics.jl")
 
 @enum AlgorithmStatus DeployError InQueue Running Stopped Liquidated Deleted Completed RuntimeError LoggingIn Initializing
 
-typealias VariableTracker Dict{String, Dict{DateTime, Float64}}
+typealias VariableTracker Dict{String, Dict{Date, Float64}}
 
 """
 Algorithm type 
 Encapsulates various entities that characterise an Algorithm    
 """  
 type Algorithm
+    name::String
 	algorithmid::String
 	status::AlgorithmStatus
 	account::Account
@@ -40,17 +37,25 @@ type Algorithm
     accounttracker::AccountTracker
     cashtracker::CashTracker
     performancetracker::PerformanceTracker
+    transactiontracker::TransactionTracker
+    ordertracker::OrderTracker
     variabletracker::VariableTracker
 end
 
 """
 Algorithm empty constructor
 """
-Algorithm() = Algorithm("", AlgorithmStatus(Initializing), Account(), 
-                                            Universe(), TradingEnvironment(), 
-                                            BacktestBrokerage(), AccountTracker(), 
-                                            CashTracker(), PerformanceTracker(), VariableTracker())
-
+Algorithm() = Algorithm("","", AlgorithmStatus(Initializing), 
+                                            Account(), 
+                                            Universe(), 
+                                            TradingEnvironment(), 
+                                            BacktestBrokerage(), 
+                                            AccountTracker(), 
+                                            CashTracker(), 
+                                            PerformanceTracker(),
+                                            TransactionTracker(),
+                                            OrderTracker(), 
+                                            VariableTracker())
 
 """
 Reset algorithm variable to default
@@ -68,19 +73,78 @@ function reset(algorithm::Algorithm)
     return
 end
 
+
+"""
+Function to track the orders at each time step
+"""
+function updateordertracker!(algorithm::Algorithm, order::Order)
+    currentdate = getcurrentdate(algorithm.tradeenv)
+    if haskey(algorithm.ordertracker, currentdate)
+        push!(algorithm.ordertracker[currentdate], order)
+    else 
+        algorithm.ordertracker[currentdate] = [order]
+    end 
+end
+
+"""
+Function to track the transactions at each time step (single transaction)
+"""
+function updatetransactiontracker!(algorithm::Algorithm, fill::OrderFill)
+    currentdate = getcurrentdate(algorithm.tradeenv)
+    tracker = algorithm.transactiontracker
+    if haskey(tracker, currentdate)
+        push!(tracker[currentdate], fill)
+    else 
+        tracker[currentdate] = [fill]
+    end 
+end
+
+
+"""
+Function to track the transactions at each time step
+"""
+function updatetransactiontracker!(algorithm::Algorithm, fills::Vector{OrderFill})
+    currentdate = getcurrentdate(algorithm.tradeenv)
+    tracker = algorithm.transactiontracker
+    if haskey(tracker, currentdate)
+        append!(tracker[currentdate], fills)
+    else 
+        tracker[currentdate] = fills
+    end 
+end
+
+
 """
 Function to track the account at each time step
 """
 function updateaccounttracker!(algorithm::Algorithm)
     accountcopy = deepcopy(algorithm.account)
-    algorithm.accounttracker[Date(getcurrentdatetime(algorithm.tradeenv))] = accountcopy
+    algorithm.accounttracker[getcurrentdate(algorithm.tradeenv)] = accountcopy
 end
+
+"""
+Function to track the cash inflow/outflow at each time step
+"""
+function updatecashtracker!(algorithm::Algorithm, cash::Float64)
+    algorithm.cashtracker[getcurrentdatetime(algorithm.tradeenv)] = cash
+end
+
+
+"""
+Function to track the performance at each time step
+"""
+function updateperformancetracker!(algorithm::Algorithm)      
+    algorithm.performancetracker[getcurrentdate(algorithm.tradeenv)] = 
+        getlatestperformance(algorithm.accounttracker, algorithm.cashtracker, algorithm.performancetracker)       
+end
+
+export updateperformancetracker!
 
 """
 Function to set initial cash in the algorithm
 """
 function setcash!(algorithm::Algorithm, cash::Float64)
-    algorithm.cashtracker[getcurrentdatetime(algorithm.tradeenv)] = cash    
+    updatecashtracker!(algorithm, cash)
     setcash!(algorithm.account, cash)
 end
 
@@ -88,7 +152,7 @@ end
 Function to add more cash to the algorithm
 """ 
 function addcash!(algorithm::Algorithm, cash::Float64)
-    algorithm.cashtracker[Date(getcurrentdatetime(algorithm.tradeenv))] = cash    
+    updatecashtracker!(algorithm, cash)
     addcash!(algorithm.account, cash)
 end
 
@@ -96,21 +160,48 @@ end
 Function to add new variable to variable tracker (at current algorithm time)
 """
 function addvariable!(algorithm::Algorithm, name::String, value::Float64)
-    addvariable!(algorithm.variabletracker, name, value, getcurrentdatetime(algorithm.tradeenv))
+    addvariable!(algorithm.variabletracker, name, value, getcurrentdate(algorithm.tradeenv))
 end
 
 """
 Function to add new variable to variable tracker (at the defined time)
 """
-function addvariable!(variabletracker::VariableTracker, name::String, value::Float64, datetime::DateTime)
+function addvariable!(variabletracker::VariableTracker, name::String, value::Float64, date::Date)
     if (!haskey(variabletracker, name))
         variabletracker[name] = Dict()
     end
 
     tracker = variabletracker[name]
-    tracker[datetime] = value
+    tracker[date] = value
 
 end
+
+function outputbackteststatistics(algorithm::Algorithm)
+    
+    accttrk = algorithm.accounttracker 
+    pftrk = algorithm.performancetracker
+    cshtrk = algorithm.cashtracker
+    tsactrk = algorithm.transactiontracker
+    ordrtrk = algorithm.ordertracker
+    
+    outputbackteststatistics_full(algorithm.accounttracker,
+                        algorithm.performancetracker,
+                        algorithm.cashtracker,
+                        algorithm.transactiontracker,
+                        algorithm.ordertracker)
+    #sort the keys in these trackers
+
+
+    #what stastics calculations do we want?
+    #1. Daily Returns and Net value
+    #2. Statistics [Monthly window/Yearly window] - 
+                #based on return and portfolio
+        #2a. Average Return
+        #2b. Total Return
+        #
+end 
+
+export outputbackteststatistics    
 
 
 

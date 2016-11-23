@@ -3,10 +3,10 @@
 # Email: shiv.chawla@aimsquant.com
 # Organization: AIMSQUANT PVT. LTD.
 
-include("../Security/Security.jl")
+#include("../Security/Security.jl")
 #include("../Output/Logger.jl")
-include("../Output/outputJSON.jl")
-include("../Performance/Performance.jl")
+include("../Performance/Statistics.jl")
+#include("../Performance/Performance.jl")
 
 """
 Trading Environment for the algorithm
@@ -45,15 +45,15 @@ end
 """
 Fuction to set the start date of the backtest
 """
-function setstartdate!(tradeenv::TradingEnvironment, datetime::DateTime)
-  tradeenv.startdate = datetime
+function setstartdate!(tradeenv::TradingEnvironment, date::Date)
+  tradeenv.startdate = date
 end
 
 """
 Function to set the end date of the backtest  
 """
-function setenddate!(tradeenv::TradingEnvironment, datetime::DateTime)
-  tradeenv.enddate = datetime
+function setenddate!(tradeenv::TradingEnvironment, date::Date)
+  tradeenv.enddate = date
 end
 
 """
@@ -78,6 +78,13 @@ Function to get current date time of the algorithm
 """
 function getcurrentdatetime(tradeenv::TradingEnvironment)
   tradeenv.currentdatetime
+end
+
+"""
+Function to get current date of the algorithm
+"""
+function getcurrentdate(tradeenv::TradingEnvironment)
+  Date(tradeenv.currentdatetime)
 end
 
 #="""

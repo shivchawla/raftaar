@@ -14,25 +14,26 @@ and latest prices
 
 using DataFrames
 using DataStructures
+using Raftaar
+#using API
 
+import Logger: warn, info, error
+
+include("../Util/handleErrors.jl")
+include("../Util/parseArgs.jl")
 include("../API/API.jl")
-#include("../Examples/firstalgorithm.jl")
-#include("../Examples/constantvalue.jl")
-#include("../Examples/constantpct.jl")
-#include("../Examples/constantshares.jl")
-#include("../Examples/uniformportfolio.jl")
-include("../Examples/smacrossover.jl")
-
-import Logger: warn, info
+include("../Util/processArgs.jl")
+ 
 
 sym = "CNX_BANK"
 alldata = history(["CNX_BANK","CNX_100","CNX_ENERGY"], "Close", :Day, 500, enddate = "2016-01-01")
 #alldata = history(["CNX_ENERGY"], "Close", :A, 200, enddate = "2016-01-01")
 
-
+println(Date(alldata[:Date][end]))
+println(Date(alldata[:Date][1]))
 #df[ isna(df[:A]), :A] = 0
-setstartdate(DateTime(alldata[:Date][end]))
-setenddate(DateTime(alldata[:Date][1]))
+setstartdate(Date(alldata[:Date][end]))
+setenddate(Date(alldata[:Date][1]))
 
 setlogmode(:json)
 
@@ -62,8 +63,6 @@ for i = size(alldata,1):-1:1
   end
 
   #println(alldata[i,:CNX_BANK][1])
-
-
   
   #If a stock doesn't come with a price?????, liquidate at a last known price.
   #If a stock goes through a split, position and orders are adjusted accordingly.
@@ -91,12 +90,11 @@ for i = size(alldata,1):-1:1
   #Internal system fetches prices for all the stocks in the portfolio 
   #and for all the stocks with pending orders.
 
-
   #beforeclose()
 
   #once orders are placed, internal system calls onData();
-  
   ondata()
+  
    #this is called every data stamp, user can 
   # user defines this functions where he sets universe, 
   #creates new orders for the next session 
@@ -105,16 +103,29 @@ for i = size(alldata,1):-1:1
   #If liquidation is set to true, add additional pending orders of liquidation
 
   #this should only be called once a day in case of high frequency data
-  _updateaccounttracker()
+  _updatedailyperformance()
 
-  _updateperformance()
+  _outputdailyperformance()
 
-  _outputperformance()
-  #println(getallpositions())
-end  
+end
 
-#_calculateperformance()
+_outputbackteststatistics()
  
+ #=catch e
+    
+
+    if isa(e, UndefVarError)
+        msg = string(split(string(e),':')[2])[1:end-1]
+        Logger.error("Variable or Function not defined: $msg")
+    elseif isa(e, LoadError)
+        msg = string(split(string(e.error), ',')[3])[1:end-1]
+        Logger.error("Line:$(e.error.line): $msg")
+    end
+    
+    throw(e)
+end=#
+ 
+
 
 #initialize()
 #for data in alldata
@@ -200,9 +211,6 @@ Now, define your algorithm and tehen try to setup in terms in signals
     Step 10: Calculate new portfolio stats based on portfolio as EOD
 
 =#
-
-
-
 
 
 

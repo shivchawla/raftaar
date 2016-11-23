@@ -24,8 +24,8 @@ type Performance
     squareddailyreturn::Float64
     sumsquareddailyreturn::Float64
     sumdailyreturn::Float64
-    peaknetvalue::Float64
-    adjustednetvalue::Float64
+    peaknormalizednetvalue::Float64
+    normalizednetvalue::Float64
     leverage::Float64
 end
 
@@ -35,10 +35,27 @@ typealias AccountTracker Dict{Date, Account}
 typealias CashTracker Dict{Date, Float64}
 typealias PerformanceTracker Dict{Date, Performance}  
 
+
+"""
+Get performance for a specific period
+"""
+function getperformanceforperiod(performancetracker::PerformanceTracker, startdate::Date, enddate::Date)
+    
+    dailyreturns = Vector{Float64}()
+    for date in startdate:enddate
+        if(haskey(performancetracker, date))
+            push!(dailyreturns, performancetracker[date].dailyreturn)
+        end 
+    end
+
+    calculateperformance(dailyreturns)
+
+end
+
 """
 Updates performance of rolling window of 252 days
 """
-function updateperformance(accounttracker::AccountTracker, cashtracker::CashTracker, performancetracker::PerformanceTracker, date::Date)
+function getlatestperformance(accounttracker::AccountTracker, cashtracker::CashTracker, performancetracker::PerformanceTracker)
 
     currentperformance = Performance()
     
@@ -67,18 +84,21 @@ function updateperformance(accounttracker::AccountTracker, cashtracker::CashTrac
         currentperformance = _intializepeformance(accounttracker[actkeys[1]].cash)    
     end
 
-    performancetracker[date] = currentperformance
+    return currentperformance
+
+    #performancetracker[date] = currentperformance
 
 end
 
-export updateperformance
+export getlatestperformance
 
 
 function _intializepeformance(netvalue::Float64)
     performance = Performance()
 
     performance.netvalue = netvalue    
-    performance.peaknetvalue = netvalue
+    performance.normalizednetvalue = netvalue
+    performance.peaknormalizednetvalue = netvalue
     performance.period = 1
 
     return performance
@@ -90,20 +110,28 @@ function _computecurrentperformance(firstperformance::Performance, lastperforman
 
     performance = Performance()
     
-    performance.dailyreturn = 100.0 * latestreturn
+    performance.dailyreturn = latestreturn
     performance.squareddailyreturn =  performance.dailyreturn * performance.dailyreturn
-    performance.totalreturn = 100.0 * ((1.0 + lastperformance.totalreturn/100.0) * (1 + performance.dailyreturn/100.0) - 1.0)
+    performance.totalreturn = ((1.0 + lastperformance.totalreturn) * (1 + performance.dailyreturn) - 1.0)
     performance.netvalue = netvalue
-    performance.adjustednetvalue = netvalue - newcash
+    #performance.adjustednetvalue = netvalue - newcash
     performance.leverage = leverage
 
-    if (performance.adjustednetvalue > lastperformance.peaknetvalue) 
+    performance.normalizednetvalue = lastperformance.normalizednetvalue * (1.0 + performance.dailyreturn) 
+    
+    if (performance.normalizednetvalue > lastperformance.peaknormalizednetvalue)
+        performance.peaknormalizednetvalue = performance.normalizednetvalue
+    else 
+        performance.peaknormalizednetvalue = lastperformance.peaknormalizednetvalue
+    end
+    
+    #=if (performance.adjustednetvalue > lastperformance.peaknetvalue) 
         performance.peaknetvalue = performance.netvalue
     else
         performance.peaknetvalue = lastperformance.peaknetvalue + newcash   
-    end
+    end=#
     
-    performance.drawdown = 100.0 * (performance.peaknetvalue - performance.netvalue) / performance.peaknetvalue   
+    performance.drawdown = (performance.peaknormalizednetvalue - performance.normalizednetvalue) / performance.peaknormalizednetvalue   
 
     if (performance.drawdown > lastperformance.maxdrawdown) 
         performance.maxdrawdown = performance.drawdown
@@ -121,7 +149,7 @@ function _computecurrentperformance(firstperformance::Performance, lastperforman
         #annualvariance and annual standard deviation
         performance.averagedailyreturn = (performance.sumdailyreturn / performance.period)
         
-        performance.annualreturn = 100.0 * ((1 + performance.averagedailyreturn/100.0)^252 - 1.0)
+        performance.annualreturn = ((1 + performance.averagedailyreturn)^252 - 1.0)
 
         #Unbiased estimator
         performance.annualvariance = 252 * (performance.period/(performance.period - 1)) * ((performance.sumsquareddailyreturn/performance.period) - performance.averagedailyreturn^2.0)
@@ -139,7 +167,7 @@ function _computecurrentperformance(firstperformance::Performance, lastperforman
         performance.sumsquareddailyreturn = lastperformance.sumsquareddailyreturn + performance.squareddailyreturn - firstperformance.squareddailyreturn   
         
         performance.averagedailyreturn = performance.sumdailyreturn/performance.period
-        performance.annualreturn = 100.0 * ((1 + performance.averagedailyreturn/100.0)^252 - 1.0)
+        performance.annualreturn = ((1 + performance.averagedailyreturn)^252 - 1.0)
         
         #Unbiased estimator 
         performance.annualvariance = 252 * (performance.period/(performance.period - 1)) * ((performance.sumsquareddailyreturn/performance.period) - performance.averagedailyreturn^2.0)
@@ -224,22 +252,23 @@ function calculateperformance(accounttracker::AccountTracker, cashtracker::CashT
 end
 
 """
-Function to compute portfolio statistics
+Function to compute performance based on vector of returns
 """
-function calculatesportfoliostats(returns::Vector{Float64})
-    ps = PortfolioStats()
-    ps.annualreturn = calculateannualreturns(returns) 
-    ps.totalreturn = calculatetotalreturn(returns)
-    ps.annualstandarddeviation = calculatestandarddeviation(returns)
-    ps.annualvariance = ps.annualstandarddeviation .* ps.annualstandarddeviation
-    ps.sharperatio = zeros(length(returns))
+function calculateperformance(returns::Vector{Float64})
+   
+    ps = Performance()
+    ps.averagedailyreturn, ps.totalreturn, ps.annualreturn = aggregatereturns(returns) 
     
-    for i = 1:length(returns)
-        ps.sharperatio[i] = ps.annualstandarddeviation[i] > 0.0 ? ps.annualreturn[i]./ ps.annualstandarddeviation[i] : 0.0
-    end
-
+    ps.annualstandarddeviation , ps.annualvariance = calculatestandarddeviation(returns)
+    
+    ps.sharperatio = 0.0
+    ps.sharperatio = ps.annualstandarddeviation > 0.0 ? ps.averagedailyreturn * 252 / ps.annualstandarddeviation : 0.0
     ps.informationratio = ps.sharperatio 
-    ps.drawdown,ps.maxdrawdown = calculatedrawdown(returns)
+
+    ps.drawdown, ps.maxdrawdown = calculatedrawdown(returns)
+    
+    ps.period = length(returns)
+
     return ps
 end 
 
@@ -247,36 +276,37 @@ end
 Function to compute annual returns
 """
 function calculateannualreturns(returns::Vector{Float64}) 
-    oness = ones(length(returns))
-    100.0 * (cumsum(returns)./cumsum(oness)) * 252.0
+    (calculatetotalreturn(returns)/sum(length(returns))) * 252.0
 end
 
 """
 Function to compute total return
 """
 function calculatetotalreturn(returns::Vector{Float64})
-    100.0 * (cumprod(1.0 + returns) - 1.0)
+    (cumprod(1.0 + returns) - 1.0)[end]
 end
+
+function aggregatereturns(returns::Vector{Float64})
+    totalreturn = calculatetotalreturn(returns)
+    return totalreturn/length(returns), totalreturn, totalreturn*252/length(returns)
+end
+
 
 """
 Function to compute standard deviation
 """
 function calculatestandarddeviation(returns::Vector{Float64})
-    std = zeros(length(returns))
-    for i = 1:length(returns)
 
-        demean = returns[1:i] - mean(returns[1:i])
-        std[i] = 100.0 * mean(demean.*demean)*sqrt(252.0)     
-    end
-
-    return std
+    sdev = std(returns) * sqrt(252.0)
+    
+    return sdev, sdev*sdev
 end
 
 """
 Function to compute drawdown
 """
 function calculatedrawdown(returns::Vector{Float64})
-    netvalue = 10000.0 * (1.0 + cumprod(returns))
+    netvalue = 100000.0 * cumprod(1.0 + returns) 
     drawdown = zeros(length(returns))
     maxdrawdown = zeros(length(returns))
     peak = -9999.0
@@ -287,7 +317,7 @@ function calculatedrawdown(returns::Vector{Float64})
       if (netvalue[i] > peak) 
         peak = netvalue[i]
       end
-      drawdown[i] = 100.0 * (peak - netvalue[i]) / peak
+      drawdown[i] = (peak - netvalue[i]) / peak
       # Same idea as peak variable, MDD keeps track of the maximum drawdown so far. Only get updated when higher DD is seen.
       if (drawdown[i] > maxdrawdown[i]) 
         maxdrawdown[i] = drawdown[i]
@@ -296,6 +326,11 @@ function calculatedrawdown(returns::Vector{Float64})
       end
     end
 
-    return (100.0*drawdown, 100.0*maxdrawdown)
+    return (drawdown[end], maxdrawdown[end])
 end
+
+
+
+
+
 

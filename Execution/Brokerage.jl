@@ -3,16 +3,10 @@
 # Email: shiv.chawla@aimsquant.com
 # Organization: AIMSQUANT PVT. LTD.
 
-include("OrderFill.jl")
 include("Blotter.jl")
-include("Commission.jl")
 include("Margin.jl")
-include("Slippage.jl")
-include("Order.jl")
-include("../Algorithm/Universe.jl")
-include("../Account/Account.jl")
+#include("../Algorithm/Universe.jl")
 #include("../Account/Account.jl")
-
 
 @enum CancelPolicy EOD GTC 
 
@@ -184,7 +178,7 @@ function updatependingorders!(brokerage::BacktestBrokerage, universe::Universe, 
 		push!(fills, fill)
 
 		#Also, update blotter with fill history
-		addtransaction!(blotter, fill)
+		#addtransaction!(blotter, fill)
 
 		#Here create a signal to up .... 
 

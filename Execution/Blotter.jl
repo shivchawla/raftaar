@@ -3,10 +3,12 @@
 # Email: shiv.chawla@aimsquant.com
 # Organization: AIMSQUANT PVT. LTD.
 
-include("Order.jl")
+#include("Order.jl")
 include("Slippage.jl")
 include("Commission.jl")
 include("OrderFill.jl")
+
+import Base.convert
 
 """
 Type to encapsulate the open orders, all orders and transactions
@@ -17,13 +19,13 @@ typealias TransactionTracker Dict{Date, Vector{OrderFill}}
 type Blotter
 	openorders::Dict{SecuritySymbol, Vector{Order}}
 	ordertracker::OrderTracker
-	transactiontracker::TransactionTracker
+	#transactiontracker::TransactionTracker
 end 
 
 """
 Empty blotter construction
 """
-Blotter() = Blotter(Dict(), OrderTracker(), TransactionTracker())
+Blotter() = Blotter(Dict(), OrderTracker())
 
 """
 Function to add order to the blotter
