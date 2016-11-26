@@ -4,9 +4,6 @@
 # Organization: AIMSQUANT PVT. LTD.
 
 #include("Order.jl")
-include("Slippage.jl")
-include("Commission.jl")
-include("OrderFill.jl")
 
 import Base.convert
 

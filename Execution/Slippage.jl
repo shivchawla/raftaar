@@ -3,7 +3,6 @@
 # Email: shiv.chawla@aimsquant.com
 # Organization: AIMSQUANT PVT. LTD.
 
-include("Order.jl")
 #include("../Security/Security.jl")
 
 @enum SlippageType ConstantSlippage SpreadSlippage

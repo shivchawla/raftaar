@@ -3,7 +3,6 @@
 # Email: shiv.chawla@aimsquant.com
 # Organization: AIMSQUANT PVT. LTD.
 
-include("Order.jl")
 
 @enum CommissionType PerTrade PerShare PerValue
 
