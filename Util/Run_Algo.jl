@@ -4,7 +4,7 @@
 # Organization: AIMSQUANT PVT. LTD.
 
 
-#="""
+#=
 Implements the backtester logic
 Runs the backtesting logic from the start date to the end date.
 Updates the universe with each time stamp, run user defined strategy 
@@ -12,51 +12,52 @@ at every time steps and updates portfolio, orders and performance for fills
 and latest prices
 """=#
 
-using DataFrames
-using DataStructures
-using Raftaar
-#using API
 
-import Logger: warn, info, error
+import Logger: info
 
-include("../Util/handleErrors.jl")
-include("../Util/parseArgs.jl")
-include("../API/API.jl")
-include("../Util/processArgs.jl")
+st = now()
+Logger.info("Starting backtest: "*string(st))
+include("../Util/Run_Helper.jl")
  
 
 sym = "CNX_BANK"
-alldata = history(["CNX_BANK","CNX_100","CNX_ENERGY"], "Close", :Day, 500, enddate = "2016-01-01")
+
+#alldata = history(["CNX_BANK","CNX_100","CNX_ENERGY"], "Close", :Day, 500, enddate = "2016-01-01")
 #alldata = history(["CNX_ENERGY"], "Close", :A, 200, enddate = "2016-01-01")
+alldata = DataFrame()
 
-println(Date(alldata[:Date][end]))
-println(Date(alldata[:Date][1]))
-#df[ isna(df[:A]), :A] = 0
-setstartdate(Date(alldata[:Date][end]))
-setenddate(Date(alldata[:Date][1]))
+function _init()
+  global alldata = history(["CNX_NIFTY","CNX_BANK","CNX_100","CNX_ENERGY"], "Close", :Day, 100, enddate = "2016-01-01")
+  
+  setstartdate(Date(alldata[:Date][end]))
+  setenddate(Date(alldata[:Date][1]))
+  setlogmode(:json, true)
+  setbenchmark("CNX_NIFTY")
+end
 
-setlogmode(:json)
+_init()
 
-initialize()
+try 
+  initialize(algorithm.state) 
+catch err
+  handleexception(err)
+end
 
 startdate = getstartdate()
 enddate = getenddate()
 
-i = 0
-
 dynamic = 0
-
-#updateuniverseforids()
-
-alldata = sort(alldata,cols = :Date, rev=true)
+alldata = sort(alldata, cols = :Date, rev=true)
+ 
+try
 
 for i = size(alldata,1):-1:1   
-  
   date = DateTime(alldata[i,:Date])
+  
   setcurrentdatetime(date)
-
+  
+  
   if dynamic > 0
-    #updateuniverseforids()
     updatepricestores(date, fetchprices(date))
   else
     updatepricestores(date, alldata[i,:])
@@ -79,8 +80,7 @@ for i = size(alldata,1):-1:1
   #_updatependingordersforsplits()
   
   #Internal function to execute pending orders using todays's close
-  _updatependingorders() 
-      
+  _updatependingorders()   
   _updateaccountforprice()
   
   #Internal function to update portfolio value using today's close
@@ -92,40 +92,39 @@ for i = size(alldata,1):-1:1
 
   #beforeclose()
 
-  #once orders are placed, internal system calls onData();
-  ondata()
+  #this should only be called once a day in case of high frequency data
+  _updatedailyperformance()
+
+  _outputdailyperformance() 
+
+  _updatestate() 
+
+  #once orders are placed and performance is updated based on last know portfolio,
+  #call the user defined
   
-   #this is called every data stamp, user can 
+  try 
+    ondata(alldata, algorithm.state)
+  catch err
+    handleexception(err)
+  end
+  
+  #this is called every data stamp, user can 
   # user defines this functions where he sets universe, 
   #creates new orders for the next session 
   #(give option to trading at open/close/or worst price)
   #Internal system checks policy for stocks not in universe
   #If liquidation is set to true, add additional pending orders of liquidation
 
-  #this should only be called once a day in case of high frequency data
-  _updatedailyperformance()
-
-  _outputdailyperformance()
-
 end
 
 _outputbackteststatistics()
- 
- #=catch e
-    
+et = now()
+Logger.info("Backtesting Finished: "*string(et))
 
-    if isa(e, UndefVarError)
-        msg = string(split(string(e),':')[2])[1:end-1]
-        Logger.error("Variable or Function not defined: $msg")
-    elseif isa(e, LoadError)
-        msg = string(split(string(e.error), ',')[3])[1:end-1]
-        Logger.error("Line:$(e.error.line): $msg")
-    end
-    
-    throw(e)
-end=#
+catch err
+  handleexception(err)
+end
  
-
 
 #initialize()
 #for data in alldata

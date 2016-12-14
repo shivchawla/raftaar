@@ -11,6 +11,7 @@ module Raftaar
 
 import Base: ==, getindex, setindex!
 
+include("../Enums/enums.jl")
 include("../DataTypes/Split.jl")
 include("../Security/Security.jl")
 include("../Execution/Order.jl") 
@@ -20,6 +21,7 @@ include("../Account/Position.jl")
 include("../Account/Portfolio.jl")
 include("../Account/Account.jl")
 include("../Performance/Performance.jl")
+include("../Performance/RollingPerformance.jl")
 include("../Execution/Commission.jl")
 include("../Execution/Slippage.jl")
 include("../Execution/Blotter.jl")
@@ -27,10 +29,16 @@ include("../Execution/Margin.jl")
 include("../Performance/Statistics.jl")
 include("../Execution/Brokerage.jl")
 include("../Algorithm/TradingEnvironment.jl")
+include("../Algorithm/AlgorithmState.jl")
 include("../Algorithm/Algorithm.jl")
 
-export Universe, Security, SecuritySymbol,
-       Commission, Slippage, Order, TradeBar
+#export Universe, Security, SecuritySymbol,
+#       Commission, Slippage, Order, TradeBar
+
+
+export Security, SecuritySymbol,
+       Commission, Slippage, Order, TradeBar,
+       Performance,Portfolio, Account, AlgorithmState
 
 export Resolution, CancelPolicy, SecurityType
 
@@ -51,6 +59,8 @@ export  setstartdate!,
         setresolution!,
         setenddate!,
         setcurrentdatetime!,
+        setbenchmark!,
+        getbenchmark,
         getstartdate,
         getenddate,
         getcurrentdatetime,

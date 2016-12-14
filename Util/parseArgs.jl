@@ -19,11 +19,11 @@ function parse_commandline()
             help = "Starting Capital of the backtest"
             arg_type = Float64
             required = true
-        "--sdate", "-s"
+        "--startdate", "-s"
             help = "Start date of the backtest"
             arg_type = Date
             default = Date("2016-01-01")
-        "--edate", "-e"
+        "--enddate", "-e"
             help = "End date of the backtest"
             arg_type = Date
             default = Date(now())    
@@ -35,31 +35,39 @@ function parse_commandline()
             arg_type = Vector{String}
         "--investmentplan"
             help = "Flow or investment structure"
-            arg_type = Pair{String,Float64}
+            arg_type = String
+            default = "AllIn"
         "--rebalance"
             help = "Rebalance frequency of the strategy"
             arg_type = String
-            default = "1D"
+            default = "Daily"
         "--cancelpolicy"
             help = "Cancel Policy of the the backtest"
             arg_type = String
-            default = "DAY"    
+            default = "EOD"    
         "--resolution"
             help = "Resolution frequency of the backtest"
             arg_type = String
-            default = "DAY"
+            default = "Day"
         "--commission"
             help = "Commission Structure of the backtest"
-            arg_type = Pair{String, Float64}
+            arg_type = String
+            default="PerTrade, 0.1"
         "--slippage"
             help = "Slippage Structure of the backtest"
-            arg_type = Pair{String, Float64}
+            arg_type = String
+            default = "Variable, 0.05"
     end
 
     return parse_args(s)
 end
 
-parsed_args = parse_commandline()
+parsed_args = ""
+try
+    parsed_args = parse_commandline()
+catch err
+    handleexception(err)
+end
 
 #Check for parsed arguments
 if (parsed_args["code"] == nothing && parsed_args["file"] == nothing)

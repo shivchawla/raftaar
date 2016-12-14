@@ -4,10 +4,6 @@
 # Organization: AIMSQUANT PVT. LTD.
 
 
-@enum OrderType Limit StopLimit StopMarket MarketOnOpen MarketOnClose Market
- 
-@enum OrderStatus New Submitted PartiallyFilled Filled Canceled Pending None 
-
 """
 Encapsulate the order characteristics    
 """

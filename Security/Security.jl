@@ -6,10 +6,6 @@
 import Base: ==
 #include("SecurityExchange.jl")
 
-"""
-Definition of Security Type 
-"""
-@enum SecurityType Equity Futur Option Commodity Forex Cfd InValid
 
 """
 Combination of stock ticker and integer id

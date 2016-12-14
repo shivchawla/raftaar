@@ -4,34 +4,39 @@ import Raftaar: getposition, getallpositions
 Functions to expose Account and Portfolio API
 """
 function setcash(cash::Float64)
-    #checkforparent(:setcash, :initialize)
+    checkforparent([:initialize,:_init])
     setcash!(algorithm, cash)
 end
+export setcash
 
 function addcash(cash::Float64)
+    checkforparent([:initialize,:_init])
     addcash!(algorithm, cash)
 end
+export addcash
 
-function getallpositions()
-    deepcopy(getallpositions(algorithm.account.portfolio))
+function setbenchmark(ticker::String)
+
 end
+
 
 function getposition(ticker::String)
-    deepcopy(getposition(algorithm.account.portfolio, ticker))
+    
+    getposition(algorithm.state.portfolio, ticker)
 end
+export getposition
 
 function getposition(symbol::SecuritySymbol)
-    deepcopy(getposition(algorithm.account.portfolio, symbol))
+    getposition(algorithm.state.portfolio, symbol)
 end
+export getposition
 
 function getposition(security::Security)
-    deepcopy(getposition(algorithm.account.portfolio, security))
+    getposition(algorithm.state.portfolio, security)
 end
-
-function getportfolio()
-    deepcopy(algorithm.account.portfolio)
-end
+export getposition
 
 function getportfoliovalue()
-    algorithm.account.netvalue
+    algorithm.state.account.netvalue
 end
+export getportfoliovalue

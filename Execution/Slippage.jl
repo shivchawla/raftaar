@@ -5,28 +5,27 @@
 
 #include("../Security/Security.jl")
 
-@enum SlippageType ConstantSlippage SpreadSlippage
 
 """
 Slippage Model
 """
 type Slippage
-	model::SlippageType
+	model::SlippageModel
 	value::Float64
 end
 
 """
 Empty Constructor
 """
-Slippage() = Slippage(SlippageType(ConstantSlippage), 0.001)
+Slippage() = Slippage(SlippageModel(Variable), 0.001)
 
 """
 Function to get slippage for the order based on latest price and slippage model
 """
 function getslippage(order::Order, slippage::Slippage, latestprice::Float64)
-	if slippage.model == SlippageType(ConstantSlippage)
-		return getslippageforconstantslippagemodel(slippage.value, latestprice)
-	elseif slippage.model == SlippageType(SpreadSlippage)
+	if slippage.model == SlippageModel(Variable)
+		return getslippageforvariableslippagemodel(slippage.value, latestprice)
+	elseif slippage.model == SlippageModel(Fixed)
 		return getslippageforspreadslippagemodel(order, security, slippage.value)
 	end	
 end
@@ -34,7 +33,7 @@ end
 """
 Function to get slippage for constant slippage model
 """
-function getslippageforconstantslippagemodel(value::Float64, latestprice::Float64)
+function getslippageforvariableslippagemodel(value::Float64, latestprice::Float64)
 	return latestprice * value
 end
 

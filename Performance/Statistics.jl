@@ -10,6 +10,7 @@ import Base.convert
 
 function outputbackteststatistics_partial(accttrkr::AccountTracker,
                                     pftrkr::PerformanceTracker,
+                                    bnchtrkr::PerformanceTracker,
                                     cshtrkr::CashTracker,
                                     trsctrkr::TransactionTracker,
                                     ordrtrkr::OrderTracker)
@@ -22,45 +23,59 @@ function outputbackteststatistics_partial(accttrkr::AccountTracker,
 
     #Cumulative Strategy Equity Data
     equity = OrderedDict{String,Float64}()
-    totalreturn = OrderedDict{String,Float64}()
+    totalreturn_algorithm = OrderedDict{String,Float64}()
+    totalreturn_benchmark = OrderedDict{String,Float64}()
         
     for i = 1:length(sorteddates)
-        equity[string(sorteddates[i])] = round(100.0 * pftrkr[sorteddates[i]].netvalue,2)
-        totalreturn[string(sorteddates[i])] = round(100.0 * pftrkr[sorteddates[i]].totalreturn,2)
+        equity[string(sorteddates[i])] = round(pftrkr[sorteddates[i]].portfoliostats.netvalue,2)
+        totalreturn_algorithm[string(sorteddates[i])] = round(100.0 * pftrkr[sorteddates[i]].returns.totalreturn,2)
+        totalreturn_benchmark[string(sorteddates[i])] = round(100.0 * bnchtrkr[sorteddates[i]].returns.totalreturn,2)
     end
 
     lastperformance = pftrkr[sorteddates[end]] 
     
     # Create aggregate returns (JSON ready format)
     # Just the onthly returns in the basic run      
-    monthlyreturns = getaggregatereturns(pftrkr, :Monthly)
+    monthlyreturns_algorithm = getaggregatereturns(pftrkr, :Monthly)
+    monthlyreturns_benchmark = getaggregatereturns(bnchtrkr, :Monthly)
 
     outputdict = Dict{String, Any}(
                     "outputtype" => "backtest",
                     "detail" => false,
-                    "equity" => equity,
-                    "totalreturn" => totalreturn,
+                    "equity" => equity,            
+                    "totalreturn" => 
+                        Dict{String, Any}(
+                            "algorithm" => totalreturn_algorithm,
+                            "benchmark" => totalreturn_benchmark,
+                        ),
                     "returns" => 
                         Dict{String, Any}(
-                            "monthly" => monthlyreturns
+                            "monthly" => 
+                                Dict{String,Any}(
+                                    "algorithm" => monthlyreturns_algorithm,
+                                    "benchmark" => monthlyreturns_benchmark,
+                                ), 
                         ),
                     "analytics" => 
                         Dict{String, Any}(
                             "rolling" => convert(Dict, lastperformance)
                             
-                        ) 
+                        ),
+                    "logs" => Logger.getlogbook() 
                     )
  
 end
 
 function outputbackteststatistics(accttrkr::AccountTracker,
                                     pftrkr::PerformanceTracker,
+                                    bnchtrkr::PerformanceTracker,
                                     cshtrkr::CashTracker,
                                     trsctrkr::TransactionTracker,
                                     ordrtrkr::OrderTracker)
     
     outputdict = outputbackteststatistics_partial(accttrkr,
                                     pftrkr,
+                                    bnchtrkr,
                                     cshtrkr,
                                     trsctrkr,
                                     ordrtrkr)
@@ -70,6 +85,7 @@ end
 
 function outputbackteststatistics_full(accttrkr::AccountTracker,
                                     pftrkr::PerformanceTracker,
+                                    bnchtrkr::PerformanceTracker,
                                     cshtrkr::CashTracker,
                                     trsctrkr::TransactionTracker,
                                     ordrtrkr::OrderTracker)
@@ -77,6 +93,7 @@ function outputbackteststatistics_full(accttrkr::AccountTracker,
 
     outputdict = outputbackteststatistics_partial(accttrkr,
                                     pftrkr,
+                                    bnchtrkr,
                                     cshtrkr,
                                     trsctrkr,
                                     ordrtrkr)
@@ -127,7 +144,7 @@ function getaggregatereturns(pft::PerformanceTracker, symbol::Symbol = :All)
     
     while i < length(sorteddates)
         
-        dailyreturn = pft[sorteddates[i]].dailyreturn
+        dailyreturn = pft[sorteddates[i]].returns.dailyreturn
 
         #Yearly
         nyear = Dates.year(sorteddates[i])
@@ -204,15 +221,18 @@ function getaggregatereturns(pft::PerformanceTracker, symbol::Symbol = :All)
 end   
 
 function convert(::Type{Dict}, performance::Performance)
-    Dict{String, Any}(  "annualreturn" => round(100.0 * performance.annualreturn,2), 
-                        "totalreturn" => round(100.0 * performance.totalreturn,2),
-                        "annualstandarddeviation" => round(100.0 * performance.annualstandarddeviation,2),
-                        "annualvariance" => round(100.0 * 100.0 * performance.annualvariance,2),
-                        "sharperatio" => round(performance.sharperatio,2),
-                        "informationratio" => round(performance.informationratio,2),
-                        "drawdown" => round(100.0 * performance.drawdown,2),
-                        "maxdrawdown" => round(100.0 * performance.maxdrawdown,2),
-                        "period" => round(performance.period,2)
+    Dict{String, Any}(  "annualreturn" => round(100.0 * performance.returns.annualreturn, 2), 
+                        "totalreturn" => round(100.0 * performance.returns.totalreturn, 2),
+                        "annualstandarddeviation" => round(100.0 * performance.deviation.annualstandarddeviation, 2),
+                        #"annualvariance" => round(100.0 * 100.0 * performance.annualvariance,2),
+                        "sharperatio" => round(performance.ratios.sharperatio, 2),
+                        "informationratio" => round(performance.ratios.informationratio, 2),
+                        "drawdown" => round(100.0 * performance.drawdown.currentdrawdown, 2),
+                        "maxdrawdown" => round(100.0 * performance.drawdown.maxdrawdown, 2),
+                        "period" => performance.period,
+                        "sortinoratio" => round(performance.ratios.sortinoratio, 2),
+                        "calmarratio" => round(performance.ratios.calmarratio, 2),
+                        "stability" => round(performance.ratios.stability, 2),
                     )
 end
 
@@ -288,7 +308,7 @@ function getyearlyanalytics(pft::PerformanceTracker)
 
 end
 
-function outputperformanceJSON(performancetracker::PerformanceTracker, date::Date)
+function outputperformanceJSON(performancetracker::PerformanceTracker, benchmarktracker::PerformanceTracker, variabletracker::VariableTracker, date::Date)
     if date == Date()
         return
     else 
@@ -298,20 +318,27 @@ function outputperformanceJSON(performancetracker::PerformanceTracker, date::Dat
     end
 
     performance = performancetracker[date]
+    btperformance = benchmarktracker[date]
 
     jsondict = Dict{String, Any}("outputtype" => "performance",
                                 "date" => date,
-                                "dailyreturn" => round(100.0*performance.dailyreturn,2),
-                                "netvalue" => round(performance.netvalue,2),
-                                "annualreturn" => round(100.0*performance.annualreturn,2),
-                                "totalreturn" => round(100.0*performance.totalreturn,2),
-                                "annualstandarddeviation" => round(100.0*performance.annualstandarddeviation,2),
-                                "annualvariance" => round(100.0*100.0*performance.annualvariance,2),
-                                "sharperatio" => round(performance.sharperatio,2),
-                                "informationratio" => round(performance.informationratio,2),
-                                "drawdown" => round(100.0*performance.drawdown,2),
-                                "maxdrawdown" => round(100.0*performance.maxdrawdown,2),
-                                "leverage" => round(performance.leverage,2)
+                                "dailyreturn" => round(100.0*performance.returns.dailyreturn,2),
+                                "netvalue" => round(performance.portfoliostats.netvalue,2),
+                                "annualreturn" => round(100.0*performance.returns.annualreturn,2),
+                                "totalreturn" => round(100.0*(performance.returns.totalreturn - 1.0),2),
+                                "totalreturn_benchmark" => round(100.0*(btperformance.returns.totalreturn - 1.0),2),
+                                "annualstandarddeviation" => round(100.0*performance.deviation.annualstandarddeviation,2),
+                                #"annualvariance" => round(100.0*100.0*performance.annualvariance,2),
+                                "sharperatio" => round(performance.ratios.sharperatio,2),
+                                "informationratio" => round(performance.ratios.informationratio,2),
+                                #"sortinoratio" => round(performance.ratios.sortinoratio,2),
+                                "calmarratio" => round(performance.ratios.calmarratio,2),
+                                "stability" => round(performance.ratios.stability,2),
+                                "beta" => round(performance.ratios.beta,2),
+                                "alpha" => round(252*100*performance.ratios.alpha,2),
+                                "drawdown" => round(100.0*performance.drawdown.currentdrawdown,2),
+                                "maxdrawdown" => round(100.0*performance.drawdown.maxdrawdown,2),
+                                "leverage" => round(performance.portfoliostats.leverage, 2)
                             )
            
     JSON.print(jsondict)

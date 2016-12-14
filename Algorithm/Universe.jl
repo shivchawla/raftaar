@@ -6,10 +6,6 @@
 
 import Base: contains
 
-@enum Resolution Tick Second Minute Hour Daily
-@enum FieldType Open High Low Close Last Volume 
-
-
 import Base: empty
 
 const SIZE = 5
@@ -66,7 +62,6 @@ function contains(universe::Universe, security::Security)
     return !empty(universe[security.symbol])
 end 
 export contains
-
 
 
 """

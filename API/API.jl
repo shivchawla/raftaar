@@ -12,14 +12,13 @@ using DataFrames
 
 import Logger: warn, info
 
-
 #Import list of functions to be overloaded
 import Raftaar: getuniverse
 
-algorithm = Raftaar.Algorithm()
+const algorithm = Raftaar.Algorithm()
  
-function setlogmode(mode::Symbol)
-    Logger.configure(print_mode = mode) 
+function setlogmode(mode::Symbol, save::Bool = false)
+    Logger.configure(print_mode = mode, save_mode = save, save_limit = 10) 
 end
 
 include("TradingEnvAPI.jl")
@@ -29,23 +28,39 @@ include("UniverseAPI.jl")
 include("BrokerageAPI.jl")
 
 """
+Function to set benchmark
+"""
+function setbenchmark(ticker::String)
+    setbenchmark!(algorithm.tradeenv, securitysymbol(ticker))
+    adduniverse(ticker)
+end
+
+function setbenchmark(symbol::SecuritySymbol)
+    setbenchmark!(algorithm.tradeenv, symbol) 
+    adduniverse(symbol.ticker)
+end
+
+"""
 Functions to expose the tracking API
 """ 
 function track(name::String, value::Float64)
     addvariable!(algorithm, name, value)
 end
 
-
 """
 Functions to support the backtest logic
 """ 
+function _updatestate()
+    updatestate(algorithm)  
+end
+
 function _updatependingorders()
-   updateaccountforfills!(algorithm.account, updatependingorders!(algorithm.brokerage, algorithm.universe, algorithm.account))
+   updateaccountforfills!(algorithm.account, algorithm.portfolio, updatependingorders!(algorithm.brokerage, algorithm.universe, algorithm.account))
 end
 
     
 function _updateaccountforprice()
-    updateaccountforprice!(algorithm.account, algorithm.universe.tradebars, algorithm.tradeenv.currentdatetime)
+    updateaccountforprice!(algorithm.account, algorithm.portfolio, algorithm.universe.tradebars, algorithm.tradeenv.currentdatetime)
 end
 
 function _updateprices(tradebars::Dict{SecuritySymbol, TradeBar})
@@ -72,7 +87,7 @@ function _outputbackteststatistics()
 end    
 
 function _outputdailyperformance()
-    outputperformance(algorithm.tradeenv, algorithm.performancetracker, Date(getcurrentdatetime()))
+    outputperformance(algorithm.tradeenv, algorithm.performancetracker, algorithm.benchmarktracker, algorithm.variabletracker, Date(getcurrentdatetime()))
 end
 
 function _updateuniverse(date::String)
@@ -149,7 +164,7 @@ function updatepricestores(date::DateTime, prices::DataFrame)
   _updateprices(tradebars)
 end
 
-function handleexception(e::Exception) 
+#=function handleexception(e::Exception) 
     println(isa(e, LoadError))
     if isa(e, UndefVarError)
         msg = string(split(string(e),':')[2])[1:end-1]
@@ -158,5 +173,5 @@ function handleexception(e::Exception)
         msg = string(split(string(e.error), ',')[3])[1:end-1]
         Logger.error("Line:$(e.error.line): $msg")
     end
-end 
+end=# 
 

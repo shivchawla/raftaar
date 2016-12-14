@@ -16,11 +16,8 @@
     Initializing = 11  #The algorithm is initializing
 =#
 
-#include("../Performance/Statistics.jl")
 
-@enum AlgorithmStatus DeployError InQueue Running Stopped Liquidated Deleted Completed RuntimeError LoggingIn Initializing
-
-typealias VariableTracker Dict{String, Dict{Date, Float64}}
+typealias VariableTracker Dict{Date, Dict{String, Float64}}
 
 """
 Algorithm type 
@@ -31,31 +28,37 @@ type Algorithm
 	algorithmid::String
 	status::AlgorithmStatus
 	account::Account
+    portfolio::Portfolio
 	universe::Universe
 	tradeenv::TradingEnvironment
 	brokerage::BacktestBrokerage
     accounttracker::AccountTracker
     cashtracker::CashTracker
     performancetracker::PerformanceTracker
+    benchmarktracker::PerformanceTracker
     transactiontracker::TransactionTracker
     ordertracker::OrderTracker
     variabletracker::VariableTracker
+    state::AlgorithmState
 end
 
 """
 Algorithm empty constructor
 """
 Algorithm() = Algorithm("","", AlgorithmStatus(Initializing), 
-                                            Account(), 
+                                            Account(),
+                                            Portfolio(), 
                                             Universe(), 
                                             TradingEnvironment(), 
                                             BacktestBrokerage(), 
                                             AccountTracker(), 
                                             CashTracker(), 
                                             PerformanceTracker(),
+                                            PerformanceTracker(),
                                             TransactionTracker(),
                                             OrderTracker(), 
-                                            VariableTracker())
+                                            VariableTracker(),
+                                            AlgorithmState())
 
 """
 Reset algorithm variable to default
@@ -134,8 +137,10 @@ end
 Function to track the performance at each time step
 """
 function updateperformancetracker!(algorithm::Algorithm)      
-    algorithm.performancetracker[getcurrentdate(algorithm.tradeenv)] = 
-        getlatestperformance(algorithm.accounttracker, algorithm.cashtracker, algorithm.performancetracker)       
+    date = getcurrentdate(algorithm.tradeenv)
+    latestbenchmarkvalue = getlatestprice(algorithm.universe, algorithm.tradeenv.benchmark)
+    updatelatestperformance_benchmark(algorithm.benchmarktracker, latestbenchmarkvalue, date)       
+    updatelatestperformance_algorithm(algorithm.accounttracker, algorithm.cashtracker, algorithm.performancetracker, algorithm.benchmarktracker, date)          
 end
 
 export updateperformancetracker!
@@ -145,7 +150,7 @@ Function to set initial cash in the algorithm
 """
 function setcash!(algorithm::Algorithm, cash::Float64)
     updatecashtracker!(algorithm, cash)
-    setcash!(algorithm.account, cash)
+    setcash!(algorithm.account, algorithm.portfolio, cash)
 end
 
 """
@@ -153,7 +158,7 @@ Function to add more cash to the algorithm
 """ 
 function addcash!(algorithm::Algorithm, cash::Float64)
     updatecashtracker!(algorithm, cash)
-    addcash!(algorithm.account, cash)
+    addcash!(algorithm.account, algorithm.portfolio, cash)
 end
 
 """
@@ -167,25 +172,27 @@ end
 Function to add new variable to variable tracker (at the defined time)
 """
 function addvariable!(variabletracker::VariableTracker, name::String, value::Float64, date::Date)
-    if (!haskey(variabletracker, name))
-        variabletracker[name] = Dict()
+    if (!haskey(variabletracker, date))
+        variabletracker[date] = Dict{String,Any}()
     end
 
-    tracker = variabletracker[name]
-    tracker[date] = value
+    tracker = variabletracker[date]
+    tracker[name] = value
 
 end
 
+function updatestate(algorithm::Algorithm)
+    algorithm.state.account = deepcopy(algorithm.account)
+    algorithm.state.portfolio = deepcopy(algorithm.portfolio)
+    algorithm.state.performance = deepcopy(getlatestperformance(algorithm.performancetracker))
+end
+export updatestate
+
 function outputbackteststatistics(algorithm::Algorithm)
-    
-    accttrk = algorithm.accounttracker 
-    pftrk = algorithm.performancetracker
-    cshtrk = algorithm.cashtracker
-    tsactrk = algorithm.transactiontracker
-    ordrtrk = algorithm.ordertracker
-    
+     
     outputbackteststatistics_full(algorithm.accounttracker,
                         algorithm.performancetracker,
+                        algorithm.benchmarktracker,
                         algorithm.cashtracker,
                         algorithm.transactiontracker,
                         algorithm.ordertracker)

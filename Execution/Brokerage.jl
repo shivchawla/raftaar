@@ -6,8 +6,6 @@
 #include("../Algorithm/Universe.jl")
 #include("../Account/Account.jl")
 
-@enum CancelPolicy EOD GTC 
-
 """
 Types to support brokerge actions
 """
@@ -34,9 +32,16 @@ function setcommission!(brokerage::BacktestBrokerage, commission::Commission)
 end 
 
 """
+Function to set commission model
+"""
+function setcommission!(brokerage::BacktestBrokerage, commission::Tuple{String, Float64})
+	brokerage.commission = Commission(eval(parse(commission[1])), commission[2])
+end 
+
+"""
 Function to set margin model
 """
-function setmargin!(brokerage::BacktestBrokerage, commission::Commission)
+function setmargin!(brokerage::BacktestBrokerage, margin::Margin)
 	brokerage.margin = margin
 end
 
@@ -47,12 +52,23 @@ function setslippage!(brokerage::BacktestBrokerage, slippage::Slippage)
 	brokerage.slippage = slippage
 end
 
+function setslippage!(brokerage::BacktestBrokerage, slippage::Tuple{String, Float64})
+	brokerage.slippage = Slippage(eval(parse(slippage[1])), slippage[2])
+end
+
 """
 Function to set cancel policy
 """
 function setcancelpolicy!(brokerage::BacktestBrokerage, cancelpolicy::CancelPolicy)
 	brokerage.cancelpolicy = cancelpolicy
 end
+
+"""
+Function to set cancelpolicy model
+"""
+function setcancelpolicy!(brokerage::BacktestBrokerage, cancelpolicy::String)
+	brokerage.cancelpolicy = CancelPolicy(eval(parse(cancelpolicy)))
+end 
 
 """
 Function to set participationrate

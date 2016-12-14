@@ -2,7 +2,7 @@ using Mongo
 using Yojak
 
 import Yojak: history, getsecurity, getsecurityid, getsecurityids, getsymbol
-import Base: getindex
+import Base: getindex, convert
 
 """
 global definition of mongodb client
@@ -15,92 +15,57 @@ function history(securities::Vector{Security},
                     datatype::String,
                     frequency::Symbol,
                     horizon::Int; enddate::String="")#DateTime = getcurrentdatetime())
+    checkforparent([:ondata])
     ids = Vector{Int}(length(securities))
 
     for i = 1:length(ids)
         ids[i] = securities[i].symbol.id    
     end
-
-    #=if enddate > getcurrentdatetime()
-        Logger.warn("Cannot access data from future")
-        return
-    end=#
-
+    
     history(ids, datatype, frequency, horizon, enddate = enddate)
 
 end
-
-#=function history(secids::Array{Int,1},
-                    datatype::String,
-                    frequency::Symbol,
-                    horizon::Int; enddate::DateTime = getcurrentdatetime()) 
-
-    history(securitycollection, datacollection,
-            secids, datatype, frequency,
-            horizon, enddate, securitytype = securitytype, exchange = exchange, country = country) 
-end=#
 
 
 function history(secids::Array{Int,1},
                     datatype::String,
                     frequency::Symbol,
                     horizon::Int; enddate::String="") 
-   
     if frequency!=:Day
         Logger.info("""Only ":Day" frequency supported in history()""")
         exit()
     end
 
+    checkforparent([:ondata, :_init])
+
     if enddate == ""
-        checkforparent(:history, :ondata)
         enddate = string(getcurrentdatetime())
-     elseif hasparent(:ondata) &&  enddate != ""
-        Logger.warn("history() can not be called with enddate argument")
+     elseif !checkforparent(:_init)
+        Logger.error("history() can not be called with enddate argument")
         exit()
     end
 
     df = history(securitycollection, datacollection, secids, datatype, frequency,
             horizon, enddate)
 
+
+
     return sort(df, cols = :Date, rev=true)
 
 end
-
 
 function history(secid::Int,
                     datatype::String,
                     frequency::Symbol,
                     horizon::Int; enddate::String="")
+    checkforparent([:ondata, :_init])
 
-    #=if enddate == ""
-        enddate = getcurrentdatetime()
-    else 
-        enddate = DateTime(enddate)
-    end=#
-    
     history([secid], datatype, frequency,
             horizon, enddate = enddate)
 end
 
 
 # Based on symbols
-
-#=function history(symbols::Array{String,1},
-                    datatype::String,
-                    frequency::Symbol,
-                    horizon::Int;
-                    enddate::DateTime=getcurrentdatetime(),                    
-                    securitytype::String="EQ",
-                    exchange::String="NSE",
-                    country::String="IN") 
-
-    history(securitycollection, datacollection,
-            symbols, datatype, frequency,
-            horizon, enddate, securitytype = securitytype, exchange = exchange, country = country)  
-end=#
-
-
-
 function history(symbols::Array{String,1},
                     datatype::String,
                     frequency::Symbol,
@@ -112,15 +77,16 @@ function history(symbols::Array{String,1},
     
     if frequency!=:Day
         Logger.info("""Only ":Day" frequency supported in history()""")
-        exit()
+        exit(0)
     end
 
-    if enddate == ""
-        checkforparent(:history, :ondata)
+    checkforparent([:ondata, :_init])
+
+    if enddate == ""       
         enddate = string(getcurrentdatetime())
-    elseif hasparent(:ondata) &&  enddate != ""
+    elseif !checkforparent(:_init)
         Logger.warn("history() can not be called with enddate argument")
-        exit()
+        exit(0)
     end
 
     df = history(securitycollection, datacollection, symbols, datatype, frequency,
@@ -156,18 +122,14 @@ function history(symbol::String,
                     securitytype::String="EQ",
                     exchange::String="NSE",
                     country::String="IN") 
-
-    #=if enddate == ""
-        enddate = getcurrentdatetime()
-    else 
-        enddate = DateTime(enddate)
-    end=#
-   
+    
     history([symbol], datatype, frequency,
             horizon, enddate = enddate, 
             securitytype = securitytype, 
             exchange = exchange, country = country)  
 end
+
+export history
 
 function getsecurityids(tickers::Array{String,1}; 
                         securitytype::String="EQ", 
