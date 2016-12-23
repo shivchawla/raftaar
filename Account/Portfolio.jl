@@ -86,7 +86,7 @@ function setposition!(portfolio::Portfolio, symbol::SecuritySymbol, avgprice::Fl
   end
 end
 
-"""
+#="""
 function to get portfolio value
 """
 function getportfoliovalue(portfolio::Portfolio)
@@ -109,7 +109,7 @@ function to get gross exposure
 """
 function getgrossexposure(portfolio::Portfolio)
   portfolio.metrics.grossexposure
-end
+end=#
 
 """
 function to get absolute of holding cost

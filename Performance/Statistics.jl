@@ -11,10 +11,10 @@ import Base.convert
 function outputbackteststatistics_partial(accttrkr::AccountTracker,
                                     pftrkr::PerformanceTracker,
                                     bnchtrkr::PerformanceTracker,
+                                    vartrkr::VariableTracker,
                                     cshtrkr::CashTracker,
                                     trsctrkr::TransactionTracker,
                                     ordrtrkr::OrderTracker)
-
 
     #Create a sorted list of dates
     sorteddates = sort(collect(keys(pftrkr)))
@@ -28,8 +28,8 @@ function outputbackteststatistics_partial(accttrkr::AccountTracker,
         
     for i = 1:length(sorteddates)
         equity[string(sorteddates[i])] = round(pftrkr[sorteddates[i]].portfoliostats.netvalue,2)
-        totalreturn_algorithm[string(sorteddates[i])] = round(100.0 * pftrkr[sorteddates[i]].returns.totalreturn,2)
-        totalreturn_benchmark[string(sorteddates[i])] = round(100.0 * bnchtrkr[sorteddates[i]].returns.totalreturn,2)
+        totalreturn_algorithm[string(sorteddates[i])] = round(100.0 * (pftrkr[sorteddates[i]].returns.totalreturn - 1.0),2)
+        totalreturn_benchmark[string(sorteddates[i])] = round(100.0 * (bnchtrkr[sorteddates[i]].returns.totalreturn - 1.0),2)
     end
 
     lastperformance = pftrkr[sorteddates[end]] 
@@ -42,7 +42,9 @@ function outputbackteststatistics_partial(accttrkr::AccountTracker,
     outputdict = Dict{String, Any}(
                     "outputtype" => "backtest",
                     "detail" => false,
-                    "equity" => equity,            
+                    "summary" => convert(Dict, lastperformance),
+                    "equity" => equity,
+                    "variables" => vartrkr,            
                     "totalreturn" => 
                         Dict{String, Any}(
                             "algorithm" => totalreturn_algorithm,
@@ -69,6 +71,7 @@ end
 function outputbackteststatistics(accttrkr::AccountTracker,
                                     pftrkr::PerformanceTracker,
                                     bnchtrkr::PerformanceTracker,
+                                    vartrkr::VariableTracker,
                                     cshtrkr::CashTracker,
                                     trsctrkr::TransactionTracker,
                                     ordrtrkr::OrderTracker)
@@ -76,6 +79,7 @@ function outputbackteststatistics(accttrkr::AccountTracker,
     outputdict = outputbackteststatistics_partial(accttrkr,
                                     pftrkr,
                                     bnchtrkr,
+                                    vartrkr,
                                     cshtrkr,
                                     trsctrkr,
                                     ordrtrkr)
@@ -86,6 +90,7 @@ end
 function outputbackteststatistics_full(accttrkr::AccountTracker,
                                     pftrkr::PerformanceTracker,
                                     bnchtrkr::PerformanceTracker,
+                                    vartrkr::VariableTracker,
                                     cshtrkr::CashTracker,
                                     trsctrkr::TransactionTracker,
                                     ordrtrkr::OrderTracker)
@@ -94,6 +99,7 @@ function outputbackteststatistics_full(accttrkr::AccountTracker,
     outputdict = outputbackteststatistics_partial(accttrkr,
                                     pftrkr,
                                     bnchtrkr,
+                                    vartrkr,
                                     cshtrkr,
                                     trsctrkr,
                                     ordrtrkr)
@@ -222,17 +228,19 @@ end
 
 function convert(::Type{Dict}, performance::Performance)
     Dict{String, Any}(  "annualreturn" => round(100.0 * performance.returns.annualreturn, 2), 
-                        "totalreturn" => round(100.0 * performance.returns.totalreturn, 2),
+                        "totalreturn" => round(100.0 * (performance.returns.totalreturn - 1.0), 2),
                         "annualstandarddeviation" => round(100.0 * performance.deviation.annualstandarddeviation, 2),
                         #"annualvariance" => round(100.0 * 100.0 * performance.annualvariance,2),
                         "sharperatio" => round(performance.ratios.sharperatio, 2),
                         "informationratio" => round(performance.ratios.informationratio, 2),
-                        "drawdown" => round(100.0 * performance.drawdown.currentdrawdown, 2),
+                        #"drawdown" => round(100.0 * performance.drawdown.currentdrawdown, 2),
                         "maxdrawdown" => round(100.0 * performance.drawdown.maxdrawdown, 2),
                         "period" => performance.period,
-                        "sortinoratio" => round(performance.ratios.sortinoratio, 2),
+                        #"sortinoratio" => round(performance.ratios.sortinoratio, 2),
                         "calmarratio" => round(performance.ratios.calmarratio, 2),
                         "stability" => round(performance.ratios.stability, 2),
+                        "beta" => round(performance.ratios.beta, 2),
+                        "alpha" => round(100*252*performance.ratios.alpha, 2),
                     )
 end
 
@@ -340,6 +348,14 @@ function outputperformanceJSON(performancetracker::PerformanceTracker, benchmark
                                 "maxdrawdown" => round(100.0*performance.drawdown.maxdrawdown,2),
                                 "leverage" => round(performance.portfoliostats.leverage, 2)
                             )
+    if haskey(variabletracker, date) 
+        jsondict["variables"] = Dict{String, Float64}()
+
+        for (k,v) in variabletracker[date]
+            jsondict["variables"][k] = round(v,2)
+        end
+    end
+
            
     JSON.print(jsondict)
     println()

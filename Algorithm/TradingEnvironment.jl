@@ -111,7 +111,7 @@ import Logger: warn, info
 Function to output performance in a specified format
 """
 function outputperformance(tradeenv::TradingEnvironment, performancetracker::PerformanceTracker, benchmarktracker::PerformanceTracker, variabletracker::VariableTracker, date::Date = Date())
-    outputperformanceJSON(performancetracker, benchmarktracker, date)
+    outputperformanceJSON(performancetracker, benchmarktracker, variabletracker, date)
 end
 
 export outputperformance

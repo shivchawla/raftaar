@@ -43,8 +43,9 @@ function updatelatestperformance_algorithm(accounttracker::AccountTracker, casht
        
     # now update ratios dependent on benchmark
     updateperformanceratios(performancetracker)
-    
 end
+
+precompile(updatelatestperformance_algorithm, (AccountTracker,CashTracker, PerformanceTracker,PerformanceTracker,Date))
 
 """
 Updates performance of benchmark rolling window of 252 days
@@ -81,6 +82,8 @@ function updatelatestperformance_benchmark(performancetracker::PerformanceTracke
    
 end
 
+precompile(updatelatestperformance_benchmark,(PerformanceTracker,Float64,Date))
+
 function _intializepeformance(netvalue::Float64)
     performance = Performance()
 
@@ -96,50 +99,40 @@ function _computecurrentperformance(firstperformance::Performance, lastperforman
 
     latestreturn  = computereturns(accounttracker, cashtracker)
     latestperformance = _computecurrentperformance(firstperformance, lastperformance, latestreturn)
-    
     return latestperformance
 end
 
 
 function _computecurrentperformance(firstperformance::Performance, lastperformance::Performance, latestreturn::Float64)
     performance = Performance()
-    performance.returns.dailyreturn = latestreturn    
+    performance.returns.dailyreturn = latestreturn
     performance.returns.totalreturn = lastperformance.returns.totalreturn * (1 + performance.returns.dailyreturn)
-    
-    if (performance.returns.totalreturn > lastperformance.returns.totalreturn)
+    if (performance.returns.totalreturn > lastperformance.returns.peaktotalreturn)
         performance.returns.peaktotalreturn = performance.returns.totalreturn
     else 
-        performance.returns.peaktotalreturn = lastperformance.returns.totalreturn
+        performance.returns.peaktotalreturn = lastperformance.returns.peaktotalreturn
     end
 
     performance.deviation.squareddailyreturn =  performance.returns.dailyreturn * performance.returns.dailyreturn
-
     performance.drawdown.currentdrawdown = (performance.returns.peaktotalreturn - performance.returns.totalreturn) / performance.returns.peaktotalreturn
-    
     if (performance.drawdown.currentdrawdown > lastperformance.drawdown.maxdrawdown) 
         performance.drawdown.maxdrawdown = performance.drawdown.currentdrawdown
     else
         performance.drawdown.maxdrawdown = lastperformance.drawdown.maxdrawdown
     end
-
     # Now here we run a specialized algorithm that updates performance based on 
     if lastperformance.period < 252
         performance.period = lastperformance.period + 1
         #performance.positivedays = performance.returns.dailyreturn > 0 ? lastperformance.positivedays + 1 : lastperformance.positivedays
         #performance.negativedays = performance.returns.dailyreturn < 0 ? lastperformance.negativedays + 1 : lastperformance.negativedays
-
         performance.deviation.sumdailyreturn = lastperformance.deviation.sumdailyreturn + performance.returns.dailyreturn
         performance.deviation.sumsquareddailyreturn = lastperformance.deviation.sumsquareddailyreturn + performance.deviation.squareddailyreturn
-        
         #annualvariance and annual standard deviation
         performance.returns.averagedailyreturn = (performance.deviation.sumdailyreturn / performance.period)
-        
         performance.returns.annualreturn = ((1 + performance.returns.averagedailyreturn)^252 - 1.0)
-
         #Unbiased estimator
         performance.deviation.annualvariance = 252 * (performance.period/(performance.period - 1)) * ((performance.deviation.sumsquareddailyreturn/performance.period) - performance.returns.averagedailyreturn^2.0)
         performance.deviation.annualstandarddeviation = sqrt(performance.deviation.annualvariance)
-
     elseif lastperformance.period >= 252
 
         performance.period = 252
@@ -158,6 +151,8 @@ function _computecurrentperformance(firstperformance::Performance, lastperforman
 
     return performance
 end
+
+precompile(_computecurrentperformance, (Performance, Performance, Float64))
 
 function updateperformanceratios(performancetracker::PerformanceTracker)
     sorteddates = sort(collect(keys(performancetracker)))
@@ -196,9 +191,9 @@ function updateperformanceratios(performancetracker::PerformanceTracker)
     latestperformance.ratios.informationratio = trkerr > 0 ? excessret/trkerr : 0.0
     #latestperformance.ratios.sortinoratio = latestperformance.deviation.annualsemideviation > 0.0 ? latestperformance.returns.annualreturn / latestperformance.deviation.annualsemideviation : 0.0
     latestperformance.ratios.calmarratio = latestperformance.drawdown.maxdrawdown > 0.0 ? latestperformance.returns.annualreturn/latestperformance.drawdown.maxdrawdown : 0.0
-
-
 end
+
+precompile(updateperformanceratios, (PerformanceTracker,))
 
 ######IMPROVEMENT: Don't calculate the whole series here
 function computereturns(accounttracker, cashtracker)
@@ -226,11 +221,14 @@ function computereturns(accounttracker, cashtracker)
     end
 
     lastdate = sortedkeys[end]
-    newfunds = haskey(cashtracker, lastdate) ? cashtracker[date] : 0.0
+    newfunds = haskey(cashtracker, lastdate) ? cashtracker[lastdate] : 0.0
     #netvalue = accounttracker[lastdate].netvalue
     #leverage = accounttracker[lastdate].leverage
     #adjustednetvalue = netvalue - newfunds    
 
     return returns[end] #, netvalue, newfunds, leverage
 end
+
+precompile(computereturns, (AccountTracker, CashTracker))
+
 

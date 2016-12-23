@@ -15,11 +15,6 @@ function addcash(cash::Float64)
 end
 export addcash
 
-function setbenchmark(ticker::String)
-
-end
-
-
 function getposition(ticker::String)
     
     getposition(algorithm.state.portfolio, ticker)
@@ -40,3 +35,6 @@ function getportfoliovalue()
     algorithm.state.account.netvalue
 end
 export getportfoliovalue
+
+getstate() = algorithm.state
+export getstate

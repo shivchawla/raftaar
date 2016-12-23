@@ -24,7 +24,8 @@ function ondata(data, state)
 
 	setholdingpct(securitysymbol("CNX_BANK"),1.0)	
 	
-	track("portfoliovalue", getportfoliovalue())
+	track("Net Value", state.account.netvalue)
+	track("11NetValue", state.account.netvalue * 1.1)
 end
 
 function beforeclose(state)

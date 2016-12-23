@@ -74,7 +74,9 @@ Performance() = Performance(0, Returns(), Deviation(), Ratios(), Drawdown(), Por
 
 typealias AccountTracker Dict{Date, Account}
 typealias CashTracker Dict{Date, Float64}
-typealias PerformanceTracker Dict{Date, Performance}  
+typealias PerformanceTracker Dict{Date, Performance} 
+typealias VariableTracker Dict{Date, Dict{String, Float64}}
+
 
 """
 Get performance for a specific period
@@ -133,6 +135,8 @@ function calculateperformance(algorithmreturns::Vector{Float64}, benchmarkreturn
     return ps
 end 
 
+println(precompile(calculateperformance,(Vector{Float64}, Vector{Float64})))
+
 """
 Function to compute annual returns
 """
@@ -144,15 +148,15 @@ end
 Function to compute total return
 """
 function calculatetotalreturn(returns::Vector{Float64})
-    (cumprod(1.0 + returns) - 1.0)[end]
+    (cumprod(1.0 + returns))[end]
 end
 
 function aggregatereturns(rets::Vector{Float64})
     returns = Returns()
     totalreturn = calculatetotalreturn(rets)
-    returns.averagedailyreturn = totalreturn/length(rets)
+    returns.averagedailyreturn = (totalreturn - 1)/length(rets)
     returns.totalreturn = totalreturn
-    returns.annualreturn = totalreturn*252/length(rets)
+    returns.annualreturn = returns.averagedailyreturn*252
     return returns
 end
 
@@ -209,6 +213,8 @@ function calculatedrawdown(returns::Vector{Float64})
 
     return drawdown
 end
+
+precompile(calculatedrawdown, (Array{Float64,1},()))
 
 
 """

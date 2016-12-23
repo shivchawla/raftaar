@@ -45,8 +45,8 @@ function to update the account with cash generated from orderfills
 """
 function updateaccount!(account::Account, portfolio::Portfolio, cashfromfills::Float64 = 0.0)
     account.cash += cashfromfills
-    account.netvalue = getnetexposure(portfolio) + account.cash
-    account.leverage = getgrossexposure(portfolio) / account.netvalue
+    account.netvalue = portfolio.metrics.netexposure + account.cash
+    account.leverage = portfolio.metrics.grossexposure / account.netvalue
 end
 
 """
@@ -66,3 +66,5 @@ function updateaccountforfills!(account::Account, portfolio::Portfolio, fills::V
         updateaccount!(account, portfolio, cashgenerated)
     end
 end
+
+println(precompile(updateaccountforfills!,(Account, Portfolio, Vector{OrderFill})))

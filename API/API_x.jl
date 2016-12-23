@@ -6,12 +6,9 @@
 
 #Lean Functions to expose Raftar API without any need
 #of initialzing algorithm object
-__precompile__(true)
-module API
 
 using Raftaar
 using DataFrames
-using Logger
 
 import Logger: warn, info
 
@@ -24,49 +21,12 @@ function setlogmode(mode::Symbol, save::Bool = false)
     Logger.configure(print_mode = mode, save_mode = save, save_limit = 10) 
 end
 
-export setlogmode
-
 include("TradingEnvAPI.jl")
-include("historyAPI.jl")
 include("AccountAPI.jl")
+include("HistoryAPI.jl")
 include("UniverseAPI.jl")
 include("BrokerageAPI.jl")
-include("../Util/Run_Algo.jl")
 
-export  setstartdate, 
-        setenddate,
-        setresolution,
-        setenddate,
-        setcurrentdatetime,
-        setbenchmark,
-        getbenchmark,
-        getstartdate,
-        getenddate,
-        getcurrentdatetime,
-        adduniverse,
-        setuniverse,
-        getuniverse,
-        cantrade,
-        setcash,
-        addcash,
-        getposition,    
-        getportfolio,
-        getportfoliovalue,
-        setcancelpolicy,    
-        setcommission,
-        setslippage,
-        setparticipationrate,
-        liquidate,
-        placeorder,
-        liquidateportfolio,
-        setholdingpct,
-        setholdingvalue,
-        setholdingshares,
-        hedgeportfolio,
-        getopenorders,
-        cancelallorders,
-        checkforparent,
-        reset
 """
 Function to set benchmark
 """
@@ -80,16 +40,12 @@ function setbenchmark(symbol::SecuritySymbol)
     adduniverse(symbol.ticker)
 end
 
-export setbenchmark
-
 """
 Functions to expose the tracking API
 """ 
 function track(name::String, value::Float64)
     addvariable!(algorithm, name, value)
 end
-
-export track
 
 """
 Functions to support the backtest logic
@@ -98,67 +54,46 @@ function _updatestate()
     updatestate(algorithm)  
 end
 
-export _updatestate
-
 function _updatependingorders()
    updateaccountforfills!(algorithm.account, algorithm.portfolio, updatependingorders!(algorithm.brokerage, algorithm.universe, algorithm.account))
 end
-
-export _updatependingorders
 
     
 function _updateaccountforprice()
     updateaccountforprice!(algorithm.account, algorithm.portfolio, algorithm.universe.tradebars, algorithm.tradeenv.currentdatetime)
 end
 
-export _updateaccountforprice
-
 function _updateprices(tradebars::Dict{SecuritySymbol, TradeBar})
     updateprices!(algorithm.universe, tradebars)
 end 
 
-export _updateprices
 
 function _updateaccounttracker()
     updateaccounttracker!(algorithm)
 end
-
-export _updateaccounttracker
 
 function _calculateperformance()
     calculateperformance(algorithm.accounttracker, algorithm.cashtracker)
     Raftaar.reset(algorithm)
 end
 
-export _calculateperformance
-
 function _updatedailyperformance()
     updateaccounttracker!(algorithm)
     updateperformancetracker!(algorithm)
 end
 
-
-
-export _updatedailyperformance
-
 function _outputbackteststatistics()
     outputbackteststatistics(algorithm)
-end 
-
-export _outputbackteststatistics   
+end    
 
 function _outputdailyperformance()
     outputperformance(algorithm.tradeenv, algorithm.performancetracker, algorithm.benchmarktracker, algorithm.variabletracker, Date(getcurrentdatetime()))
 end
 
-export _outputdailyperformance
-
 function _updateuniverse(date::String)
     updateuniverseforid()
     updateuniverseforprices(date)
 end
-
-export _updateuniverse
 
 function securitysymbol(ticker::String)
     id = getsecurityid(ticker)
@@ -181,8 +116,6 @@ function securitysymbol(id::Int)
     return SecuritySymbol(id, ticker)
 end
 
-export securitysymbol
-
 isvalid(ss::SecuritySymbol) = ss.ticker!="NULL" && ss.id!=0 && ss.id!=-1
 
 function updateuniverseforids()
@@ -204,8 +137,6 @@ function updateuniverseforids()
     end
 end
 
-export updateuniverseforids
-
 function fetchprices(date::DateTime)
     ids = Vector{Int}()
 
@@ -216,8 +147,6 @@ function fetchprices(date::DateTime)
 
     prices = history(ids, "Close", :A, 1, enddate = date)
 end
-
-export fetchprices
 
 function updatepricestores(date::DateTime, prices::DataFrame)
     
@@ -235,7 +164,14 @@ function updatepricestores(date::DateTime, prices::DataFrame)
   _updateprices(tradebars)
 end
 
-precompile(updatepricestores, (DateTime, DataFrame))
+#=function handleexception(e::Exception) 
+    println(isa(e, LoadError))
+    if isa(e, UndefVarError)
+        msg = string(split(string(e),':')[2])[1:end-1]
+        Logger.error("Variable or Function not defined: $msg")
+    elseif isa(e, LoadError)
+        msg = string(split(string(e.error), ',')[3])[1:end-1]
+        Logger.error("Line:$(e.error.line): $msg")
+    end
+end=# 
 
-export updatepricestores
-end

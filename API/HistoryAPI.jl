@@ -1,17 +1,11 @@
-using Mongo 
+
 using Yojak
 
 import Yojak: history, getsecurity, getsecurityid, getsecurityids, getsymbol
 import Base: getindex, convert
 
-"""
-global definition of mongodb client
-"""
-const client = MongoClient()
-const securitycollection = MongoCollection(client, "aimsquant", "security_test") 
-const datacollection = MongoCollection(client , "aimsquant", "data_test")
 
-function history(securities::Vector{Security},
+#=function history(securities::Vector{Security},
                     datatype::String,
                     frequency::Symbol,
                     horizon::Int; enddate::String="")#DateTime = getcurrentdatetime())
@@ -24,7 +18,7 @@ function history(securities::Vector{Security},
     
     history(ids, datatype, frequency, horizon, enddate = enddate)
 
-end
+end=#
 
 
 function history(secids::Array{Int,1},
@@ -45,7 +39,7 @@ function history(secids::Array{Int,1},
         exit()
     end
 
-    df = history(securitycollection, datacollection, secids, datatype, frequency,
+    df = Yojak.history(secids, datatype, frequency,
             horizon, enddate)
 
 
@@ -88,8 +82,8 @@ function history(symbols::Array{String,1},
         Logger.warn("history() can not be called with enddate argument")
         exit(0)
     end
-
-    df = history(securitycollection, datacollection, symbols, datatype, frequency,
+    
+    df = Yojak.history(symbols, datatype, frequency,
             horizon, enddate, 
             securitytype = securitytype, 
             exchange = exchange, country = country) 
@@ -131,7 +125,7 @@ end
 
 export history
 
-function getsecurityids(tickers::Array{String,1}; 
+#=function getsecurityids(tickers::Array{String,1}; 
                         securitytype::String="EQ", 
                         exchange::String="NSE",
                         country::String="IN")
@@ -159,14 +153,16 @@ end
 
 function getsymbol(id::Int)
     return getsymbol(securitycollection, id)
-end
+end=#
+
 
 function getsecurity(secid::Int)
-   convert(Raftaar.Security, getsecurity(securitycollection, secid))
+   convert(Raftaar.Security, Yojak.getsecurity(secid))
 end
 
 function convert(::Type{Raftaar.Security}, security::Yojak.Security)
-    return Security(security.symbol.id, security.symbol.ticker, security.name,
+    
+    return Raftaar.Security(security.symbol.id, security.symbol.ticker, security.name,
                       exchange = security.exchange,
                       country = security.exchange,
                       securitytype = security.securitytype)
@@ -178,10 +174,11 @@ function getsecurity(ticker::String;
                         exchange::String="NSE",
                         country::String="IN")
 
-    convert(Raftaar.Security, getsecurity(securitycollection, ticker, 
-                securitytype = securitytype,
-                exchange = exchange,
-                country = country))
+    sec =  Yojak.getsecurity(ticker, 
+                        securitytype, 
+                        exchange, 
+                        country)
+    convert(Raftaar.Security, sec)
 end
 
 # Overriding getindex for history dataframes
