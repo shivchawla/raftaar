@@ -235,7 +235,7 @@ function updatepricestores(date::DateTime, prices::DataFrame)
   _updateprices(tradebars)
 end
 
-precompile(updatepricestores, (DateTime, DataFrame))
+#precompile(updatepricestores, (DateTime, DataFrame))
 export updatepricestores
 
 end
