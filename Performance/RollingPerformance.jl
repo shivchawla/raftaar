@@ -88,8 +88,6 @@ function _intializepeformance(netvalue::Float64)
     performance = Performance()
 
     performance.portfoliostats.netvalue = netvalue    
-    #performance.portfoliostats.normalizednetvalue = netvalue
-    #performance.portfoliostats.peaknormalizednetvalue = netvalue
     performance.period = 1
 
     return performance
@@ -107,6 +105,7 @@ function _computecurrentperformance(firstperformance::Performance, lastperforman
     performance = Performance()
     performance.returns.dailyreturn = latestreturn
     performance.returns.totalreturn = lastperformance.returns.totalreturn * (1 + performance.returns.dailyreturn)
+    
     if (performance.returns.totalreturn > lastperformance.returns.peaktotalreturn)
         performance.returns.peaktotalreturn = performance.returns.totalreturn
     else 
@@ -200,7 +199,6 @@ function computereturns(accounttracker, cashtracker)
     sortedkeys = sort(collect(keys(accounttracker)))
     returns = Vector{Float64}(length(sortedkeys))
 
-    #push!(returns, 0.0)
     if !isempty(sortedkeys)
         firstdate = sortedkeys[1]
         startingcaptital = accounttracker[firstdate].cash
@@ -222,6 +220,7 @@ function computereturns(accounttracker, cashtracker)
 
     lastdate = sortedkeys[end]
     newfunds = haskey(cashtracker, lastdate) ? cashtracker[lastdate] : 0.0
+    
     #netvalue = accounttracker[lastdate].netvalue
     #leverage = accounttracker[lastdate].leverage
     #adjustednetvalue = netvalue - newfunds    

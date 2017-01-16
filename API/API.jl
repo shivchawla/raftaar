@@ -31,7 +31,7 @@ include("historyAPI.jl")
 include("AccountAPI.jl")
 include("UniverseAPI.jl")
 include("BrokerageAPI.jl")
-include("../Util/Run_Algo.jl")
+#include("../Util/Run_Algo.jl")
 
 export  setstartdate, 
         setenddate,
@@ -214,7 +214,7 @@ function fetchprices(date::DateTime)
         push!(ids, id)
     end
 
-    prices = history(ids, "Close", :A, 1, enddate = date)
+    prices = history(ids, "Close", :Day, 1, enddate = date)
 end
 
 export fetchprices
@@ -236,6 +236,6 @@ function updatepricestores(date::DateTime, prices::DataFrame)
 end
 
 precompile(updatepricestores, (DateTime, DataFrame))
-
 export updatepricestores
+
 end

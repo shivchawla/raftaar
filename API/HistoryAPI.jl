@@ -5,7 +5,7 @@ import Yojak: history, getsecurity, getsecurityid, getsecurityids, getsymbol
 import Base: getindex, convert
 
 
-#=function history(securities::Vector{Security},
+function history(securities::Vector{Security},
                     datatype::String,
                     frequency::Symbol,
                     horizon::Int; enddate::String="")#DateTime = getcurrentdatetime())
@@ -18,8 +18,7 @@ import Base: getindex, convert
     
     history(ids, datatype, frequency, horizon, enddate = enddate)
 
-end=#
-
+end
 
 function history(secids::Array{Int,1},
                     datatype::String,
@@ -34,7 +33,7 @@ function history(secids::Array{Int,1},
 
     if enddate == ""
         enddate = string(getcurrentdatetime())
-     elseif !checkforparent(:_init)
+     elseif !checkforparent([:_init])
         Logger.error("history() can not be called with enddate argument")
         exit()
     end
@@ -42,6 +41,31 @@ function history(secids::Array{Int,1},
     df = Yojak.history(secids, datatype, frequency,
             horizon, enddate)
 
+
+    return sort(df, cols = :Date, rev=true)
+
+end
+
+function history(secids::Array{Int,1},
+                    datatype::String,
+                    frequency::Symbol,
+                    horizon::Int; enddate::DateTime = DateTime()) 
+    if frequency!=:Day
+        Logger.info("""Only ":Day" frequency supported in history()""")
+        exit()
+    end
+
+    checkforparent([:ondata, :_init])
+
+    if enddate == DateTime()
+        enddate = getcurrentdatetime()
+     elseif !checkforparent([:_init])
+        Logger.error("history() can not be called with enddate argument")
+        exit()
+    end
+
+    df = Yojak.history(secids, datatype, frequency,
+            horizon, enddate)
 
 
     return sort(df, cols = :Date, rev=true)
@@ -78,7 +102,7 @@ function history(symbols::Array{String,1},
 
     if enddate == ""       
         enddate = string(getcurrentdatetime())
-    elseif !checkforparent(:_init)
+    elseif !checkforparent([:_init])
         Logger.warn("history() can not be called with enddate argument")
         exit(0)
     end
@@ -90,23 +114,6 @@ function history(symbols::Array{String,1},
 
     return sort(df, cols = :Date, rev=true)
 end
-
-#=function history(symbol::String,
-                    datatype::String,
-                    frequency::Symbol,
-                    horizon::Int;
-                    enddate::DateTime=getcurrentdatetime(),                    
-                    securitytype::String="EQ",
-                    exchange::String="NSE",
-                    country::String="IN") 
-
-    history([symbol], datatype, frequency,
-            horizon, enddate = enddate, 
-            securitytype = securitytype, 
-            exchange = exchange, country = country)  
-end=#
-
-
 
 function history(symbol::String,
                     datatype::String,
@@ -121,6 +128,47 @@ function history(symbol::String,
             horizon, enddate = enddate, 
             securitytype = securitytype, 
             exchange = exchange, country = country)  
+end
+
+
+function history(symbols::Vector{String},
+                    datatype::String,
+                    frequency::Symbol;
+                    startdate::DateTime = now(),
+                    enddate::DateTime = now(),                   
+                    securitytype::String="EQ",
+                    exchange::String="NSE",
+                    country::String="IN") 
+    
+    df = Yojak.history(symbols, datatype, frequency,
+            startdate, enddate, 
+            securitytype = securitytype, 
+            exchange = exchange, country = country) 
+
+    return sort(df, cols = :Date, rev=true) 
+end
+
+function history(symbols::Vector{SecuritySymbol},
+                    datatype::String,
+                    frequency::Symbol;
+                    startdate::DateTime = now(),
+                    enddate::DateTime = now(),                   
+                    securitytype::String="EQ",
+                    exchange::String="NSE",
+                    country::String="IN") 
+    
+    tickers = Vector{String}()
+    for sym in symbols
+        push!(tickers, sym.ticker)
+    end
+
+    history(tickers, datatype, frequency, 
+                startdate = startdate,
+                enddate = enddate,
+                securitytype  =securitytype,
+                exchange = exchange,
+                country = country)
+    
 end
 
 export history

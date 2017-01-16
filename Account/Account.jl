@@ -63,8 +63,9 @@ function to update the account with from orderfills (adding/removing positions)
 function updateaccountforfills!(account::Account, portfolio::Portfolio, fills::Vector{OrderFill})
     if !isempty(fills)
         cashgenerated = updateportfolioforfills!(portfolio, fills)
+        
         updateaccount!(account, portfolio, cashgenerated)
     end
 end
 
-println(precompile(updateaccountforfills!,(Account, Portfolio, Vector{OrderFill})))
+precompile(updateaccountforfills!,(Account, Portfolio, Vector{OrderFill}))

@@ -4,19 +4,19 @@
 # Organization: AIMSQUANT PVT. LTD.
 
 function processargs(parsed_args::Dict{AbstractString,Any})
-
-  pattern = ""
+  fname = ""
   #Include the strategy code
   if (parsed_args["code"] == nothing)
-    pattern = parsed_args["file"]
-    include(parsed_args["file"])
+    fname = parsed_args["file"]
   elseif (parsed_args["file"] == nothing)
-    tf=tempname()
+    
+    tf = tempname()
+
     open(tf, "w") do f
-                 write(f, parsed_args["code"])
+                write(f, "using Raftaar\n")
+                write(f, parsed_args["code"])
               end
-    pattern = tf
-    include(tf) 
+    fname = tf
   end
 
   if (parsed_args["capital"] != nothing)
@@ -28,11 +28,31 @@ function processargs(parsed_args::Dict{AbstractString,Any})
   end
 
   if (parsed_args["enddate"] != nothing)
-    setstartdate(parsed_args["enddate"])
+    setenddate(parsed_args["enddate"])
   end
 
   if (parsed_args["universe"] != nothing)
-    setuniverse(parsed_args["universe"])
+    
+    ss = split(parsed_args["universe"],",")
+
+    nss = length(ss)
+    universe = Vector{String}(nss)
+    
+    flag = false
+    for i = 1:nss
+        str = strip(String(ss[i]))
+        
+        if(str != "")
+            universe[i] = str 
+            flag = true
+        end
+        
+    end
+
+    if flag
+      setuniverse(universe)
+    end
+    
   end
 
   if (parsed_args["investmentplan"] != nothing)
@@ -61,7 +81,7 @@ function processargs(parsed_args::Dict{AbstractString,Any})
     
     #eval(parse(ss[1]))
     #println(eval(parse(ss[1])))
-    setcommission((String(ss[1]), parse(ss[2])))
+    setcommission((String(ss[1]), parse(ss[2])/100.0))
 
   end
 
@@ -72,17 +92,11 @@ function processargs(parsed_args::Dict{AbstractString,Any})
       Logger.error("""Can't parse the "slippage" argument. Need Name,Value type""");
     end  
     
-    setslippage((String(ss[1]), parse(ss[2])))
+    setslippage((String(ss[1]), parse(ss[2])/100.0))
 
   end
 
-  return pattern
-end
-
-try 
-  pattern = processargs(parsed_args)
-catch err
-  handleexception(err)
+  return fname 
 end
 
 

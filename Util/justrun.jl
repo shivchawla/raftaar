@@ -1,15 +1,38 @@
 using Yojak
 import Mongo: MongoClient
+using API
 
-println("mongoclient start: $(now())")
+include("../Util/handleErrors.jl")
+include("../Util/parseArgs.jl")
+include("../Util/processArgs.jl")
+include("../Util/Run_Algo.jl")
+
+parsed_args = ""
+try
+    parsed_args = parse_commandline()
+catch err
+    handleexception(err)
+end
+  
+#Check for parsed arguments
+if (parsed_args["code"] == nothing && parsed_args["file"] == nothing)
+  println("Atleast one of the code or file arguments should be provided")
+  exit(0)
+end
 
 const client = MongoClient()
 Yojak.configure(client)
 
-println("mongoclient end: $(now())")
+fname = processargs(parsed_args)
 
-using API
-println("API load end: $(now())")
+#fname = "/users/shivkumarchawla/Desktop/temp.jl"
 
+setlogmode(:json, true)
+  
+try
+    include(fname)
+catch err
+    handleexception(err)
+end
 
-API.run_algo()
+run_algo()

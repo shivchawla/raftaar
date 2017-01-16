@@ -120,8 +120,7 @@ export outputperformance
 Function to find the parent function of a the called function
 helps in limiting the use of API functions
 """
-function checkforparent(func::Symbol, reqparent::Symbol)
-    #println(stacktrace())
+#=function checkforparent(func::Symbol, reqparent::Symbol)
     frames = Base.stacktrace()
     len = length(frames)
 
@@ -137,6 +136,7 @@ function checkforparent(func::Symbol, reqparent::Symbol)
 end
 
 function checkforparent(reqparent::Symbol)
+    
     frames = Base.stacktrace()
     func = frames[2].func
     len = length(frames)
@@ -154,9 +154,12 @@ function checkforparent(reqparent::Symbol)
     end
     
     return true
-end
+end=#
 
 function checkforparent(reqparents::Vector{Symbol})
+    
+    return true
+
     frames = Base.stacktrace()
     func = frames[2].func
 

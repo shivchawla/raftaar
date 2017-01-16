@@ -3,9 +3,7 @@
 # Email: shiv.chawla@aimsquant.com
 # Organization: AIMSQUANT PVT. LTD.
 
-
 import Base: contains
-
 import Base: empty
 
 const SIZE = 5

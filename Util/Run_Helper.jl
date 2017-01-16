@@ -1,29 +1,19 @@
 
 import Logger: warn, info, error
-import Base: isvalid, showerror
 
-pattern = ""
 using DataFrames
 
-#include("../API/API.jl")
-include("../Examples/constantpct.jl")
-include("../Util/handleErrors.jl")
-#include("../Util/parseArgs.jl")
-#include("../Util/processArgs.jl")
-
-alldata = DataFrame()
-dynamic = 0
-
-function mainfnc(i::Int) 
-  
-  date = DateTime(alldata[i,:Date])
-  
-  setcurrentdatetime(date)
-  
-  if dynamic > 0
+#function mainfnc(i::Int)
+function mainfnc(date::String, counter::Int; dynamic::Bool = true, dataframe::DataFrame = DataFrame())
+   
+  if dynamic
+    date = DateTime(date)
+    setcurrentdatetime(date)
     updatepricestores(date, fetchprices(date))
   else
-    updatepricestores(date, alldata[i,:])
+    date = DateTime(dataframe[counter,:Date])
+    setcurrentdatetime(date)
+    updatepricestores(date, dataframe[counter, :])
   end
 
   #println(alldata[i,:CNX_BANK][1])

@@ -40,7 +40,9 @@ end
 function setuniverse(tickers::Vector{String};
                         securitytype::String="EQ",
                         exchange::String="NSE")
+
     
+    println("mamamammamamam")
     checkforparent([:ondata,:beforeopen,:initialize,:_init])  
     securities = Vector{Security}()
     inuniverse = Dict{String, Bool}()
@@ -56,7 +58,7 @@ function setuniverse(tickers::Vector{String};
     #Add the benchmark security to the universe
     benchmark = getbenchmark()
     
-    if !haskey(inuniverse, benchmark.ticker)
+    if !haskey(inuniverse, benchmark.ticker) && benchmark.ticker!=""
         push!(securities, getsecurity(benchmark.ticker))
         inuniverse[benchmark.ticker] = true
     end

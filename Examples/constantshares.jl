@@ -3,10 +3,7 @@
 # Email: shiv.chawla@aimsquant.com
 # Organization: AIMSQUANT PVT. LTD.
 
-#include("../Engine/API.jl")
-#using API
-
-function initialize()	
+function initialize(state)	
 	#setstartdate(DateTime("01/01/2016","dd/mm/yyyy"))
 	#setenddate(DateTime("20/07/2016","dd/mmm/yyyy"))
 	setcash(1000000.0)
@@ -18,11 +15,11 @@ end
 function beforeopen()
 end
 
-function ondata()
+function ondata(data, state)
 
 	setholdingshares(securitysymbol("CNX_BANK"), 100)	
 	
-	track("portfoliovalue", getportfoliovalue())
+	track("portfoliovalue", state.account.netvalue)
 
 	return true
 end
@@ -30,9 +27,4 @@ end
 function beforeclose()
 	cancelallorders()
 end
-
-
-
-
-
 

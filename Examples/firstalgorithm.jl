@@ -3,9 +3,6 @@
 # Email: shiv.chawla@aimsquant.com
 # Organization: AIMSQUANT PVT. LTD.
 
-#include("../Engine/API.jl")
-#using API
-
 function initialize()	
 	#setstartdate(DateTime("01/01/2016","dd/mm/yyyy"))
 	#setenddate(DateTime("20/07/2016","dd/mmm/yyyy"))

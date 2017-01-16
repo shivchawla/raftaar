@@ -29,10 +29,10 @@ function parse_commandline()
             default = Date(now())    
         "--universe","-u"
             help = "Static universe for the backtest"
-            arg_type = Vector{String}
+            arg_type = String
         "--exclude"
             help = "Exclude from universe"
-            arg_type = Vector{String}
+            arg_type = String
         "--investmentplan"
             help = "Flow or investment structure"
             arg_type = String
@@ -60,18 +60,5 @@ function parse_commandline()
     end
 
     return parse_args(s)
-end
-
-parsed_args = ""
-try
-    parsed_args = parse_commandline()
-catch err
-    handleexception(err)
-end
-
-#Check for parsed arguments
-if (parsed_args["code"] == nothing && parsed_args["file"] == nothing)
-  println("Atleast one of the code or file arguments should be provided")
-  exit(0)
 end
 

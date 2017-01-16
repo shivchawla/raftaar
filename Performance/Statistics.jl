@@ -362,5 +362,14 @@ function outputperformanceJSON(performancetracker::PerformanceTracker, benchmark
 
 end
 
+function outputlabels(labels::Dict{String, Float64})
+
+    jsondict = Dict{String, Any}("outputtype" => "labels",
+                                 "labels" => labels)
+    JSON.print(jsondict)
+    println()
+end
+export outputlabels
+
 
                         
