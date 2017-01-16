@@ -68,4 +68,4 @@ function updateaccountforfills!(account::Account, portfolio::Portfolio, fills::V
     end
 end
 
-precompile(updateaccountforfills!,(Account, Portfolio, Vector{OrderFill}))
+#precompile(updateaccountforfills!,(Account, Portfolio, Vector{OrderFill}))

@@ -135,7 +135,7 @@ function calculateperformance(algorithmreturns::Vector{Float64}, benchmarkreturn
     return ps
 end 
 
-println(precompile(calculateperformance,(Vector{Float64}, Vector{Float64})))
+#println(precompile(calculateperformance,(Vector{Float64}, Vector{Float64})))
 
 """
 Function to compute annual returns
@@ -214,7 +214,7 @@ function calculatedrawdown(returns::Vector{Float64})
     return drawdown
 end
 
-precompile(calculatedrawdown, (Array{Float64,1},()))
+#precompile(calculatedrawdown, (Array{Float64,1},()))
 
 
 """

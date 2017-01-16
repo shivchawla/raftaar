@@ -45,7 +45,7 @@ function updatelatestperformance_algorithm(accounttracker::AccountTracker, casht
     updateperformanceratios(performancetracker)
 end
 
-precompile(updatelatestperformance_algorithm, (AccountTracker,CashTracker, PerformanceTracker,PerformanceTracker,Date))
+#precompile(updatelatestperformance_algorithm, (AccountTracker,CashTracker, PerformanceTracker,PerformanceTracker,Date))
 
 """
 Updates performance of benchmark rolling window of 252 days
@@ -82,7 +82,7 @@ function updatelatestperformance_benchmark(performancetracker::PerformanceTracke
    
 end
 
-precompile(updatelatestperformance_benchmark,(PerformanceTracker,Float64,Date))
+#precompile(updatelatestperformance_benchmark,(PerformanceTracker,Float64,Date))
 
 function _intializepeformance(netvalue::Float64)
     performance = Performance()
@@ -151,7 +151,7 @@ function _computecurrentperformance(firstperformance::Performance, lastperforman
     return performance
 end
 
-precompile(_computecurrentperformance, (Performance, Performance, Float64))
+#precompile(_computecurrentperformance, (Performance, Performance, Float64))
 
 function updateperformanceratios(performancetracker::PerformanceTracker)
     sorteddates = sort(collect(keys(performancetracker)))
@@ -192,7 +192,7 @@ function updateperformanceratios(performancetracker::PerformanceTracker)
     latestperformance.ratios.calmarratio = latestperformance.drawdown.maxdrawdown > 0.0 ? latestperformance.returns.annualreturn/latestperformance.drawdown.maxdrawdown : 0.0
 end
 
-precompile(updateperformanceratios, (PerformanceTracker,))
+#precompile(updateperformanceratios, (PerformanceTracker,))
 
 ######IMPROVEMENT: Don't calculate the whole series here
 function computereturns(accounttracker, cashtracker)
@@ -228,6 +228,6 @@ function computereturns(accounttracker, cashtracker)
     return returns[end] #, netvalue, newfunds, leverage
 end
 
-precompile(computereturns, (AccountTracker, CashTracker))
+#precompile(computereturns, (AccountTracker, CashTracker))
 
 
