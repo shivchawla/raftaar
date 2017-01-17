@@ -1,4 +1,4 @@
-using Yojak
+using YRead
 import Mongo: MongoClient
 using API
 
@@ -21,7 +21,7 @@ if (parsed_args["code"] == nothing && parsed_args["file"] == nothing)
 end
 
 const client = MongoClient()
-Yojak.configure(client)
+YRead.configure(client)
 
 fname = processargs(parsed_args)
 

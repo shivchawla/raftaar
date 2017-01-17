@@ -1,7 +1,7 @@
 
-using Yojak
+using YRead
 
-import Yojak: history, getsecurity, getsecurityid, getsecurityids, getsymbol
+import YRead: history, getsecurity, getsecurityid, getsecurityids, getsymbol
 import Base: getindex, convert
 
 
@@ -38,7 +38,7 @@ function history(secids::Array{Int,1},
         exit()
     end
 
-    df = Yojak.history(secids, datatype, frequency,
+    df = YRead.history(secids, datatype, frequency,
             horizon, enddate)
 
 
@@ -64,7 +64,7 @@ function history(secids::Array{Int,1},
         exit()
     end
 
-    df = Yojak.history(secids, datatype, frequency,
+    df = YRead.history(secids, datatype, frequency,
             horizon, enddate)
 
 
@@ -107,7 +107,7 @@ function history(symbols::Array{String,1},
         exit(0)
     end
     
-    df = Yojak.history(symbols, datatype, frequency,
+    df = YRead.history(symbols, datatype, frequency,
             horizon, enddate, 
             securitytype = securitytype, 
             exchange = exchange, country = country) 
@@ -140,7 +140,7 @@ function history(symbols::Vector{String},
                     exchange::String="NSE",
                     country::String="IN") 
     
-    df = Yojak.history(symbols, datatype, frequency,
+    df = YRead.history(symbols, datatype, frequency,
             startdate, enddate, 
             securitytype = securitytype, 
             exchange = exchange, country = country) 
@@ -205,10 +205,10 @@ end=#
 
 
 function getsecurity(secid::Int)
-   convert(Raftaar.Security, Yojak.getsecurity(secid))
+   convert(Raftaar.Security, YRead.getsecurity(secid))
 end
 
-function convert(::Type{Raftaar.Security}, security::Yojak.Security)
+function convert(::Type{Raftaar.Security}, security::YRead.Security)
     
     return Raftaar.Security(security.symbol.id, security.symbol.ticker, security.name,
                       exchange = security.exchange,
@@ -222,7 +222,7 @@ function getsecurity(ticker::String;
                         exchange::String="NSE",
                         country::String="IN")
 
-    sec =  Yojak.getsecurity(ticker, 
+    sec =  YRead.getsecurity(ticker, 
                         securitytype, 
                         exchange, 
                         country)
