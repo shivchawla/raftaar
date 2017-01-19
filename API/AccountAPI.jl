@@ -38,3 +38,8 @@ export getportfoliovalue
 
 getstate() = algorithm.state
 export getstate
+
+function getindex(portfolio::Portfolio, ticker::String)
+    security = getsecurity(ticker)
+    return portfolio[security]
+end

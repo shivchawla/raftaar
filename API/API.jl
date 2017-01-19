@@ -27,7 +27,7 @@ end
 export setlogmode
 
 include("TradingEnvAPI.jl")
-include("historyAPI.jl")
+include("HistoryAPI.jl")
 include("AccountAPI.jl")
 include("UniverseAPI.jl")
 include("BrokerageAPI.jl")

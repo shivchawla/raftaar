@@ -32,18 +32,11 @@ Portfolio() = Portfolio(Dict(), PortfolioMetrics())
 Indexing function to get position based 
 on security symbol or security directly from portfolio
 """
+
 getindex(portfolio::Portfolio, symbol::SecuritySymbol) = get(portfolio.positions, symbol, Position(symbol))
 getindex(portfolio::Portfolio, security::Security) = get(portfolio.positions, security.symbol, Position(security.symbol))
 setindex!(portfolio::Portfolio, position::Position, securitysymbol::SecuritySymbol) = 
                       setindex!(portfolio.positions, position, securitysymbol)
-
-"""
-Indexing function to get position based on ticker
-"""
-function getindex(portfolio::Portfolio, ticker::String) 
-  symbol = createsymbol(ticker, SecurityType(Equity))
-  get(portfolio, symbol, Position())
-end
 
 """
 function to get all positions in a portfolio

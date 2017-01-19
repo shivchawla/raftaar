@@ -36,14 +36,15 @@ type to encapuslate securities and latest prices of the securities
 """
 type Universe 
 	#securities::Vector{Security}
-    securities::Dict{SecuritySymbol, Security}
+  tickertosymbol::Dict{String, Vector{SecuritySymbol}}
+  securities::Dict{SecuritySymbol, Security}
 	tradebars::Dict{SecuritySymbol, Vector{TradeBar}}
 end
 
 """
 Empty constructor
 """
-Universe() = Universe(Dict(), Dict())
+Universe() = Universe(Dict(), Dict(), Dict())
 
 """
 Index function to retrieve the security based on symbol
@@ -73,7 +74,14 @@ function adduniverse!(universe::Universe, ticker::String;
                         securitytype = securitytype,
                         exchange = exchange)
     
-    #push!(universe.securities, security)
+    ticker = security.symbol.ticker
+
+    if(!haskey(universe.tickertosymbol, ticker))
+        universe.tickertosymbol[ticker] = Vector{SecuritySymbol}()
+    end
+
+    push!(universe.tickertosymbol[ticker], security.symbol)
+    
     universe.securities[security.symbol] = security
 end
 
@@ -116,10 +124,17 @@ end=#
 
 function adduniverse!(universe::Universe, security::Security)	
     if !empty(security)
-		if !haskey(universe.securities, security.symbol)
-			universe[security.symbol] = security
-		end
-	end
+    		if !haskey(universe.securities, security.symbol)
+    			universe[security.symbol] = security
+    		end
+
+        ticker = security.symbol.ticker
+        if(!haskey(universe.tickertosymbol, ticker))
+            universe.tickertosymbol[ticker] = Vector{SecuritySymbol}()
+        end
+
+        push!(universe.tickertosymbol[ticker], security.symbol)
+    end
 end
 
 function adduniverse!(universe::Universe, securities::Vector{Security})
@@ -303,5 +318,6 @@ function shiftforwardandinsert!(tradebars::Vector{TradeBar}, newtradebar::TradeB
     end 
 
 end
+
 
 
