@@ -8,7 +8,7 @@ import Base: getindex, convert
 function history(securities::Vector{Security},
                     datatype::String,
                     frequency::Symbol,
-                    horizon::Int; enddate::String="")#DateTime = getcurrentdatetime())
+                    horizon::Int; enddate::DateTime = getcurrentdatetime())
     checkforparent([:ondata])
     ids = Vector{Int}(length(securities))
 
@@ -23,33 +23,7 @@ end
 function history(secids::Array{Int,1},
                     datatype::String,
                     frequency::Symbol,
-                    horizon::Int; enddate::String="") 
-    if frequency!=:Day
-        Logger.info("""Only ":Day" frequency supported in history()""")
-        exit()
-    end
-
-    checkforparent([:ondata, :_init])
-
-    if enddate == ""
-        enddate = string(getcurrentdatetime())
-     elseif !checkforparent([:_init])
-        Logger.error("history() can not be called with enddate argument")
-        exit()
-    end
-
-    df = YRead.history(secids, datatype, frequency,
-            horizon, enddate)
-
-
-    return sort(df, cols = :Date, rev=true)
-
-end
-
-function history(secids::Array{Int,1},
-                    datatype::String,
-                    frequency::Symbol,
-                    horizon::Int; enddate::DateTime = DateTime()) 
+                    horizon::Int; enddate::DateTime = getcurrentdatetime()) 
     if frequency!=:Day
         Logger.info("""Only ":Day" frequency supported in history()""")
         exit()
@@ -67,28 +41,16 @@ function history(secids::Array{Int,1},
     df = YRead.history(secids, datatype, frequency,
             horizon, enddate)
 
-
     return sort(df, cols = :Date, rev=true)
 
 end
-
-function history(secid::Int,
-                    datatype::String,
-                    frequency::Symbol,
-                    horizon::Int; enddate::String="")
-    checkforparent([:ondata, :_init])
-
-    history([secid], datatype, frequency,
-            horizon, enddate = enddate)
-end
-
 
 # Based on symbols
 function history(symbols::Array{String,1},
                     datatype::String,
                     frequency::Symbol,
                     horizon::Int;
-                    enddate::String="",                    
+                    enddate::DateTime = getcurrentdatetime(),
                     securitytype::String="EQ",
                     exchange::String="NSE",
                     country::String="IN")
@@ -100,8 +62,8 @@ function history(symbols::Array{String,1},
 
     checkforparent([:ondata, :_init])
 
-    if enddate == ""       
-        enddate = string(getcurrentdatetime())
+    if enddate == DateTime()       
+        enddate = getcurrentdatetime()
     elseif !checkforparent([:_init])
         Logger.warn("history() can not be called with enddate argument")
         exit(0)
@@ -114,22 +76,6 @@ function history(symbols::Array{String,1},
 
     return sort(df, cols = :Date, rev=true)
 end
-
-function history(symbol::String,
-                    datatype::String,
-                    frequency::Symbol,
-                    horizon::Int;
-                    enddate::String="",                    
-                    securitytype::String="EQ",
-                    exchange::String="NSE",
-                    country::String="IN") 
-    
-    history([symbol], datatype, frequency,
-            horizon, enddate = enddate, 
-            securitytype = securitytype, 
-            exchange = exchange, country = country)  
-end
-
 
 function history(symbols::Vector{String},
                     datatype::String,
