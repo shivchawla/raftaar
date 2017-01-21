@@ -16,7 +16,8 @@ using Logger
 import Logger: warn, info
 
 #Import list of functions to be overloaded
-import Raftaar: getuniverse
+import Raftaar: getuniverse, getopenorders
+
 
 const algorithm = Raftaar.Algorithm()
  

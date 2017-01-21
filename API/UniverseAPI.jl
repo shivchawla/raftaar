@@ -23,6 +23,43 @@ function adduniverse(tickers::Vector{String};
     end
 end
 
+function adduniverse(secid::Int)
+    adduniverse(getsecurity(secid))
+end
+
+function adduniverse(secids::Vector{Int})
+
+    checkforparent([:ondata,:beforeopen,:initialize,:_init])  
+    for secid in secids
+        adduniverse(secid)
+    end
+end
+
+function adduniverse(symbol::SecuritySymbol)
+    adduniverse(symbol.id)
+end
+
+function adduniverse(symbols::Vector{SecuritySymbol})
+
+    checkforparent([:ondata,:beforeopen,:initialize,:_init])  
+    for symbol in symbols
+        adduniverse(symbol)
+    end
+end
+
+function adduniverse(security::Security)
+    adduniverse!(algorithm.universe, security)
+end
+
+function adduniverse(securities::Vector{Security})
+
+    checkforparent([:ondata,:beforeopen,:initialize,:_init])  
+    for security in securities
+        adduniverse(security)
+    end
+end
+
+
 export adduniverse
 
 function setuniverse(ticker::String;
@@ -41,8 +78,6 @@ function setuniverse(tickers::Vector{String};
                         securitytype::String="EQ",
                         exchange::String="NSE")
 
-    
-    println("mamamammamamam")
     checkforparent([:ondata,:beforeopen,:initialize,:_init])  
     securities = Vector{Security}()
     inuniverse = Dict{String, Bool}()
@@ -141,8 +176,21 @@ function getlatestprice(symbol::SecuritySymbol)
 end
 export getlatestprice
 
+
+function ispartofuniverse(security::Security)
+    return contains(algorithm.universe, security.symbol) 
+end
+
 function ispartofuniverse(symbol::SecuritySymbol)
     return contains(algorithm.universe, symbol) 
+end
+
+function ispartofuniverse(secid::Int)   
+    return contains(algorithm.universe, getsecurity(secid)) 
+end
+
+function ispartofuniverse(ticker::String)
+    return contains(algorithm.universe, getsecurity(ticker)) 
 end
 export ispartofuniverse
 

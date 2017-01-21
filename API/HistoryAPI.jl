@@ -20,10 +20,29 @@ function history(securities::Vector{Security},
 
 end
 
+function history(symbols::Vector{SecuritySymbol},
+                    datatype::String,
+                    frequency::Symbol,
+                    horizon::Int; enddate::DateTime = getcurrentdatetime())
+    
+    checkforparent([:ondata])
+    ids = Vector{Int}(length(symbols))
+
+    for i = 1:length(ids)
+        ids[i] = symbols[i].id    
+    end
+    
+    history(ids, datatype, frequency, horizon, enddate = enddate)
+
+end
+
 function history(secids::Array{Int,1},
                     datatype::String,
                     frequency::Symbol,
                     horizon::Int; enddate::DateTime = getcurrentdatetime()) 
+    
+    SIZE = 50
+
     if frequency!=:Day
         Logger.info("""Only ":Day" frequency supported in history()""")
         exit()
@@ -38,6 +57,7 @@ function history(secids::Array{Int,1},
         exit()
     end
 
+    secids = length(secids) > SIZE ? secids[1:50] : secids
     df = YRead.history(secids, datatype, frequency,
             horizon, enddate)
 
@@ -46,7 +66,7 @@ function history(secids::Array{Int,1},
 end
 
 # Based on symbols
-function history(symbols::Array{String,1},
+function history(tickers::Array{String,1},
                     datatype::String,
                     frequency::Symbol,
                     horizon::Int;
@@ -55,6 +75,8 @@ function history(symbols::Array{String,1},
                     exchange::String="NSE",
                     country::String="IN")
     
+    SIZE = 50
+
     if frequency!=:Day
         Logger.info("""Only ":Day" frequency supported in history()""")
         exit(0)
@@ -69,7 +91,9 @@ function history(symbols::Array{String,1},
         exit(0)
     end
     
-    df = YRead.history(symbols, datatype, frequency,
+    tickers = length(tickers) > SIZE ? tickers[1:50] : tickers
+    
+    df = YRead.history(tickers, datatype, frequency,
             horizon, enddate, 
             securitytype = securitytype, 
             exchange = exchange, country = country) 
@@ -77,7 +101,10 @@ function history(symbols::Array{String,1},
     return sort(df, cols = :Date, rev=true)
 end
 
-function history(symbols::Vector{String},
+
+# Period based History
+
+function history(securities::Vector{Security},
                     datatype::String,
                     frequency::Symbol;
                     startdate::DateTime = now(),
@@ -86,12 +113,18 @@ function history(symbols::Vector{String},
                     exchange::String="NSE",
                     country::String="IN") 
     
-    df = YRead.history(symbols, datatype, frequency,
-            startdate, enddate, 
-            securitytype = securitytype, 
-            exchange = exchange, country = country) 
+    ids = Vector{Int}(length(securities))
+    for i = 1:length(securities)
+        ids[i] = securities[i].symbol.id
+    end
 
-    return sort(df, cols = :Date, rev=true) 
+    history(ids, datatype, frequency, 
+                startdate = startdate,
+                enddate = enddate,
+                securitytype  =securitytype,
+                exchange = exchange,
+                country = country)
+    
 end
 
 function history(symbols::Vector{SecuritySymbol},
@@ -103,19 +136,63 @@ function history(symbols::Vector{SecuritySymbol},
                     exchange::String="NSE",
                     country::String="IN") 
     
-    tickers = Vector{String}()
-    for sym in symbols
-        push!(tickers, sym.ticker)
+    ids = Vector{Int}(length(symbols))
+    for i = 1:length(symbols)
+        ids[i] = symbols[i].id
     end
 
-    history(tickers, datatype, frequency, 
+    history(ids, datatype, frequency, 
                 startdate = startdate,
                 enddate = enddate,
                 securitytype  =securitytype,
                 exchange = exchange,
-                country = country)
-    
+                country = country)   
 end
+
+
+function history(secids::Vector{Int},
+                    datatype::String,
+                    frequency::Symbol;
+                    startdate::DateTime = now(),
+                    enddate::DateTime = now(),                   
+                    securitytype::String="EQ",
+                    exchange::String="NSE",
+                    country::String="IN") 
+    SIZE = 50
+
+    secids = length(secids) > SIZE ? secids[1:50] : secids
+
+    df = YRead.history(secids, datatype, frequency, 
+                startdate,
+                enddate,
+                securitytype  =securitytype,
+                exchange = exchange,
+                country = country)
+    return sort(df, cols = :Date, rev=true) 
+
+end
+
+
+function history(tickers::Vector{String},
+                    datatype::String,
+                    frequency::Symbol;
+                    startdate::DateTime = now(),
+                    enddate::DateTime = now(),                   
+                    securitytype::String="EQ",
+                    exchange::String="NSE",
+                    country::String="IN") 
+    
+    SIZE = 50
+
+    tickers = length(tickers) > SIZE ? tickers[1:50] : tickers
+    df = YRead.history(tickers, datatype, frequency,
+            startdate, enddate, 
+            securitytype = securitytype, 
+            exchange = exchange, country = country) 
+
+    return sort(df, cols = :Date, rev=true) 
+end
+
 
 export history
 
@@ -148,12 +225,7 @@ end
 function getsymbol(id::Int)
     return getsymbol(securitycollection, id)
 end=#
-
-
-function getsecurity(secid::Int)
-   convert(Raftaar.Security, YRead.getsecurity(secid))
-end
-
+   
 function convert(::Type{Raftaar.Security}, security::YRead.Security)
     
     return Raftaar.Security(security.symbol.id, security.symbol.ticker, security.name,

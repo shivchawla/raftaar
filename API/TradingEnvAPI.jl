@@ -15,13 +15,34 @@ function setstartdate(date::Date)
     checkforparent([:initialize,:_init])
     setstartdate!(algorithm.tradeenv, date)
 end
+
+function setstartdate(dt::DateTime)  
+    checkforparent([:initialize,:_init])
+    setstartdate!(algorithm.tradeenv, Date(dt))
+end
+
+function setstartdate(date::String; format="yyyy-mm-dd")  
+    checkforparent([:initialize,:_init])
+    setstartdate!(algorithm.tradeenv, Date(date, format))
+end
 export setstartdate
 
 function setenddate(date::Date)
     checkforparent([:initialize,:_init])
     setenddate!(algorithm.tradeenv, date)
 end
+
+function setenddate(dt::DateTime)
+    checkforparent([:initialize,:_init])
+    setenddate!(algorithm.tradeenv, Date(dt))
+end
+
+function setenddate(date::String; format="yyyy-mm-dd")
+    checkforparent([:initialize,:_init])
+    setenddate!(algorithm.tradeenv, Date(date, format))
+end
 export setenddate
+
 
 function setcurrentdatetime(datetime::DateTime)
     setcurrentdatetime!(algorithm.tradeenv, datetime) 

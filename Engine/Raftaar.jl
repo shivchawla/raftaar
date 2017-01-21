@@ -40,7 +40,7 @@ export Security, SecuritySymbol,
        Commission, Slippage, Order, TradeBar,
        Performance,Portfolio, Account, AlgorithmState
 
-export Resolution, CancelPolicy, SecurityType
+export Resolution, CancelPolicy, SecurityType, CommissionModel, SlippageModel
 
 for s in instances(Resolution)
     @eval export $(Symbol(s))
@@ -51,6 +51,14 @@ for s in instances(CancelPolicy)
 end
 
 for s in instances(SecurityType)
+    @eval export $(Symbol(s))
+end
+
+for s in instances(CommissionModel)
+    @eval export $(Symbol(s))
+end
+
+for s in instances(SlippageModel)
     @eval export $(Symbol(s))
 end
 
@@ -85,7 +93,7 @@ export  setstartdate!,
         setholdingshares!,
         hedgeportfolio,
         getopenorders,
-        cancelallorders,
+        cancelallorders!,
         updatependingorders!,
         updateaccountforfills!,
         updateaccountforprice!,

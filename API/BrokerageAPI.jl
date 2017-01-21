@@ -37,11 +37,20 @@ function setparticipationrate(participationrate::Float64)
 end
 export setparticipationrate
 
+function placeorder(ticker::String, quantity::Int64)
+    checkforparent([:ondata, :beforeclose])
+    placeorder(getsecurity(ticker), quantity)
+end 
+
+function placeorder(secid::Int, quantity::Int64)
+    checkforparent([:ondata, :beforeclose])
+    placeorder(getsecurity(secid), quantity)
+end 
+
 function placeorder(security::Security, quantity::Int64)
     checkforparent([:ondata, :beforeclose])
     placeorder(security.symbol, quantity)
 end 
-
 
 function placeorder(symbol::SecuritySymbol, quantity::Int64)
     checkforparent([:ondata, :beforeclose])
@@ -68,20 +77,24 @@ function placeorder(order::Order)
         order.datetime = now()
     end
     
-
     Logger.info("Placing order: $(order.securitysymbol.ticker)/$(order.quantity)/$(order.ordertype)")
     placeorder!(algorithm.brokerage, order)  
 end
 export placeorder
 
-function liquidate(symbol::SecuritySymbol)
-    checkforparent([:ondata, :beforeclose])
-    setholdingshares(symbol, 0)  
-end
-
 function liquidate(ticker::String)
     checkforparent([:ondata, :beforeclose])
     setholdingshares(ticker, 0)  
+end
+
+function liquidate(secid::Int)
+    checkforparent([:ondata, :beforeclose])
+    setholdingshares(secid, 0)  
+end
+
+function liquidate(symbol::SecuritySymbol)
+    checkforparent([:ondata, :beforeclose])
+    setholdingshares(symbol, 0)  
 end
 
 function liquidate(security::Security)
@@ -105,6 +118,12 @@ function setholdingpct(ticker::String, target::Float64)
     setholdingpct(getsecurity(ticker), target)
 end
 
+function setholdingpct(secid::Int, target::Float64)
+    checkforparent([:ondata, :beforeclose])
+    setholdingpct(getsecurity(secid), target)
+end
+
+
 function setholdingpct(security::Security, target::Float64)
     checkforparent([:ondata, :beforeclose])
     setholdingpct(security.symbol, target)
@@ -114,9 +133,11 @@ function setholdingpct(symbol::SecuritySymbol, target::Float64)
     checkforparent([:ondata, :beforeclose])
     
     if !ispartofuniverse(symbol)
-        Logger.warn("Security: $(symbol.id)/$(symbol.ticker) not present in the universe")
+        adduniverse(symbol)
+        
+        #=Logger.warn("Security: $(symbol.id)/$(symbol.ticker) not present in the universe")
         Logger.warn("Can't place order for security missing in the universe")
-        return
+        return=#
     end
 
     initialshares = getposition(symbol).quantity
@@ -137,13 +158,25 @@ function setholdingpct(symbol::SecuritySymbol, target::Float64)
     valuetobeinvested = getportfoliovalue() * target - currentvalue
     roundedshares = valuetobeinvested > 0 ? floor(Int, valuetobeinvested/latestprice) : -ceil(Int, abs(valuetobeinvested)/latestprice)
 
-    if abs(roundedshares) > 0
-        placeorder(symbol, roundedshares)
+    openqty = 0
+
+    for order in getopenorders(symbol)
+        openqty += order.quantity
+    end
+    netroundedshares = roundedshares - openqty
+
+    if abs(netroundedshares) > 0
+        placeorder(symbol, netroundedshares)
     end
 
 end
 
 export setholdingpct
+
+function setholdingvalue(secid::Int, target::Float64)
+    checkforparent([:ondata, :beforeclose])
+    setholdingvalue(getsecurity(secid), target)
+end
 
 function setholdingvalue(ticker::String, target::Float64)
     checkforparent([:ondata, :beforeclose])
@@ -159,9 +192,11 @@ function setholdingvalue(symbol::SecuritySymbol, target::Float64)
     checkforparent([:ondata, :beforeclose])
     
     if !ispartofuniverse(symbol)
-        Logger.warn("Security: $(symbol.id)/$(symbol.ticker) not present in the universe")
+        adduniverse(symbol)
+        
+        #=Logger.warn("Security: $(symbol.id)/$(symbol.ticker) not present in the universe")
         Logger.warn("Can't place order for security missing in the universe")
-        return
+        return=#
     end
 
     initialshares = getposition(symbol).quantity
@@ -183,14 +218,26 @@ function setholdingvalue(symbol::SecuritySymbol, target::Float64)
     valuetobeinvested = target - currentvalue
     roundedshares = valuetobeinvested > 0 ? floor(Int, valuetobeinvested/latestprice) : -ceil(Int, abs(valuetobeinvested)/latestprice)
 
-    if abs(roundedshares) > 0
-        placeorder(symbol, roundedshares)
+    openqty = 0
+    for order in getopenorders(symbol)
+        openqty += order.quantity
+    end
+
+    netroundedshares = roundedshares - openqty
+
+    if abs(netroundedshares) > 0
+        placeorder(symbol, netroundedshares)
     end
     
 end
 export setholdingvalue
 
-function setholdingshares(ticker::String, target::Float64)
+function setholdingshares(secid::Int, target::Int64)
+    checkforparent([:ondata, :beforeclose])
+    setholdingshares(getsecurity(secid), target)
+end
+
+function setholdingshares(ticker::String, target::Int64)
     checkforparent([:ondata, :beforeclose])
     setholdingshares(getsecurity(ticker), target)
 end
@@ -204,9 +251,11 @@ function setholdingshares(symbol::SecuritySymbol, target::Int64)
     checkforparent([:ondata, :beforeclose])
     
     if !ispartofuniverse(symbol)
-        Logger.warn("Security: $(symbol.id)/$(symbol.ticker) not present in the universe")
+        adduniverse(symbol)
+       
+        #=Logger.warn("Security: $(symbol.id)/$(symbol.ticker) not present in the universe")
         Logger.warn("Can't place order for security missing in the universe")
-        return
+        return=#
     end
 
     initialshares = getposition(symbol).quantity
@@ -224,8 +273,13 @@ function setholdingshares(symbol::SecuritySymbol, target::Int64)
         return
     end
     
-    sharestobeinvested = target - initialshares
-    
+    openqty = 0
+    for order in getopenorders(symbol)
+        openqty += order.quantity
+    end
+
+    sharestobeinvested = target - initialshares - openqty
+
     if abs(sharestobeinvested) > 0
         placeorder(symbol, sharestobeinvested)
     end
@@ -236,20 +290,61 @@ export setholdingshares
 function hedgeportfolio()
 end
 
+function getopenorders(ticker::String)
+    checkforparent([:ondata, :beforeclose])
+    deepcopy(getopenorders(algorithm.brokerage, getsecurity(ticker).symbol))
+end
+
+function getopenorders(secid::Int)
+    checkforparent([:ondata, :beforeclose])
+    deepcopy(getopenorders(algorithm.brokerage, getsecurity(secid).symbol))
+end
+
+function getopenorders(symbol::SecuritySymbol)
+    checkforparent([:ondata, :beforeclose])
+    deepcopy(getopenorders(algorithm.brokerage, symbol))
+end
+
+function getopenorders(security::Security)
+    checkforparent([:ondata, :beforeclose])
+    deepcopy(getopenorders(algorithm.brokerage, security.symbol))
+end
+
 function getopenorders()
     checkforparent([:ondata, :beforeclose])
     deepcopy(getopenorders(algorithm.brokerage))
 end
 export getopenorders
 
+function cancelopenorders(ticker::String)
+    checkforparent([:ondata, :beforeclose])
+    security = getsecurity(ticker)
+    Logger.info("Canceling all orders for $(security.symbol.id)/$(security.symbol.ticker)")
+    cancelallorders!(algorithm.brokerage, security.symbol)
+end
+
+function cancelopenorders(secid::Int)
+    checkforparent([:ondata, :beforeclose])
+    security = getsecurity(secid)
+    Logger.info("Canceling all orders for $(security.symbol.id)/$(security.symbol.ticker)")
+    cancelallorders!(algorithm.brokerage, security.symbol)
+end
+    
+function cancelopenorders(security::Security)
+    checkforparent([:ondata, :beforeclose])
+    Logger.info("Canceling all orders for $(security.symbol.id)/$(security.symbol.ticker)")
+    cancelallorders!(algorithm.brokerage, security.symbol)
+end
+
 function cancelopenorders(symbol::SecuritySymbol)
     checkforparent([:ondata, :beforeclose])
-    cancelallorders(algorithm.brokerage, symbol)
+    Logger.info("Canceling all orders for $(symbol.id)/$(symbol.ticker)")
+    cancelallorders!(algorithm.brokerage, symbol)
 end
-export cancelallorders
 
 function cancelopenorders()
     checkforparent([:ondata, :beforeclose])
-    cancelallorders(algorithm.brokerage)    
+    Logger.info("Canceling all orders")
+    cancelallorders!(algorithm.brokerage)    
 end
-export cancelallorders
+export cancelopenorders

@@ -143,15 +143,17 @@ end
 Function to get all open orders
 """
 function getopenorders(brokerage::BacktestBrokerage)
-	[getopenorders(brokerage.blotter)]
+	getopenorders(brokerage.blotter)
 end
 
 """
 Function to get open orders for a security
 """
 function getopenorders(brokerage::BacktestBrokerage, security::SecuritySymbol)
-	[getopenorders(brokerage.blotter, security)]
+	getopenorders(brokerage.blotter, security)
 end
+
+export getopenorders
 
 """
 Function to update pending orders
