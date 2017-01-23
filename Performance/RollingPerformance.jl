@@ -156,7 +156,7 @@ end
 function updateperformanceratios(performancetracker::PerformanceTracker)
     sorteddates = sort(collect(keys(performancetracker)))
 
-    if (length(sorteddates) < 2)
+    if (length(sorteddates) < 5)
         return
     end
     #Initialize returns vector

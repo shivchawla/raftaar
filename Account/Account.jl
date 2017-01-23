@@ -10,17 +10,19 @@ An account encapsulates the underlying portfolio and
 cash  
 """
 type Account
+    seedcash::Float64
     cash::Float64
     netvalue::Float64
     leverage::Float64
 end
 
-Account() = Account(0.0, 0.0, 0.0) 
+Account() = Account(0.0, 0.0, 0.0, 0.0) 
 
 """
 function to reset the cash position of the account
 """
 function setcash!(account::Account, portfolio::Portfolio, amount::Float64)
+    account.seedcash = amount
     account.cash = amount 
     updateaccount!(account, portfolio)  
 end
@@ -28,7 +30,7 @@ end
 """
 function to add more cash to the account 
 """
-function addcash!(account::Account, porfolio::Portfolio, amount::Float64)
+function addcash!(account::Account, portfolio::Portfolio, amount::Float64)
     account.cash += amount 
     updateaccount!(account, portfolio)   
 end

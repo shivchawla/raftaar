@@ -141,7 +141,7 @@ function updateperformancetracker!(algorithm::Algorithm)
     
 end
 
-precompile(updateperformancetracker!, (Algorithm,))
+#precompile(updateperformancetracker!, (Algorithm,))
 
 export updateperformancetracker!
 

@@ -121,10 +121,12 @@ Function to cancel all orders for the symbol
 function cancelallorders!(brokerage::BacktestBrokerage, symbol::SecuritySymbol)
 	blotter = brokerage.blotter
 	
-	orders = removeallopenorders!(blotter, symbol)
+	ordersDict = removeallopenorders!(blotter, symbol)
 
-	for order in orders
-		order.orderstatus = OrderStatus(Canceled)
+	for (symbol, orders) in ordersDict
+		for order in orders
+			order.orderstatus = OrderStatus(Canceled)
+		end
 	end
 end
 
@@ -248,6 +250,18 @@ function checkforsufficientcapital(margin::Margin, commission::Commission, accou
 	return true
 
 end
+
+function updateordersforcancelpolicy!(brokerage::BacktestBrokerage)
+	blotter = brokerage.blotter
+	#Step 1: Get all pending orders
+	openorders = getopenorders(blotter)
+
+	if(brokerage.cancelpolicy == CancelPolicy(EOD))
+		cancelallorders!(brokerage)
+	end
+end
+
+export updateordersforcancelpolicy!
 
 """
 Function to generate unique orderid

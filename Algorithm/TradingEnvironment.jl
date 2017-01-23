@@ -18,6 +18,8 @@ type TradingEnvironment
   livemode::Bool
   benchmark::SecuritySymbol
   resolution::Resolution
+  rebalance::Rebalance
+  investmentplan::InvestmentPlan
   fullrun::Bool
   defaultsecuritytype::SecurityType
   defaultmarket::String
@@ -31,7 +33,7 @@ Empty constructor for the trading environment
 """
 TradingEnvironment() = TradingEnvironment(
                           DateTime(), DateTime(), DateTime(), false, 
-                          SecuritySymbol(), Resolution(Resolution_Day), true,
+                          SecuritySymbol(), Resolution(Resolution_Day), Rebalance(Rebalance_Daily), InvestmentPlan(IP_AllIn), true,
                           SecurityType(Equity), "IN")
 
 """
@@ -75,6 +77,25 @@ function setcurrentdatetime!(tradeenv::TradingEnvironment, datetime::DateTime)
   end 
 end
 
+function setinvestmentplan!(tradeenv::TradingEnvironment, plan::String)
+    tradeenv.investmentplan = eval(parse("IP_"*plan))
+end
+
+function setrebalance!(tradeenv::TradingEnvironment, rebalance::String)
+    tradeenv.rebalance = eval(parse("Rebalance_"*rebalance))
+end
+
+function setinvestmentplan!(tradeenv::TradingEnvironment, plan::InvestmentPlan)
+    tradeenv.investmentplan = plan
+end
+
+function setrebalance!(tradeenv::TradingEnvironment, rebalance::Rebalance)
+   tradeenv.rebalance =  rebalance
+end
+
+export setinvestmentplan!, setrebalance!
+
+
 """
 Function to get current date time of the algorithm
 """
@@ -92,6 +113,15 @@ end
 function getbenchmark(tradeenv::TradingEnvironment)
   return tradeenv.benchmark
 end
+
+function getinvestmentplan(tradeenv::TradingEnvironment)
+  return tradeenv.investmentplan
+end
+
+function getrebalancefrequency(tradeenv::TradingEnvironment)
+  return tradeenv.rebalance 
+end
+
 
 #="""
 Function to log values or string from the algorithms

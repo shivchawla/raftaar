@@ -10,11 +10,11 @@ module Logger
 
 type LogBook
     mode::Symbol
-    container::Dict{DateTime, Vector{String}}
+    container::Dict{Date, Vector{String}}
     savelimit::Int
 end
 
-LogBook() = LogBook(:json, Dict{Date, Vector{String}}(), 20)
+LogBook() = LogBook(:json, Dict{Date, Vector{String}}(), 200)
 
 @enum MessageType INFO WARN ERROR
 
@@ -96,21 +96,23 @@ Function to log message AS JSON (with timestamp) based on message type
 """
 function _logJSON(msg::String, msgtype::MessageType, datetime::DateTime) 
     
+    date = Date(datetime)
     counter = params["counter"];
-    if(counter < params["limit"])
+    if(counter < params["limit"] && params["limit"] != -1)
         messagedict = Dict{String, String}("outputtype" => "log",
                                         "messagetype" => string(msgtype),
-                                        "datetime" => string(datetime), 
+                                        "datetime" => string(date), 
                                         "message" => msg)
         jsonmsg = JSON.json(messagedict);
         println(jsonmsg)
 
         if params["save"]
-            if !haskey(logbook.container, datetime)
-                logbook.container[datetime] = Vector{String}()
+            
+            if !haskey(logbook.container, date)
+                logbook.container[date] = Vector{String}()
             end
 
-            logs = logbook.container[datetime]
+            logs = logbook.container[date]
             nmessages = length(logs)
             if nmessages < logbook.savelimit
                 push!(logs, jsonmsg);

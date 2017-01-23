@@ -43,24 +43,24 @@ function processargs(parsed_args::Dict{AbstractString,Any})
         str = strip(String(ss[i]))
         
         if(str != "")
-            universe[i] = str 
-            flag = true
-        end
-        
+            parsed = parse(str)
+            
+            if(typeof(parsed) == Int64)
+              adduniverse(parsed)
+            elseif (typeof(parsed)==Symbol)
+              adduniverse(str) 
+            end  
+        end    
     end
 
-    if flag
-      setuniverse(universe)
-    end
-    
   end
 
   if (parsed_args["investmentplan"] != nothing)
-    #setinvestmentplan(parsed_args["investmentplan"])
+    setinvestmentplan(parsed_args["investmentplan"])
   end
 
   if (parsed_args["rebalance"] != nothing)
-    #setrebalance("Rebalance_"*parsed_args["rebalance"])
+    setrebalance(parsed_args["rebalance"])
   end
 
   if (parsed_args["cancelpolicy"] != nothing)

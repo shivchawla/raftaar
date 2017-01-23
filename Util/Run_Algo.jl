@@ -52,15 +52,13 @@ function run_algo()
   startdate = getstartdate()
   enddate = getenddate()
 
-  #global alldata = sort(alldata, cols = :Date, rev=true)
-
-  #=for i in size(alldata,1):-1:1    
-    mainfnc(i)
-  end=#
+  alldata = history(getuniverse(), "Close", :Day, startdate = getstartdate(), enddate = getenddate())
+  
+  alldata = sort(alldata, cols = :Date, rev=false)
 
   i = 1
   for date in sort(collect(keys(labels)))
-      mainfnc(date, i) #, dynamic = false, dataframe = alldata)
+      mainfnc(date, i, dynamic = false, dataframe = alldata)
       i = i + 1
   end
 
@@ -68,9 +66,8 @@ function run_algo()
 
 end
  
-#function mainfnc(i::Int)
-function mainfnc(date::String, counter::Int; dynamic::Bool = true, dataframe::DataFrame = DataFrame())
-   
+function mainfnc(date::String, counter::Int; dynamic::Bool = true, dataframe::DataFrame = DataFrame())  
+
   if dynamic
     date = DateTime(date)
     setcurrentdatetime(date)
@@ -79,6 +76,15 @@ function mainfnc(date::String, counter::Int; dynamic::Bool = true, dataframe::Da
     date = DateTime(dataframe[counter,:Date])
     setcurrentdatetime(date)
     updatepricestores(date, dataframe[counter, :])
+  end
+
+  ip = getinvestmentplan()
+  seedcash = getstate().account.seedcash
+  
+  if (ip == InvestmentPlan(IP_Weekly) && Dates.dayofweek(date)==1)
+      addcash(seedcash)
+  elseif (ip == InvestmentPlan(IP_Monthly) && Dates.dayofweek(date)==1 && Dates.dayofmonth(date)<=7)
+      addcash(seedcash)
   end
 
   #println(alldata[i,:CNX_BANK][1])

@@ -40,7 +40,9 @@ export Security, SecuritySymbol,
        Commission, Slippage, Order, TradeBar,
        Performance,Portfolio, Account, AlgorithmState
 
-export Resolution, CancelPolicy, SecurityType, CommissionModel, SlippageModel
+export Resolution, CancelPolicy, SecurityType,
+         CommissionModel, SlippageModel,
+         InvestmentPlan, Rebalance
 
 for s in instances(Resolution)
     @eval export $(Symbol(s))
@@ -59,6 +61,14 @@ for s in instances(CommissionModel)
 end
 
 for s in instances(SlippageModel)
+    @eval export $(Symbol(s))
+end
+
+for s in instances(InvestmentPlan)
+    @eval export $(Symbol(s))
+end
+
+for s in instances(Rebalance)
     @eval export $(Symbol(s))
 end
 

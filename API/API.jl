@@ -45,7 +45,6 @@ export  setstartdate,
         getenddate,
         getcurrentdatetime,
         adduniverse,
-        setuniverse,
         getuniverse,
         cantrade,
         setcash,
@@ -103,6 +102,7 @@ export _updatestate
 
 function _updatependingorders()
    updateaccountforfills!(algorithm.account, algorithm.portfolio, updatependingorders!(algorithm.brokerage, algorithm.universe, algorithm.account))
+   updateordersforcancelpolicy!(algorithm.brokerage)
 end
 
 export _updatependingorders
@@ -224,13 +224,16 @@ function updatepricestores(date::DateTime, prices::DataFrame)
     
     tradebars = Dict{SecuritySymbol, TradeBar}()
     for security in getuniverse()
-    
-        close = prices[Symbol(security.symbol.ticker)][1]
+        
+        #added try to prevent error in case security is not present
+        try
+            close = prices[Symbol(security.symbol.ticker)][1]
 
-        #check if price is DataArray NA
-        tradebar =  isna(close) ? TradeBar() : TradeBar(date, close, close, close, close, 1000000)
-        ss = security.symbol
-        tradebars[ss] = tradebar
+            #check if price is DataArray NA
+            tradebar =  isna(close) ? TradeBar() : TradeBar(date, close, close, close, close, 1000000)
+            ss = security.symbol
+            tradebars[ss] = tradebar
+        end
     end
 
   _updateprices(tradebars)

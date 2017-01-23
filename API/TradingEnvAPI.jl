@@ -50,6 +50,24 @@ function setcurrentdatetime(datetime::DateTime)
 end
 export setcurrentdatetime
 
+function setinvestmentplan(plan::String)
+    setinvestmentplan!(algorithm.tradeenv, plan)
+end
+
+function setrebalance(rebalance::String)
+    setrebalance!(algorithm.tradeenv, rebalance)
+end
+
+function setinvestmentplan(plan::InvestmentPlan)
+    setinvestmentplan!(algorithm.tradeenv, plan)
+end
+
+function setrebalance(rebalance::Rebalance)
+    setrebalance!(algorithm.tradeenv, rebalance)
+end
+
+export setrebalance, setinvestmentplan
+
 function getbenchmark()
     return algorithm.tradeenv.benchmark
 end
@@ -68,3 +86,15 @@ function getcurrentdatetime()
     algorithm.tradeenv.currentdatetime
 end
 export getcurrentdatetime
+
+
+function getinvestmentplan()
+  algorithm.tradeenv.investmentplan
+end
+export getinvestmentplan
+
+function getrebalancefrequency()
+  algorithm.tradeenv.rebalance 
+end
+export getrebalancefrequency
+

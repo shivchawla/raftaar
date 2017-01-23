@@ -100,6 +100,33 @@ function setuniverse(tickers::Vector{String};
 
     setuniverse!(algorithm.universe, securities)
 end
+
+
+function setuniverse(secids::Vector{Int})
+
+    checkforparent([:ondata,:beforeopen,:initialize,:_init])  
+    securities = Vector{Security}()
+    inuniverse = Dict{Int, Bool}()
+
+    for i in 1:length(secids)
+        if !haskey(inuniverse, secids[i])
+            security = getsecurity(secids[i])
+            push!(securities, security)
+            inuniverse[secids[i]] = true
+        end    
+    end
+
+    #Add the benchmark security to the universe
+    benchmark = getbenchmark()
+    
+    if !haskey(inuniverse, benchmark.ticker) && benchmark.ticker!=""
+        push!(securities, getsecurity(benchmark.ticker))
+        inuniverse[benchmark.id] = true
+    end
+
+    setuniverse!(algorithm.universe, securities)
+end    
+
 export setuniverse
 
 
