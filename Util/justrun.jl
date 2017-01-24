@@ -20,12 +20,13 @@ if (parsed_args["code"] == nothing && parsed_args["file"] == nothing)
   exit(0)
 end
 
-const client = MongoClient()
+using JSON
+connection = JSON.parsefile("connection.json")
+
+const client = MongoClient(connection["mongo_host"], connection["mongo_port"], connection["mongo_user"], connection["mongo_pass"])
 YRead.configure(client)
 
 fname = processargs(parsed_args)
-
-#fname = "/users/shivkumarchawla/Desktop/temp.jl"
 
 setlogmode(:json, true)
   
