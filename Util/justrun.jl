@@ -21,7 +21,7 @@ if (parsed_args["code"] == nothing && parsed_args["file"] == nothing)
 end
 
 using JSON
-connection = JSON.parsefile("connection.json")
+connection = JSON.parsefile("../../raftaar/Util/connection.json")
 
 const client = MongoClient(connection["mongo_host"], connection["mongo_port"], connection["mongo_user"], connection["mongo_pass"])
 YRead.configure(client)
