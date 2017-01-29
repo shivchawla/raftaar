@@ -118,10 +118,10 @@ end
 """
 function to update portfolio with multiple fills
 """
-function updateportfolioforfills!(portfolio::Portfolio, fills::Vector{OrderFill})
+function updateportfolio_fills!(portfolio::Portfolio, fills::Vector{OrderFill})
   cash = 0.0 
   for fill in fills 
-    cash += updateportfolioforfill!(portfolio, fill)
+    cash += updateportfolio_fill!(portfolio, fill)
   end
 
   updateportfoliometrics!(portfolio::Portfolio)
@@ -132,7 +132,7 @@ end
 """
 function to update portfolio for single fill
 """
-function updateportfolioforfill!(portfolio::Portfolio, fill::OrderFill)
+function updateportfolio_fill!(portfolio::Portfolio, fill::OrderFill)
    
   securitysymbol = fill.securitysymbol  
   
@@ -143,7 +143,7 @@ function updateportfolioforfill!(portfolio::Portfolio, fill::OrderFill)
   position = portfolio[securitysymbol]
   
   #function to adjust position for fill and update cash in portfolio
-  return updatepositionforfill!(position, fill)
+  return updateposition_fill!(position, fill)
 
 end
 
@@ -168,16 +168,28 @@ end
 """
 function to update portfolio for a split
 """
-function updateportfolioforprice!(portfolio::Portfolio, tradebars::Dict{SecuritySymbol, Vector{TradeBar}}, datetime::DateTime)
+function updateportfolio_price!(portfolio::Portfolio, tradebars::Dict{SecuritySymbol, Vector{TradeBar}}, datetime::DateTime)
 
   for position in getallpositions(portfolio)
       securitysymbol = position.securitysymbol
       if haskey(tradebars, securitysymbol)
-        updatepositionforprice!(position, tradebars[securitysymbol][1])
+        updateposition_price!(position, tradebars[securitysymbol][1])
       end
   end 
 
   updateportfoliometrics!(portfolio::Portfolio)
+end
+
+function updateportfolio_splits_dividends!(portfolio::Portfolio, adjustments::Dict{SecuritySymbol, Adjustment})
+    for (symbol, adjustment) in adjustments
+        
+        if (adjustment.adjustmenttype != "17.0" && portfolio[symbol].quantity != 0)
+            updateposition_splits_dividends!(portfolio[symbol], adjustment)
+        end
+
+    end 
+
+    updateportfoliometrics!(portfolio::Portfolio) 
 end
 
 """

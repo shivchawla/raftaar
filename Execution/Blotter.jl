@@ -123,7 +123,7 @@ function getorderfill(order::Order, slippage::Slippage, commission::Commission, 
     end
 
     #find the quantity that can be executed...assume 5% of the total volume
-    availablequantity = convert(Int64, participationrate * volume)      
+    availablequantity = Int(round(participationrate * volume))      
 
     if availablequantity > abs(order.remainingquantity)
         fill.fillquantity = order.remainingquantity

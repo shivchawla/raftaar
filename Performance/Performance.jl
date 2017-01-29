@@ -222,7 +222,7 @@ Function to compute risk measuring ratios
 """
 function calculateratios(returns::Returns, deviation::Deviation, drawdown::Drawdown)
     ratios = Ratios()
-    ratios.sharperatio = deviation.annualstandarddeviation > 0.0 ? returns.annualreturn / deviation.annualstandarddeviation : 0.0 
+    ratios.sharperatio = deviation.annualstandarddeviation > 0.0 ? (returns.annualreturn - 0.065) / deviation.annualstandarddeviation : 0.0 
     ratios.sortinoratio = deviation.annualsemideviation > 0.0 ? returns.annualreturn / deviation.annualsemideviation : 0.0
     ratios.calmarratio = drawdown.maxdrawdown > 0.0 ? returns.annualreturn/drawdown.maxdrawdown : 0.0
     return ratios

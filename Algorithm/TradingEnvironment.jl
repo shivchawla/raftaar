@@ -12,9 +12,9 @@ Trading Environment for the algorithm
 Encapsulates date range, mode, benchmak etc. 
 """
 type TradingEnvironment
-  startdate::DateTime
-  enddate::DateTime
-  currentdatetime::DateTime
+  startdate::Date
+  enddate::Date
+  currentdate::Date
   livemode::Bool
   benchmark::SecuritySymbol
   resolution::Resolution
@@ -32,7 +32,7 @@ end
 Empty constructor for the trading environment
 """
 TradingEnvironment() = TradingEnvironment(
-                          DateTime(), DateTime(), DateTime(), false, 
+                          Date(), Date(), Date(), false, 
                           SecuritySymbol(), Resolution(Resolution_Day), Rebalance(Rebalance_Daily), InvestmentPlan(IP_AllIn), true,
                           SecurityType(Equity), "IN")
 
@@ -71,9 +71,9 @@ end
 """
 function to set the current algorithm time (mainly used for backtest)
 """
-function setcurrentdatetime!(tradeenv::TradingEnvironment, datetime::DateTime)
+function setcurrentdate!(tradeenv::TradingEnvironment, date::Date)
   if !tradeenv.livemode 
-    tradeenv.currentdatetime = datetime
+    tradeenv.currentdate = date
   end 
 end
 
@@ -99,15 +99,15 @@ export setinvestmentplan!, setrebalance!
 """
 Function to get current date time of the algorithm
 """
-function getcurrentdatetime(tradeenv::TradingEnvironment)
-  tradeenv.currentdatetime
+function getcurrentdate(tradeenv::TradingEnvironment)
+  tradeenv.currentdate
 end
 
 """
 Function to get current date of the algorithm
 """
 function getcurrentdate(tradeenv::TradingEnvironment)
-  Date(tradeenv.currentdatetime)
+  tradeenv.currentdate
 end
 
 function getbenchmark(tradeenv::TradingEnvironment)

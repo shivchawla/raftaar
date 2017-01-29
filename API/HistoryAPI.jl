@@ -165,9 +165,11 @@ function history(secids::Vector{Int},
     df = YRead.history(secids, datatype, frequency, 
                 startdate,
                 enddate,
-                securitytype  =securitytype,
+                securitytype = securitytype,
                 exchange = exchange,
                 country = country)
+
+  
     return sort(df, cols = :Date, rev=true) 
 
 end
@@ -193,8 +195,167 @@ function history(tickers::Vector{String},
     return sort(df, cols = :Date, rev=true) 
 end
 
-
 export history
+
+
+
+#for Unadjusted History
+
+function history_unadj(securities::Vector{Security},
+                    datatype::String,
+                    frequency::Symbol;
+                    startdate::DateTime = now(),
+                    enddate::DateTime = now(),                   
+                    securitytype::String="EQ",
+                    exchange::String="NSE",
+                    country::String="IN") 
+    
+    ids = Vector{Int}(length(securities))
+    for i = 1:length(securities)
+        ids[i] = securities[i].symbol.id
+    end
+
+    history_unadj(ids, datatype, frequency, 
+                startdate = startdate,
+                enddate = enddate,
+                securitytype  =securitytype,
+                exchange = exchange,
+                country = country)
+    
+end
+
+function history_unadj(symbols::Vector{SecuritySymbol},
+                    datatype::String,
+                    frequency::Symbol;
+                    startdate::DateTime = now(),
+                    enddate::DateTime = now(),                   
+                    securitytype::String="EQ",
+                    exchange::String="NSE",
+                    country::String="IN") 
+    
+    ids = Vector{Int}(length(symbols))
+    for i = 1:length(symbols)
+        ids[i] = symbols[i].id
+    end
+
+    history_unadj(ids, datatype, frequency, 
+                startdate = startdate,
+                enddate = enddate,
+                securitytype  =securitytype,
+                exchange = exchange,
+                country = country)   
+end
+
+function history_unadj(tickers::Vector{String},
+                    datatype::String,
+                    frequency::Symbol;
+                    startdate::DateTime = now(),
+                    enddate::DateTime = now(),                   
+                    securitytype::String="EQ",
+                    exchange::String="NSE",
+                    country::String="IN") 
+    
+    SIZE = 50
+
+    tickers = length(tickers) > SIZE ? tickers[1:50] : tickers
+    df = YRead.history_unadj(tickers, datatype, frequency,
+            startdate, enddate, 
+            securitytype = securitytype, 
+            exchange = exchange, country = country) 
+
+    return sort(df, cols = :Date, rev=true) 
+end
+
+function history_unadj(secids::Vector{Int},
+                    datatype::String,
+                    frequency::Symbol;
+                    startdate::DateTime = now(),
+                    enddate::DateTime = now(),                   
+                    securitytype::String="EQ",
+                    exchange::String="NSE",
+                    country::String="IN") 
+    
+    SIZE = 50
+
+    secids = length(secids) > SIZE ? secids[1:50] : secids
+    df = YRead.history_unadj(secids, datatype, frequency, 
+                startdate,
+                enddate,
+                securitytype = securitytype,
+                exchange = exchange,
+                country = country)
+
+  
+    return sort(df, cols = :Date, rev=true) 
+end
+
+export history_unadj
+
+
+function getadjustments(tickers::Vector{String},
+                        startdate::DateTime, 
+                        enddate::DateTime, 
+                        securitytype::String="EQ",
+                        exchange::String="NSE",
+                        country::String="IN")
+
+    YRead.getadjustments(tickers, datatype, frequency,
+            startdate, enddate, 
+            securitytype = securitytype, 
+            exchange = exchange, country = country)    
+end
+
+function getadjustments(secids::Vector{Int},
+                        startdate::DateTime, 
+                        enddate::DateTime, 
+                        securitytype::String="EQ",
+                        exchange::String="NSE",
+                        country::String="IN")
+    
+    YRead.getadjustments(tickers, datatype, frequency,
+            startdate, enddate, 
+            securitytype = securitytype, 
+            exchange = exchange, country = country)    
+end
+
+function getadjustments(securities::Vector{Security},
+                        startdate::DateTime, 
+                        enddate::DateTime, 
+                        securitytype::String="EQ",
+                        exchange::String="NSE",
+                        country::String="IN")
+
+    secids = Vector{Int}(length(securities))
+    for i = 1:length(securities)
+        secids[i] = securities[i].symbol.id
+    end
+
+    getadjustments(secids, datatype, frequency,
+            startdate, enddate, 
+            securitytype = securitytype, 
+            exchange = exchange, country = country)    
+end
+
+function getadjustments(symbols::Vector{SecuritySymbol},
+                        startdate::DateTime, 
+                        enddate::DateTime, 
+                        securitytype::String="EQ",
+                        exchange::String="NSE",
+                        country::String="IN")
+
+    secids = Vector{Int}(length(symbols))
+    
+    for i = 1:length(symbols)
+        secids[i] = symbols[i].id
+    end
+
+    getadjustments(secids, datatype, frequency,
+            startdate, enddate, 
+            securitytype = securitytype, 
+            exchange = exchange, country = country)    
+end
+
+
 
 #=function getsecurityids(tickers::Array{String,1}; 
                         securitytype::String="EQ", 

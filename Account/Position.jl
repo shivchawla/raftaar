@@ -103,15 +103,17 @@ end
 """
 Function to update position for latest price
 """
-function updatepositionforprice!(position::Position, tradebar::TradeBar)
-  position.lastprice = tradebar.close
-  position.lasttradepnl = position.quantity * (position.lastprice - position.averageprice)
+function updateposition_price!(position::Position, tradebar::TradeBar)
+  if(tradebar.close > 0.0000000001)
+    position.lastprice = tradebar.close
+    position.lasttradepnl = position.quantity * (position.lastprice - position.averageprice)
+  end
 end
 
 """
 Function to update position for order fill
 """
-function updatepositionforfill!(position::Position, fill::OrderFill)
+function updateposition_fill!(position::Position, fill::OrderFill)
 
   #apply sales value to holdings
   position.totaltradedvolume += fill.fillprice*abs(fill.fillquantity)
@@ -215,6 +217,18 @@ function updateaverageprice!(position::Position, fill::OrderFill)
     end
   
   end
+end 
+
+"""
+Function to update position for corporate adjustment (not cash dividend)
+"""
+function updateposition_splits_dividends!(position::Position, adjustment::Adjustment) 
+    if(adjustment.adjustmenttype != "17.0")
+        println("Shiv")
+        println(adjustment.adjustmenttype)
+        position.averageprice = position.averageprice * adjustment.adjustmentfactor
+        position.quantity = Int(round(position.quantity * (1.0/adjustment.adjustmentfactor)))
+    end
 end  
 
 

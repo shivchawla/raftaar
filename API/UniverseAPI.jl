@@ -2,7 +2,28 @@ import Raftaar: getlatestprice
 
 """
 Functions to expose Universe API
-""" 
+"""
+
+function removeuniverse(ticker::String;securitytype::String="EQ",
+                        exchange::String="NSE")
+
+    security = getsecurity(ticker, securitytype=securitytype, exchange=exchange)
+    removeuniverse!(algorithm.universe, security) 
+end
+
+function removeuniverse(secid::Int)
+    security = getsecurity(secid)
+    removeuniverse!(algorithm.universe, security) 
+end
+
+function removeuniverse(symbol::SecuritySymbol)
+    removeuniverse!(algorithm.universe, getsecurity(symbol.id)) 
+end
+
+function removeuniverse(security::Security)
+    removeuniverse!(algorithm.universe, security) 
+end
+
 function adduniverse(ticker::String;
                         securitytype::String="EQ",
                         exchange::String="NSE")
@@ -100,7 +121,6 @@ function setuniverse(tickers::Vector{String};
 
     setuniverse!(algorithm.universe, securities)
 end
-
 
 function setuniverse(secids::Vector{Int})
 

@@ -45,8 +45,8 @@ end
 """
 function to update the account with cash generated from orderfills
 """
-function updateaccount!(account::Account, portfolio::Portfolio, cashfromfills::Float64 = 0.0)
-    account.cash += cashfromfills
+function updateaccount!(account::Account, portfolio::Portfolio, cash_fills_dividends::Float64 = 0.0)
+    account.cash += cash_fills_dividends
     account.netvalue = portfolio.metrics.netexposure + account.cash
     account.leverage = portfolio.metrics.grossexposure / account.netvalue
 end
@@ -54,17 +54,31 @@ end
 """
 function to update the account portfolio with latest prices
 """
-function updateaccountforprice!(account::Account, portfolio::Portfolio, tradebars::Dict{SecuritySymbol, Vector{TradeBar}}, datetime::DateTime)
-    updateportfolioforprice!(portfolio, tradebars, datetime)
+function updateaccount_price!(account::Account, portfolio::Portfolio, tradebars::Dict{SecuritySymbol, Vector{TradeBar}}, datetime::DateTime)
+    updateportfolio_price!(portfolio, tradebars, datetime)
     updateaccount!(account, portfolio)
+end
+
+"""
+function to update the account portfolio with corporate adjustments
+"""
+function updateaccount_splits_dividends!(account::Account, portfolio::Portfolio, adjustments::Dict{SecuritySymbol, Adjustment})
+    updateportfolio_splits_dividends!(portfolio, adjustments)
+    
+    cashfromdividends = 0.0
+    for (symbol, adjustment) in adjustments
+        cashfromdividends += (adjustment.adjustmenttype == "17.0") ? portfolio[symbol].quantity * adjustment.adjustmentfactor : 0.0
+    end
+
+    updateaccount!(account, portfolio, cashfromdividends)
 end
 
 """
 function to update the account with from orderfills (adding/removing positions)
 """
-function updateaccountforfills!(account::Account, portfolio::Portfolio, fills::Vector{OrderFill})
+function updateaccount_fills!(account::Account, portfolio::Portfolio, fills::Vector{OrderFill})
     if !isempty(fills)
-        cashgenerated = updateportfolioforfills!(portfolio, fills)
+        cashgenerated = updateportfolio_fills!(portfolio, fills)
         
         updateaccount!(account, portfolio, cashgenerated)
     end

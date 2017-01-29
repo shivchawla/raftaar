@@ -14,6 +14,7 @@ import Base: ==, getindex, setindex!
 include("../Enums/enums.jl")
 include("../DataTypes/Split.jl")
 include("../Security/Security.jl")
+include("../Security/Adjustment.jl")
 include("../Execution/Order.jl") 
 include("../Execution/OrderFill.jl")
 include("../Algorithm/Universe.jl")
@@ -36,7 +37,7 @@ include("../Algorithm/Algorithm.jl")
 #       Commission, Slippage, Order, TradeBar
 
 
-export Security, SecuritySymbol,
+export Security, SecuritySymbol, Adjustment,
        Commission, Slippage, Order, TradeBar,
        Performance,Portfolio, Account, AlgorithmState
 
@@ -76,12 +77,12 @@ export  setstartdate!,
         setenddate!,
         setresolution!,
         setenddate!,
-        setcurrentdatetime!,
+        setcurrentdate!,
         setbenchmark!,
         getbenchmark,
         getstartdate,
         getenddate,
-        getcurrentdatetime,
+        getcurrentdate,
         adduniverse!,
         setuniverse!,
         getuniverse,
@@ -105,9 +106,12 @@ export  setstartdate!,
         getopenorders,
         cancelallorders!,
         updatependingorders!,
-        updateaccountforfills!,
-        updateaccountforprice!,
+        updatependingorders_splits!,
+        updateaccount_fills!,
+        updateaccount_price!,
+        updateaccount_splits_dividends!,
         updateprices!,
+        updateadjustments!,
         updateaccounttracker!,
         calculateperformance,
         createsymbol,

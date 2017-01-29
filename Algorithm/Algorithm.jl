@@ -126,7 +126,7 @@ end
 Function to track the cash inflow/outflow at each time step
 """
 function updatecashtracker!(algorithm::Algorithm, cash::Float64)
-    algorithm.cashtracker[getcurrentdatetime(algorithm.tradeenv)] = cash
+    algorithm.cashtracker[getcurrentdate(algorithm.tradeenv)] = cash
 end
 
 
@@ -197,7 +197,6 @@ function outputbackteststatistics(algorithm::Algorithm)
                         algorithm.transactiontracker,
                         algorithm.ordertracker)
     #sort the keys in these trackers
-
 
     #what stastics calculations do we want?
     #1. Daily Returns and Net value

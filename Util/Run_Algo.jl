@@ -19,7 +19,7 @@ alldata = DataFrame()
 function _getlabels()
 
   #alldata = history([benchmark], "Close", :Day, 100, enddate = "2016-01-01")
-  global alldata = history([API.getbenchmark()], "Close", :Day, startdate = getstartdate(), enddate = getenddate())
+  global alldata = history_unadj([API.getbenchmark()], "Close", :Day, startdate = DateTime(getstartdate()), enddate = DateTime(getenddate()))
   
   alldata = sort(alldata, cols=:Date, rev=false) 
   
@@ -52,13 +52,17 @@ function run_algo()
   startdate = getstartdate()
   enddate = getenddate()
 
-  alldata = history(getuniverse(), "Close", :Day, startdate = getstartdate(), enddate = getenddate())
+  cp = sort(history_unadj(getuniverse(), "Close", :Day, startdate = DateTime(getstartdate()), enddate = DateTime(getenddate())), cols = :Date, rev=false)
+  vol = sort(history_unadj(getuniverse(), "Volume", :Day, startdate = DateTime(getstartdate()), enddate = DateTime(getenddate())), cols = :Date, rev=false)
   
-  alldata = sort(alldata, cols = :Date, rev=false)
+  adjs = getadjustments(getuniverse(), DateTime(getstartdate()), DateTime(getenddate()))
+
+  println(adjs)
+
 
   i = 1
   for date in sort(collect(keys(labels)))
-      mainfnc(date, i, dynamic = false, dataframe = alldata)
+      mainfnc(date, i, dynamic = false, close = cp, volume = vol, adjustments = adjs)
       i = i + 1
   end
 
@@ -66,16 +70,28 @@ function run_algo()
 
 end
  
-function mainfnc(date::String, counter::Int; dynamic::Bool = true, dataframe::DataFrame = DataFrame())  
+function mainfnc(date::String, counter::Int; dynamic::Bool = true, close::DataFrame = DataFrame(), volume::DataFrame = DataFrame(), adjustments = Dict())  
 
   if dynamic
-    date = DateTime(date)
-    setcurrentdatetime(date)
-    updatepricestores(date, fetchprices(date))
-  else
-    date = DateTime(dataframe[counter,:Date])
-    setcurrentdatetime(date)
-    updatepricestores(date, dataframe[counter, :])
+    date = Date(date)
+    setcurrentdate(date)
+
+    #DYNAMIC doesn't work
+    updatedatastores(date, fetchprices(date), fetchvolumes(date), getadjustments())
+  else 
+    date = Date(close[counter,:Date])
+
+    setcurrentdate(date)
+
+    # check if volume dataframe has same rows as close OR if it has row
+
+    nrows_volume = size(volume)[1]
+    currentvolume = nrows_volume > counter ? volume[counter, :] : DataFrame()
+
+    nrows_close = size(close)[1]
+    currentprices = nrows_close > counter ? close[counter, :] : DataFrame()
+
+    updatedatastores(date, currentprices, currentvolume, adjustments)
   end
 
   ip = getinvestmentplan()
@@ -87,26 +103,14 @@ function mainfnc(date::String, counter::Int; dynamic::Bool = true, dataframe::Da
       addcash(seedcash)
   end
 
-  #println(alldata[i,:CNX_BANK][1])
+  _updateaccount_splits_dividends()
   
-  #If a stock doesn't come with a price?????, liquidate at a last known price.
-  #If a stock goes through a split, position and orders are adjusted accordingly.
-  #If a stock has a dividend, cash is updated
-  #_updateportfoliofordividends()
-  #_updatportfolioforsplits()
-  
-  
-  #Update pending orders for splits
-  #A 2:1 split causes 100 shares order to go to 200 shares       
-  #What if there is a split?
-  #What if there is no price and it doesnn't trade anymore?
-  
-  #_updatependingordersforsplits()
+  _updatependingorders_splits()
   
   #Internal function to execute pending orders using todays's close
 
-  _updatependingorders()   
-  _updateaccountforprice()
+  _updatependingorders_price()   
+  _updateaccount_price()
   
   #Internal function to update portfolio value using today's close
   #What if there is no price and it doesnn't trade anymore?

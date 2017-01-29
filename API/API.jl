@@ -18,7 +18,6 @@ import Logger: warn, info
 #Import list of functions to be overloaded
 import Raftaar: getuniverse, getopenorders
 
-
 const algorithm = Raftaar.Algorithm()
  
 function setlogmode(mode::Symbol, save::Bool = false)
@@ -38,12 +37,12 @@ export  setstartdate,
         setenddate,
         setresolution,
         setenddate,
-        setcurrentdatetime,
+        setcurrentdate,
         setbenchmark,
         getbenchmark,
         getstartdate,
         getenddate,
-        getcurrentdatetime,
+        getcurrentdate,
         adduniverse,
         getuniverse,
         cantrade,
@@ -70,12 +69,20 @@ export  setstartdate,
 """
 Function to set benchmark
 """
+function setbenchmark(secid::Int)
+    removeuniverse(getbenchmark())
+    setbenchmark!(algorithm.tradeenv, securitysymbol(secid))
+    adduniverse(secid)
+end
+
 function setbenchmark(ticker::String)
+    removeuniverse(getbenchmark())
     setbenchmark!(algorithm.tradeenv, securitysymbol(ticker))
     adduniverse(ticker)
 end
 
 function setbenchmark(symbol::SecuritySymbol)
+    removeuniverse(getbenchmark())
     setbenchmark!(algorithm.tradeenv, symbol) 
     adduniverse(symbol.ticker)
 end
@@ -100,30 +107,39 @@ end
 
 export _updatestate
 
-function _updatependingorders()
-   updateaccountforfills!(algorithm.account, algorithm.portfolio, updatependingorders!(algorithm.brokerage, algorithm.universe, algorithm.account))
-   updateordersforcancelpolicy!(algorithm.brokerage)
+function _updatependingorders_price()
+   updateaccount_fills!(algorithm.account, algorithm.portfolio, updatependingorders!(algorithm.brokerage, algorithm.universe, algorithm.account))
+   updateorders_cancelpolicy!(algorithm.brokerage)
 end
 
-export _updatependingorders
+export _updatependingorders_price
 
+function _updatependingorders_splits()
+    updatependingorders_splits!(algorithm.brokerage, algorithm.universe.adjustments)
+end
+export _updatependingorders_splits
     
-function _updateaccountforprice()
-    updateaccountforprice!(algorithm.account, algorithm.portfolio, algorithm.universe.tradebars, algorithm.tradeenv.currentdatetime)
+function _updateaccount_price()
+    updateaccount_price!(algorithm.account, algorithm.portfolio, algorithm.universe.tradebars, DateTime(algorithm.tradeenv.currentdate))
 end
 
-export _updateaccountforprice
+export _updateaccount_price
 
-function _updateprices(tradebars::Dict{SecuritySymbol, TradeBar})
+function _updatedatastores(tradebars::Dict{SecuritySymbol, TradeBar}, adjustments::Dict{SecuritySymbol, Adjustment})
+    
     updateprices!(algorithm.universe, tradebars)
-end 
+    updateadjustments!(algorithm.universe, adjustments)
+end
+export _updatedatastores
 
-export _updateprices
+function _updateaccount_splits_dividends()
+    updateaccount_splits_dividends!(algorithm.account, algorithm.portfolio, algorithm.universe.adjustments)
+end
+export _updateaccount_splits_dividends
 
 function _updateaccounttracker()
     updateaccounttracker!(algorithm)
 end
-
 export _updateaccounttracker
 
 function _calculateperformance()
@@ -138,8 +154,6 @@ function _updatedailyperformance()
     updateperformancetracker!(algorithm)
 end
 
-
-
 export _updatedailyperformance
 
 function _outputbackteststatistics()
@@ -149,7 +163,7 @@ end
 export _outputbackteststatistics   
 
 function _outputdailyperformance()
-    outputperformance(algorithm.tradeenv, algorithm.performancetracker, algorithm.benchmarktracker, algorithm.variabletracker, Date(getcurrentdatetime()))
+    outputperformance(algorithm.tradeenv, algorithm.performancetracker, algorithm.benchmarktracker, algorithm.variabletracker, getcurrentdate())
 end
 
 export _outputdailyperformance
@@ -173,13 +187,13 @@ end
 
 
 function securitysymbol(id::Int)
-    ticker = getsymbol(id)
+    security = getsecurity(id)
     
-    if ticker == "NULL"  
-        Logger.warn("Not a valid ticker: $(id)")
+    if security == Security()  
+        Logger.warn("Not a valid secid: $(id)")
     end
 
-    return SecuritySymbol(id, ticker)
+    return security.symbol
 end
 
 export securitysymbol
@@ -220,26 +234,56 @@ end
 
 export fetchprices
 
-function updatepricestores(date::DateTime, prices::DataFrame)
+function updatedatastores(date::Date, prices::DataFrame, volumes::DataFrame, adjustments)
     
+    datetime = DateTime(date)
+
     tradebars = Dict{SecuritySymbol, TradeBar}()
+    adjs = Dict{SecuritySymbol, Adjustment}()
+
     for security in getuniverse()
         
+        close = 0.0;
+        volume = 0
+
+        close_names = names(prices)
+        volume_names = names(volumes)
         #added try to prevent error in case security is not present
-        try
-            close = prices[Symbol(security.symbol.ticker)][1]
+        #try 
+
+            colname = Symbol(security.symbol.ticker)
+
+            if colname in close_names
+                close = prices[colname][1]
+                close = !isna(close) ? close : 0.0
+            end
+            
+            if colname in volume_names
+                volume = volumes[colname][1]
+                volume = !isna(volume) ? volume : 0
+            end
 
             #check if price is DataArray NA
-            tradebar =  isna(close) ? TradeBar() : TradeBar(date, close, close, close, close, 1000000)
+            tradebar =  TradeBar(datetime, close, close, close, close, volume)
+
             ss = security.symbol
             tradebars[ss] = tradebar
-        end
+
+            if haskey(adjustments, security.symbol.id)
+                if haskey(adjustments[security.symbol.id], date)
+                    adj = adjustments[security.symbol.id][date]
+                    adjs[security.symbol] = Adjustment(adj[1], string(adj[3]), adj[2])
+                end
+            end          
+
+        #end
     end
 
-  _updateprices(tradebars)
+    _updatedatastores(tradebars, adjs)
 end
 
 #precompile(updatepricestores, (DateTime, DataFrame))
-export updatepricestores
+export updatedatastores
+
 
 end

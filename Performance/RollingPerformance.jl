@@ -186,7 +186,7 @@ function updateperformanceratios(performancetracker::PerformanceTracker)
     excessret = 252 * mean(algorithmreturns[s_idx:end] - benchmarkreturns[s_idx:end])
     
     ##
-    latestperformance.ratios.sharperatio = latestperformance.deviation.annualstandarddeviation > 0.0 ? latestperformance.returns.annualreturn / latestperformance.deviation.annualstandarddeviation : 0.0
+    latestperformance.ratios.sharperatio = latestperformance.deviation.annualstandarddeviation > 0.0 ? (latestperformance.returns.annualreturn - 0.065) / latestperformance.deviation.annualstandarddeviation : 0.0
     latestperformance.ratios.informationratio = trkerr > 0 ? excessret/trkerr : 0.0
     #latestperformance.ratios.sortinoratio = latestperformance.deviation.annualsemideviation > 0.0 ? latestperformance.returns.annualreturn / latestperformance.deviation.annualsemideviation : 0.0
     latestperformance.ratios.calmarratio = latestperformance.drawdown.maxdrawdown > 0.0 ? latestperformance.returns.annualreturn/latestperformance.drawdown.maxdrawdown : 0.0

@@ -14,7 +14,7 @@ type LogBook
     savelimit::Int
 end
 
-LogBook() = LogBook(:json, Dict{Date, Vector{String}}(), 200)
+LogBook() = LogBook(:json, Dict{Date, Vector{String}}(), 20)
 
 @enum MessageType INFO WARN ERROR
 

@@ -22,7 +22,7 @@ end
 Empty brokerage constructor
 """
 BacktestBrokerage() = BacktestBrokerage(Blotter(), Commission(), Margin(),
-							Slippage(), CancelPolicy(EOD), 0.005)
+							Slippage(), CancelPolicy(EOD), 0.05)
       
 """
 Function to set commission model
@@ -223,6 +223,24 @@ function updatependingorders!(brokerage::BacktestBrokerage, universe::Universe, 
 end
 
 """
+Function to update pending orders for splits
+"""
+function updatependingorders_splits!(brokerage::BacktestBrokerage, adjustments::Dict{SecuritySymbol, Adjustment})
+	for (symbol, adjustment) in adjustments
+		if(adjustment.adjustmenttype != 17.0)
+
+			pendingorders = getopenorders(brokerage.blotter, symbol)
+
+			for order in pendingorders
+				order.quantity = Int(round(order.quantity * (1.0/adjustment.adjustmentfactor)))
+				order.price = order.price * adjustment.adjustmentfactor 
+			end
+
+		end
+	end
+end
+
+"""
 Check if sufficient cash/margin is available to complete the transaction
 Logic taken from LEAN
 """
@@ -251,7 +269,7 @@ function checkforsufficientcapital(margin::Margin, commission::Commission, accou
 
 end
 
-function updateordersforcancelpolicy!(brokerage::BacktestBrokerage)
+function updateorders_cancelpolicy!(brokerage::BacktestBrokerage)
 	blotter = brokerage.blotter
 	#Step 1: Get all pending orders
 	openorders = getopenorders(blotter)
@@ -261,7 +279,7 @@ function updateordersforcancelpolicy!(brokerage::BacktestBrokerage)
 	end
 end
 
-export updateordersforcancelpolicy!
+export updateorders_cancelpolicy!
 
 """
 Function to generate unique orderid

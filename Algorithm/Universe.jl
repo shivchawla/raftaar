@@ -39,12 +39,13 @@ type Universe
   tickertosymbol::Dict{String, Vector{SecuritySymbol}}
   securities::Dict{SecuritySymbol, Security}
 	tradebars::Dict{SecuritySymbol, Vector{TradeBar}}
+  adjustments::Dict{SecuritySymbol, Adjustment}
 end
 
 """
 Empty constructor
 """
-Universe() = Universe(Dict(), Dict(), Dict())
+Universe() = Universe(Dict(), Dict(), Dict(), Dict())
 
 """
 Index function to retrieve the security based on symbol
@@ -63,13 +64,26 @@ end
 export contains
 
 
-"""
+function removeuniverse!(universe::Universe, security::Security)
+  
+  if(haskey(universe.securities, security.symbol))
+      delete!(universe.securities, security.symbol)
+  end
+
+  if(haskey(universe.tickertosymbol, security.symbol.ticker))
+      delete!(universe.tickertosymbol, security.symbol.ticker)
+  end
+end
+
+export removeuniverse!
+
+#="""
 Function to add security to the universe 
 """
 function adduniverse!(universe::Universe, ticker::String;
                                           securitytype::String="EQ",
                                           exchange::String="NSE")
-
+    
     security = Security(ticker, 
                         securitytype = securitytype,
                         exchange = exchange)
@@ -97,7 +111,7 @@ function setuniverse!(universe::Universe, tickers::Vector{String};
         adduniverse!(universe, ticker, securitytype = securitytype, exchange = exchange)
     end
 
-end 
+end=# 
 
 #=function adduniverse1!(universe::Universe, ticker::String, securitytype::SecurityType)	
 	security = Security(ticker, securitytype)
@@ -193,12 +207,26 @@ function updateprices!(universe::Universe, newtradebars::Dict{SecuritySymbol, Tr
         end    
         
         tradebar = haskey(newtradebars, symbol) ? newtradebars[symbol] : TradeBar() 
-        
         shiftforwardandinsert!(universe.tradebars[symbol], tradebar)
         
     end
 
-end	
+end
+
+"""
+Function to update corporate adjustment for current universe/dates
+"""	
+function updateadjustments!(universe::Universe, adjustments::Dict{SecuritySymbol, Adjustment})
+    for symbol in keys(universe.securities)
+          
+        if !haskey(adjustments, symbol)     
+            delete!(universe.adjustments, symbol)
+        else
+            universe.adjustments[symbol] = adjustments[symbol]
+        end
+
+    end   
+end
 
 """
 Function to get the latest price of the security

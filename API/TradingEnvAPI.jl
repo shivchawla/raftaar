@@ -43,10 +43,9 @@ function setenddate(date::String; format="yyyy-mm-dd")
 end
 export setenddate
 
-
-function setcurrentdatetime(datetime::DateTime)
-    setcurrentdatetime!(algorithm.tradeenv, datetime) 
-    Logger.updateclock(datetime)
+function setcurrentdate(date::Date)
+    setcurrentdate!(algorithm.tradeenv, date) 
+    Logger.updateclock(DateTime(date))
 end
 export setcurrentdatetime
 
@@ -82,10 +81,14 @@ function getenddate()
 end
 export getenddate
 
-function getcurrentdatetime()
-    algorithm.tradeenv.currentdatetime
+function getcurrentdate()
+    algorithm.tradeenv.currentdate
 end
-export getcurrentdatetime
+
+function getcurrentdatetime()
+    DateTime(getcurrentdate())
+end
+export getcurrentdate, getcurrentdatetime
 
 
 function getinvestmentplan()
