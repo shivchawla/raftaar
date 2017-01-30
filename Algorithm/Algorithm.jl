@@ -135,7 +135,7 @@ Function to track the performance at each time step
 """
 function updateperformancetracker!(algorithm::Algorithm)      
     date = getcurrentdate(algorithm.tradeenv)
-    latestbenchmarkvalue = getlatestprice(algorithm.universe, algorithm.tradeenv.benchmark)
+    latestbenchmarkvalue = getbenchmarkvalue(algorithm.tradeenv, date)
     updatelatestperformance_benchmark(algorithm.benchmarktracker, latestbenchmarkvalue, date)       
     updatelatestperformance_algorithm(algorithm.accounttracker, algorithm.cashtracker, algorithm.performancetracker, algorithm.benchmarktracker, date)          
     

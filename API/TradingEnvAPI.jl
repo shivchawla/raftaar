@@ -67,6 +67,11 @@ end
 
 export setrebalance, setinvestmentplan
 
+function setbenchmarkvalues(prices::Dict{String, Float64})
+    setbenchmarkvalues!(algorithm.tradeenv, prices)  
+end
+export setbenchmarkvalues
+
 function getbenchmark()
     return algorithm.tradeenv.benchmark
 end

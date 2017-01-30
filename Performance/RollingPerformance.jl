@@ -71,7 +71,8 @@ function updatelatestperformance_benchmark(performancetracker::PerformanceTracke
         end
 
         lastbenchmarkvalue = lastperformance.portfoliostats.netvalue
-        latestreturn = (benchmarkvalue - lastbenchmarkvalue)/lastbenchmarkvalue
+
+        latestreturn = abs(lastbenchmarkvalue) > 0.0  && abs(benchmarkvalue) > 0.0 ? (benchmarkvalue - lastbenchmarkvalue)/lastbenchmarkvalue : 0.0
         performancetracker[date] = _computecurrentperformance(firstperformance, lastperformance, latestreturn) 
 
     else

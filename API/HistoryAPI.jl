@@ -218,7 +218,7 @@ function history_unadj(securities::Vector{Security},
     history_unadj(ids, datatype, frequency, 
                 startdate = startdate,
                 enddate = enddate,
-                securitytype  =securitytype,
+                securitytype = securitytype,
                 exchange = exchange,
                 country = country)
     
@@ -285,7 +285,6 @@ function history_unadj(secids::Vector{Int},
                 exchange = exchange,
                 country = country)
 
-  
     return sort(df, cols = :Date, rev=true) 
 end
 

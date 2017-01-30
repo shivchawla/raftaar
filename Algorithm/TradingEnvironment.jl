@@ -23,7 +23,7 @@ type TradingEnvironment
   fullrun::Bool
   defaultsecuritytype::SecurityType
   defaultmarket::String
-
+  benchmarkvalues::Dict{String, Float64}
   #calendar::TradingCalendar
   #WHAT IS A TRADING CALENDAR
 end
@@ -34,7 +34,7 @@ Empty constructor for the trading environment
 TradingEnvironment() = TradingEnvironment(
                           Date(), Date(), Date(), false, 
                           SecuritySymbol(), Resolution(Resolution_Day), Rebalance(Rebalance_Daily), InvestmentPlan(IP_AllIn), true,
-                          SecurityType(Equity), "IN")
+                          SecurityType(Equity), "IN", Dict{Date, Float64}())
 
 """
 Function to set time resolution of the backtest
@@ -93,7 +93,11 @@ function setrebalance!(tradeenv::TradingEnvironment, rebalance::Rebalance)
    tradeenv.rebalance =  rebalance
 end
 
-export setinvestmentplan!, setrebalance!
+function setbenchmarkvalues!(tradeenv::TradingEnvironment, prices::Dict{String, Float64})
+  tradeenv.benchmarkvalues = prices  
+end
+
+export setinvestmentplan!, setrebalance!, setbenchmarkvalues!
 
 
 """
@@ -121,6 +125,12 @@ end
 function getrebalancefrequency(tradeenv::TradingEnvironment)
   return tradeenv.rebalance 
 end
+
+function getbenchmarkvalue(tradeenv::TradingEnvironment, date::Date)
+    dstr = string(date)
+    return haskey(tradeenv.benchmarkvalues, dstr)  ? tradeenv.benchmarkvalues[dstr] :  0.0
+end
+
 
 
 #="""

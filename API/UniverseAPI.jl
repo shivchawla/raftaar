@@ -112,12 +112,12 @@ function setuniverse(tickers::Vector{String};
     end
 
     #Add the benchmark security to the universe
-    benchmark = getbenchmark()
+    #=benchmark = getbenchmark()
     
     if !haskey(inuniverse, benchmark.ticker) && benchmark.ticker!=""
         push!(securities, getsecurity(benchmark.ticker))
         inuniverse[benchmark.ticker] = true
-    end
+    end=#
 
     setuniverse!(algorithm.universe, securities)
 end
@@ -137,12 +137,12 @@ function setuniverse(secids::Vector{Int})
     end
 
     #Add the benchmark security to the universe
-    benchmark = getbenchmark()
+    #=benchmark = getbenchmark()
     
     if !haskey(inuniverse, benchmark.ticker) && benchmark.ticker!=""
         push!(securities, getsecurity(benchmark.ticker))
         inuniverse[benchmark.id] = true
-    end
+    end=#
 
     setuniverse!(algorithm.universe, securities)
 end    

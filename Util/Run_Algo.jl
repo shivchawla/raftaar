@@ -16,49 +16,59 @@ using DataFrames
 
 alldata = DataFrame()
 
-function _getlabels()
-
-  #alldata = history([benchmark], "Close", :Day, 100, enddate = "2016-01-01")
-  global alldata = history_unadj([API.getbenchmark()], "Close", :Day, startdate = DateTime(getstartdate()), enddate = DateTime(getenddate()))
-  
-  alldata = sort(alldata, cols=:Date, rev=false) 
-  
-  alldates = alldata[:Date]
-
-  labels = Dict{String,Float64}()
-  for d in alldates
-    labels[d] = 1.0
-  end
-  
-  return labels
-
-end
-
 function run_algo()
 
   benchmark = "CNX_NIFTY"
   setbenchmark(benchmark)
 
+  benchmark = API.getbenchmark()
+
+  #alldata = history([benchmark], "Close", :Day, 100, enddate = "2016-01-01")
+  global alldata = history_unadj([benchmark], "Close", :Day, startdate = DateTime(getstartdate()), enddate = DateTime(getenddate()))
+  
   try
     initialize(getstate()) 
   catch err
     handleexception(err)
   end
-
-  labels = _getlabels()
    
-  outputlabels(labels)  
-
   startdate = getstartdate()
   enddate = getenddate()
 
-  cp = sort(history_unadj(getuniverse(), "Close", :Day, startdate = DateTime(getstartdate()), enddate = DateTime(getenddate())), cols = :Date, rev=false)
+  cp = history_unadj(getuniverse(), "Close", :Day, startdate = DateTime(getstartdate()), enddate = DateTime(getenddate()))
   vol = sort(history_unadj(getuniverse(), "Volume", :Day, startdate = DateTime(getstartdate()), enddate = DateTime(getenddate())), cols = :Date, rev=false)
   
+  #Join benchmark data with close prices
+  cp = sort(join(cp, alldata, on = :Date, kind = :outer), cols = :Date, rev=false)
+
+  labels = Dict{String,Float64}()
+  
+  for i = 1:size(cp)[1]
+    val = cp[Symbol(benchmark.ticker)][i]
+
+    j = i-1
+    
+    while isna(val) && j > 0
+      val = cp[Symbol(benchmark.ticker)][j]
+      j = j - 1
+    end
+
+    val = isna(val) ? 0.0 : val
+    
+    labels[cp[:Date][i]] = val 
+  end
+
+  #Set benchmark value and Output labels from graphs
+  setbenchmarkvalues(labels)
+
   adjs = getadjustments(getuniverse(), DateTime(getstartdate()), DateTime(getenddate()))
 
-  println(adjs)
-
+  #continue with backtest if there are any rows in price data.
+  if(size(cp)[1]>0)
+    outputlabels(labels)  
+  else
+    return
+  end
 
   i = 1
   for date in sort(collect(keys(labels)))
@@ -84,7 +94,6 @@ function mainfnc(date::String, counter::Int; dynamic::Bool = true, close::DataFr
     setcurrentdate(date)
 
     # check if volume dataframe has same rows as close OR if it has row
-
     nrows_volume = size(volume)[1]
     currentvolume = nrows_volume > counter ? volume[counter, :] : DataFrame()
 

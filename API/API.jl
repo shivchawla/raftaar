@@ -70,24 +70,25 @@ export  setstartdate,
 Function to set benchmark
 """
 function setbenchmark(secid::Int)
-    removeuniverse(getbenchmark())
+    #removeuniverse(getbenchmark())
     setbenchmark!(algorithm.tradeenv, securitysymbol(secid))
-    adduniverse(secid)
+    #adduniverse(secid)
 end
 
 function setbenchmark(ticker::String)
-    removeuniverse(getbenchmark())
+    #removeuniverse(getbenchmark())
     setbenchmark!(algorithm.tradeenv, securitysymbol(ticker))
-    adduniverse(ticker)
+    #adduniverse(ticker)
 end
 
 function setbenchmark(symbol::SecuritySymbol)
-    removeuniverse(getbenchmark())
+    #removeuniverse(getbenchmark())
     setbenchmark!(algorithm.tradeenv, symbol) 
-    adduniverse(symbol.ticker)
+    #adduniverse(symbol.ticker)
 end
 
 export setbenchmark
+
 
 """
 Functions to expose the tracking API
@@ -244,12 +245,12 @@ function updatedatastores(date::Date, prices::DataFrame, volumes::DataFrame, adj
     for security in getuniverse()
         
         close = 0.0;
-        volume = 0
+        volume = 10000000
 
         close_names = names(prices)
         volume_names = names(volumes)
         #added try to prevent error in case security is not present
-        #try 
+        try 
 
             colname = Symbol(security.symbol.ticker)
 
@@ -276,7 +277,7 @@ function updatedatastores(date::Date, prices::DataFrame, volumes::DataFrame, adj
                 end
             end          
 
-        #end
+        end
     end
 
     _updatedatastores(tradebars, adjs)
