@@ -37,27 +37,64 @@ function setparticipationrate(participationrate::Float64)
 end
 export setparticipationrate
 
+
+function _checkforrebalance()
+    rebalance = getrebalancefrequency()
+    date = getcurrentdate()
+    
+    if(rebalance == Rebalance(Rebalance_Daily))
+        return true
+    elseif (rebalance == Rebalance(Rebalance_Weekly) && Dates.dayofweek(date)==1)
+        return true
+    elseif (rebalance == Rebalance(Rebalance_Monthly) && Dates.dayofweek(date)==1 && Dates.dayofmonth(date)<=7)
+        return true
+    elseif (rebalance == Rebalance(Rebalance_Monthly) && Dates.dayofweek(date)==1 && Dates.dayofmonth(date)<=7 && Dates.dayofyear(date)<=31)
+        return true
+    else
+        return false
+    end
+    
+end
+
+
 function placeorder(ticker::String, quantity::Int64)
+    if !_checkforrebalance()
+        return
+    end
     checkforparent([:ondata, :beforeclose])
     placeorder(getsecurity(ticker), quantity)
 end 
 
 function placeorder(secid::Int, quantity::Int64)
+    if !_checkforrebalance()
+        return
+    end
     checkforparent([:ondata, :beforeclose])
     placeorder(getsecurity(secid), quantity)
 end 
 
 function placeorder(security::Security, quantity::Int64)
+    if !_checkforrebalance()
+        return
+    end
     checkforparent([:ondata, :beforeclose])
     placeorder(security.symbol, quantity)
 end 
 
 function placeorder(symbol::SecuritySymbol, quantity::Int64)
-    checkforparent([:ondata, :beforeclose])
-    placeorder(Order(symbol, quantity))
+    
+    if !_checkforrebalance()
+        return
+    end
+    checkforparent([:ondata, :beforeclose]) 
+    placeorder(Order(symbol, quantity))  
+    
 end
 
 function placeorder(order::Order)
+    if !_checkforrebalance()
+        return
+    end
     checkforparent([:ondata, :beforeclose])
     if(order.quantity == 0)
         Logger.warn("Can't place order with 0 quantity for $(order.securitysymbol.ticker)")
@@ -114,22 +151,34 @@ export liquidateportfolio
 
 # Order function to set holdings to a specific level in pct/value/shares
 function setholdingpct(ticker::String, target::Float64)
+    if !_checkforrebalance()
+        return
+    end
     checkforparent([:ondata, :beforeclose])
     setholdingpct(getsecurity(ticker), target)
 end
 
 function setholdingpct(secid::Int, target::Float64)
+    if !_checkforrebalance()
+        return
+    end
     checkforparent([:ondata, :beforeclose])
     setholdingpct(getsecurity(secid), target)
 end
 
 
 function setholdingpct(security::Security, target::Float64)
+    if !_checkforrebalance()
+        return
+    end
     checkforparent([:ondata, :beforeclose])
     setholdingpct(security.symbol, target)
 end
 
 function setholdingpct(symbol::SecuritySymbol, target::Float64)
+    if !_checkforrebalance()
+        return
+    end
     checkforparent([:ondata, :beforeclose])
     
     if !ispartofuniverse(symbol)
@@ -174,21 +223,33 @@ end
 export setholdingpct
 
 function setholdingvalue(secid::Int, target::Float64)
+    if !_checkforrebalance()
+        return
+    end
     checkforparent([:ondata, :beforeclose])
     setholdingvalue(getsecurity(secid), target)
 end
 
 function setholdingvalue(ticker::String, target::Float64)
+    if !_checkforrebalance()
+        return
+    end
     checkforparent([:ondata, :beforeclose])
     setholdingvalue(getsecurity(ticker), target)
 end
 
 function setholdingvalue(security::Security, target::Float64)
+    if !_checkforrebalance()
+        return
+    end
     checkforparent([:ondata, :beforeclose])
     setholdingvalue(security.symbol, target)
 end
 
 function setholdingvalue(symbol::SecuritySymbol, target::Float64)
+    if !_checkforrebalance()
+        return
+    end
     checkforparent([:ondata, :beforeclose])
     
     if !ispartofuniverse(symbol)
@@ -233,21 +294,33 @@ end
 export setholdingvalue
 
 function setholdingshares(secid::Int, target::Int64)
+    if !_checkforrebalance()
+        return
+    end
     checkforparent([:ondata, :beforeclose])
     setholdingshares(getsecurity(secid), target)
 end
 
 function setholdingshares(ticker::String, target::Int64)
+    if !_checkforrebalance()
+        return
+    end
     checkforparent([:ondata, :beforeclose])
     setholdingshares(getsecurity(ticker), target)
 end
 
 function setholdingshares(security::Security, target::Int64)
+    if !_checkforrebalance()
+        return
+    end
     checkforparent([:ondata, :beforeclose])
     setholdingshares(security.symbol, target)
 end
 
 function setholdingshares(symbol::SecuritySymbol, target::Int64)
+    if !_checkforrebalance()
+        return
+    end
     checkforparent([:ondata, :beforeclose])
     
     if !ispartofuniverse(symbol)
