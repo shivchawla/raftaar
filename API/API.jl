@@ -21,7 +21,7 @@ import Raftaar: getuniverse, getopenorders
 const algorithm = Raftaar.Algorithm()
  
 function setlogmode(mode::Symbol, save::Bool = false)
-    Logger.configure(print_mode = mode, save_mode = save, save_limit = 10) 
+    Logger.configure(print_mode = mode, save_mode = save, save_limit = 20) 
 end
 
 export setlogmode

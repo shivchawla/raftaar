@@ -61,7 +61,7 @@ function history(secids::Array{Int,1},
     df = YRead.history(secids, datatype, frequency,
             horizon, enddate)
 
-    return sort(df, cols = :Date, rev=true)
+    return size(df)!=(0,0) ? sort(df, cols = :Date, rev=true) : df
 
 end
 
@@ -98,7 +98,7 @@ function history(tickers::Array{String,1},
             securitytype = securitytype, 
             exchange = exchange, country = country) 
 
-    return sort(df, cols = :Date, rev=true)
+    return size(df)!=(0,0) ? sort(df, cols = :Date, rev=true) : df
 end
 
 
@@ -170,7 +170,7 @@ function history(secids::Vector{Int},
                 country = country)
 
   
-    return sort(df, cols = :Date, rev=true) 
+    return size(df)!=(0,0) ? sort(df, cols = :Date, rev=true) : df
 
 end
 
@@ -192,7 +192,7 @@ function history(tickers::Vector{String},
             securitytype = securitytype, 
             exchange = exchange, country = country) 
 
-    return sort(df, cols = :Date, rev=true) 
+    return size(df)!=(0,0) ? sort(df, cols = :Date, rev=true) : df
 end
 
 export history
@@ -285,7 +285,7 @@ function history_unadj(secids::Vector{Int},
                 exchange = exchange,
                 country = country)
 
-    return sort(df, cols = :Date, rev=true) 
+    return size(df)!=(0,0) ? sort(df, cols = :Date, rev=true) : df
 end
 
 export history_unadj

@@ -36,10 +36,13 @@ function run_algo()
   enddate = getenddate()
 
   cp = history_unadj(getuniverse(), "Close", :Day, startdate = DateTime(getstartdate()), enddate = DateTime(getenddate()))
-  vol = sort(history_unadj(getuniverse(), "Volume", :Day, startdate = DateTime(getstartdate()), enddate = DateTime(getenddate())), cols = :Date, rev=false)
+  
+  vol = history_unadj(getuniverse(), "Volume", :Day, startdate = DateTime(getstartdate()), enddate = DateTime(getenddate()))
+  vol = size(vol)!=(0,0) ? sort(vol, cols = :Date, rev=false) : vol
   
   #Join benchmark data with close prices
-  cp = sort(join(cp, alldata, on = :Date, kind = :outer), cols = :Date, rev=false)
+  cp = size(cp)!=(0,0) && size(alldata)!=(0,0) ?  join(cp, alldata, on = :Date, kind = :outer) : cp  
+  cp = size(cp)!=(0,0) ? sort(cp, cols = :Date, rev=false) : cp
 
   labels = Dict{String,Float64}()
   
