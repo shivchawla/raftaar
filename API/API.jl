@@ -11,6 +11,7 @@ module API
 
 using Raftaar
 using DataFrames
+using TimeSeries
 using Logger
 
 import Logger: warn, info
@@ -235,7 +236,7 @@ end
 
 export fetchprices
 
-function updatedatastores(date::Date, prices::DataFrame, volumes::DataFrame, adjustments)
+function updatedatastores(date::Date, prices::TimeArray, volumes::TimeArray, adjustments)
     
     datetime = DateTime(date)
 
@@ -244,24 +245,24 @@ function updatedatastores(date::Date, prices::DataFrame, volumes::DataFrame, adj
 
     for security in getuniverse()
         
-        close = 0.0;
+        close = 0.0
         volume = 10000000
 
-        close_names = names(prices)
-        volume_names = names(volumes)
+        close_names = colnames(prices)
+        volume_names = colnames(volumes)
         #added try to prevent error in case security is not present
-        try 
+        #try 
 
-            colname = Symbol(security.symbol.ticker)
+            colname = security.symbol.ticker
 
             if colname in close_names
-                close = prices[colname][1]
-                close = !isna(close) ? close : 0.0
+                close = values(prices[colname])[1]
+                close = !isnan(close) ? close : 0.0
             end
             
             if colname in volume_names
-                volume = volumes[colname][1]
-                volume = !isna(volume) ? volume : 0
+                volume = values(volumes[colname])[1]
+                volume = !isnan(volume) ? volume : 0
             end
 
             #check if price is DataArray NA
@@ -277,7 +278,7 @@ function updatedatastores(date::Date, prices::DataFrame, volumes::DataFrame, adj
                 end
             end          
 
-        end
+        #end
     end
 
     _updatedatastores(tradebars, adjs)

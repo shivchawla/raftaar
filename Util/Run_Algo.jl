@@ -13,6 +13,7 @@
 import Logger: warn, info, error
 
 using DataFrames
+using TimeSeries
 
 alldata = DataFrame()
 
@@ -35,39 +36,45 @@ function run_algo()
   startdate = getstartdate()
   enddate = getenddate()
 
+  #println(startdate)
+  #println(enddate)
+
   cp = history_unadj(getuniverse(), "Close", :Day, startdate = DateTime(getstartdate()), enddate = DateTime(getenddate()))
   
+  allsecurities_includingbenchmark = push!([d.symbol for d in getuniverse()], API.getbenchmark())
+  adjustedprices = history(allsecurities_includingbenchmark, "Close", :Day, startdate = DateTime(getstartdate()), enddate = DateTime(getenddate()))
+  
   vol = history_unadj(getuniverse(), "Volume", :Day, startdate = DateTime(getstartdate()), enddate = DateTime(getenddate()))
-  vol = size(vol)!=(0,0) ? sort(vol, cols = :Date, rev=false) : vol
   
   #Join benchmark data with close prices
-  cp = size(cp)!=(0,0) && size(alldata)!=(0,0) ?  join(cp, alldata, on = :Date, kind = :outer) : cp  
-  cp = size(cp)!=(0,0) ? sort(cp, cols = :Date, rev=false) : cp
-
+  cp = !isempty(cp) && !isempty(alldata) ? merge(cp, alldata, :outer) : cp
+  
   labels = Dict{String,Float64}()
   
-  for i = 1:size(cp)[1]
-    val = cp[Symbol(benchmark.ticker)][i]
+  bvals = values(cp[benchmark.ticker])
+ 
+  for i = 1:length(cp)
+    val = bvals[i]
 
     j = i-1
     
-    while isna(val) && j > 0
-      val = cp[Symbol(benchmark.ticker)][j]
+    while isnan(val) && j > 0
+      val = bvals[j]
       j = j - 1
     end
 
-    val = isna(val) ? 0.0 : val
+    val = isnan(val) ? 0.0 : val
     
-    labels[cp[:Date][i]] = val 
+    labels[string(cp.timestamp[i])] = val 
   end
 
   #Set benchmark value and Output labels from graphs
   setbenchmarkvalues(labels)
 
-  adjs = getadjustments(getuniverse(), DateTime(getstartdate()), DateTime(getenddate()))
+  adjustments = getadjustments(getuniverse(), DateTime(getstartdate()), DateTime(getenddate()))
 
   #continue with backtest if there are any rows in price data.
-  if(size(cp)[1]>0)
+  if !isempty(cp)
     outputlabels(labels)  
   else
     return
@@ -75,33 +82,43 @@ function run_algo()
 
   i = 1
   for date in sort(collect(keys(labels)))
-      mainfnc(date, i, dynamic = false, close = cp, volume = vol, adjustments = adjs)
+      mainfnc(Date(date), i, cp, vol, adjustments, dynamic = false)
       i = i + 1
   end
 
   _outputbackteststatistics()
 
 end
- 
-function mainfnc(date::String, counter::Int; dynamic::Bool = true, close::DataFrame = DataFrame(), volume::DataFrame = DataFrame(), adjustments = Dict())  
 
-  if dynamic
-    date = Date(date)
-    setcurrentdate(date)
+function mainfnc(date::Date, counter::Int, close, volume, adjustments; dynamic::Bool = true)  
 
+  setcurrentdate(date)
+  if dynamic  
     #DYNAMIC doesn't work
     updatedatastores(date, fetchprices(date), fetchvolumes(date), getadjustments())
   else 
-    date = Date(close[counter,:Date])
-
     setcurrentdate(date)
 
     # check if volume dataframe has same rows as close OR if it has row
-    nrows_volume = size(volume)[1]
-    currentvolume = nrows_volume > counter ? volume[counter, :] : DataFrame()
+    #nrows_volume = length(volume)
+    #currentvolume = nrows_volume > counter ? volume[date] : DataFrame()
+    currentvolume = volume[date]
 
-    nrows_close = size(close)[1]
-    currentprices = nrows_close > counter ? close[counter, :] : DataFrame()
+    if (currentvolume == nothing)
+      names = push!([d.symbol.ticker for d in getuniverse()], API.getbenchmark().ticker)
+      currentvolume = TimeArray([date], zeros(1, length(names)), names)
+    end
+
+    #nrows_close = length(close)
+    #currentprices = nrows_close > counter ? close[:][counter] : DataFrame()
+    currentprices = close[date]
+    if (currentprices == nothing)
+      names = push!([d.symbol.ticker for d in getuniverse()], API.getbenchmark().ticker)
+      currentprices = TimeArray([date], zeros(1, length(names)), names)
+    end
+
+    #println(currentvolume)
+    #println(currentprices)
 
     updatedatastores(date, currentprices, currentvolume, adjustments)
   end
@@ -139,9 +156,11 @@ function mainfnc(date::String, counter::Int; dynamic::Bool = true, close::DataFr
 
   #once orders are placed and performance is updated based on last know portfolio,
   #call the user defined
-  
-  try 
+ 
+  try
+    
     ondata(alldata, getstate())
+    
   catch err
     handleexception(err)
   end

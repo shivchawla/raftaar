@@ -138,12 +138,18 @@ function liquidate(security::Security)
     checkforparent([:ondata, :beforeclose])
     setholdingshares(security, 0)  
 end
+
+function liquidate(pos::Position)
+    checkforparent([:ondata, :beforeclose])
+    setholdingshares(pos.securitysymbol, 0)  
+end
+
 export liquidate
 
 function liquidateportfolio()
     checkforparent([:ondata, :beforeclose])
-    for security in getuniverse()
-        liquidate(security)
+    for pos in getallpositions(algorithm.portfolio)
+        liquidate(pos)
     end
 end
 export liquidateportfolio
