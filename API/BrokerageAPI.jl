@@ -114,7 +114,7 @@ function placeorder(order::Order)
         order.datetime = now()
     end
     
-    Logger.info("Placing order: $(order.securitysymbol.ticker)/$(order.quantity)/$(order.ordertype)")
+    info("Placing order: $(order.securitysymbol.ticker)/$(order.quantity)/$(order.ordertype)")
     placeorder!(algorithm.brokerage, order)  
 end
 export placeorder
@@ -398,32 +398,32 @@ export getopenorders
 function cancelopenorders(ticker::String)
     checkforparent([:ondata, :beforeclose])
     security = getsecurity(ticker)
-    Logger.info("Canceling all orders for $(security.symbol.id)/$(security.symbol.ticker)")
+    info("Canceling all orders for $(security.symbol.id)/$(security.symbol.ticker)")
     cancelallorders!(algorithm.brokerage, security.symbol)
 end
 
 function cancelopenorders(secid::Int)
     checkforparent([:ondata, :beforeclose])
     security = getsecurity(secid)
-    Logger.info("Canceling all orders for $(security.symbol.id)/$(security.symbol.ticker)")
+    info("Canceling all orders for $(security.symbol.id)/$(security.symbol.ticker)")
     cancelallorders!(algorithm.brokerage, security.symbol)
 end
     
 function cancelopenorders(security::Security)
     checkforparent([:ondata, :beforeclose])
-    Logger.info("Canceling all orders for $(security.symbol.id)/$(security.symbol.ticker)")
+    info("Canceling all orders for $(security.symbol.id)/$(security.symbol.ticker)")
     cancelallorders!(algorithm.brokerage, security.symbol)
 end
 
 function cancelopenorders(symbol::SecuritySymbol)
     checkforparent([:ondata, :beforeclose])
-    Logger.info("Canceling all orders for $(symbol.id)/$(symbol.ticker)")
+    info("Canceling all orders for $(symbol.id)/$(symbol.ticker)")
     cancelallorders!(algorithm.brokerage, symbol)
 end
 
 function cancelopenorders()
     checkforparent([:ondata, :beforeclose])
-    Logger.info("Canceling all orders")
+    info("Canceling all orders")
     cancelallorders!(algorithm.brokerage)    
 end
 export cancelopenorders

@@ -42,11 +42,11 @@ function handleexception(error::Exception)
     end
 
     if length(errorlist) > 1
-        Logger.error(errorlist[1]*" "*line)
+        error(errorlist[1]*" "*line)
     elseif length(errorlist) == 1 
-        Logger.error(errorlist[1])
+        error(errorlist[1])
     else
-        Logger.error(String(ss[1]))
+        error(String(ss[1]))
     end
 
     exit(0)

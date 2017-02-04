@@ -4,7 +4,10 @@ using YRead
 import YRead: history, getsecurity, getsecurityid, getsecurityids, getsymbol
 import Base: getindex, convert
 
-const _globaldatastores = Dict{String, Dict{String, TimeArray}}()
+const _globaldatastores = Dict{String, Any}()
+#Dict{String, Dict{String, TimeArray}}()
+const _tickertosecurity = Dict{String, Security}()
+const _seciddtosecurity = Dict{Int64, Security}()
 
 
 function to{T,N,D}(ta::TimeArray{T,N,D}, d::D, ct::Int = 0)
@@ -17,15 +20,162 @@ function to{T,N,D}(ta::TimeArray{T,N,D}, d::D, ct::Int = 0)
 end
 
 
-
 # array of columns by name
 function getindex{T,N,D}(ta::TimeArray{T,N,D}, names::Vector{String})
     ns = [findfirst(ta.colnames, a) for a in names]
     TimeArray(ta.timestamp, ta.values[:,ns], String[a for a in names], ta.meta)
 end
 
-
 function _updateglobaldatastores(key::String, ta::TimeArray)
+    
+    if !haskey(_globaldatastores, key)
+        _globaldatastores[key] = ta 
+    else
+        old_ta = _globaldatastores[key]
+        
+        oldnames = colnames(old_ta)
+      
+        newnames = colnames(ta)
+      
+        commonnames = intersect(newnames, oldnames)
+
+        old_common_ta = old_ta[commonnames]
+
+        new_common_ta = ta[commonnames]
+
+        merged_common_ta = nothing
+
+        # BUG FIX REQUIRED: Adjusted prices are adjusted only for the horizon 
+        # merging two different horizons leads to price incompatibility
+        for ticker in commonnames
+
+            old_common_ta_ticker = old_common_ta[ticker]
+            new_common_ta_ticker = new_common_ta[ticker]
+
+            merged_common_ta_ticker = merge(old_common_ta_ticker, new_common_ta_ticker, :outer)
+
+            val_old = values(merged_common_ta_ticker[ticker])
+            val_new = values(merged_common_ta_ticker[ticker*"_1"])
+
+            nrows = length(val_new)
+            vals = zeros(nrows, 1)
+            for i = 1:nrows
+                if isnan(val_old[i]) && isnan(val_new[i]) 
+                    vals[i] = NaN
+                elseif  isnan(val_old[i]) && !isnan(val_new[i]) 
+                    vals[i] = val_new[i]
+                elseif !isnan(val_old[i]) && isnan(val_new[i]) 
+                    vals[i] = val_old[i]
+                elseif !isnan(val_old[i]) && !isnan(val_new[i]) 
+                    vals[i] = val_new[i]
+                end
+            end
+
+            merged_common_ta_ticker = TimeArray(merged_common_ta_ticker.timestamp, vals, [ticker])
+
+            if merged_common_ta == nothing
+                merged_common_ta = merged_common_ta_ticker
+            else
+                merged_common_ta = merge(merged_common_ta, merged_common_ta_ticker, :outer)
+            end
+        end
+
+        # Now merge ta for unique names across old and new TA
+        old_diffnames = setdiff(oldnames, newnames)
+        old_uncommon_ta = nothing
+
+        if length(old_diffnames) > 0
+            old_uncommon_ta = old_ta[old_diffnames]
+        end
+
+        new_diffnames = setdiff(newnames, oldnames)
+        new_uncommon_ta = nothing
+        
+        if length(new_diffnames) > 0
+            new_uncommon_ta = ta[new_diffnames]
+        end
+
+        merged_uncommon_ta = nothing
+
+        if old_uncommon_ta != nothing && new_uncommon_ta != nothing
+            merged_uncommon_ta = merge(old_uncommon_ta, new_uncommon_ta, :outer)
+        elseif old_uncommon_ta != nothing 
+            merged_uncommon_ta = old_uncommon_ta
+        elseif new_uncommon_ta != nothing  
+            merged_uncommon_ta = new_uncommon_ta
+        end
+
+        # final merge
+
+        merged_ta = nothing
+
+        if merged_uncommon_ta != nothing && merged_common_ta != nothing
+            merged_ta = merge(merged_uncommon_ta, merged_common_ta, :outer)
+        elseif merged_uncommon_ta != nothing
+            merged_ta = merged_uncommon_ta
+        elseif merged_common_ta != nothing 
+            merged_ta = merged_common_ta
+        end
+
+        if (merged_ta != nothing)
+            _globaldatastores[key] = merged_ta 
+        end
+    end
+end
+
+function fromglobalstore(ticker::String, key::String)
+    if haskey(_globaldatastores, key)
+        if ticker in colnames(_globaldatastores[key])
+            return _globaldatastores[key][ticker]
+        end 
+    end
+
+    return nothing
+end
+
+function fromglobalstore(tickers::Vector{String}, key::String)
+    if haskey(_globaldatastores, key)
+        ta = _globaldatastores[key]
+        columnnames = colnames(ta)
+        uniquenames = setdiff(tickers, columnnames)
+
+        if length(uniquenames) > 0
+            return nothing
+        end
+
+        return ta[tickers]
+
+    end
+
+    return nothing
+end
+
+
+function searchsecurity(secid::Int64)
+
+    notfound = false
+    if haskey(_globaldatastores, "security")
+        if haskey(_globaldatastores["security"], secid)
+            return _globaldatastores["security"][secid]
+        
+        else
+            notfound = true
+        end
+    else
+        notfound = true
+    end
+
+    if notfound
+        if !haskey(_globaldatastores, "security") 
+            _globaldatastores["security"] = Dict{Int64, Security}()
+        end
+
+        security = getsecurity(secid)
+        _globaldatastores["security"][secid] = security
+    end
+end
+
+#=function _updateglobaldatastores(key::String, ta::TimeArray)
 
     for ticker in colnames(ta)
         _updateglobaldatastores(ticker, key , ta[ticker])
@@ -74,7 +224,7 @@ function fromglobalstore(ticker::String, key::String)
     end
 
     return nothing
-end
+end=#
 
 function findinglobalstores(tickers::Vector{String}, 
                                 datatype::String, 
@@ -98,13 +248,10 @@ function findinglobalstores(tickers::Vector{String},
                                 exchange::String="NSE",
                                 country::String="IN")
     
-    #println("Here")
-
     if !haskey(_globaldatastores, datatype)
         return nothing
     else
-        full_ta = _globaldatastores[datatype][tickers]
-        #println(full_ta)
+        #full_ta = _globaldatastores[datatype][tickers]
 
         return nothing
     end
@@ -122,6 +269,7 @@ function findinglobalstores(secids::Vector{Int64},
 end
 
 
+#= OLD FUNCTION
 function findinglobalstores(secids::Vector{Int64}, 
                                 datatype::String, 
                                 frequency::Symbol, 
@@ -156,9 +304,24 @@ function findinglobalstores(secids::Vector{Int64},
 
     return length(output_ta) < horizon ? nothing : output_ta
       
+end=#
+
+function findinglobalstores(secids::Vector{Int64}, 
+                                datatype::String, 
+                                frequency::Symbol, 
+                                horizon::Int, 
+                                enddate::DateTime;
+                                securitytype::String="EQ",
+                                exchange::String="NSE",
+                                country::String="IN")
+    #println("Here - Secids")  
+
+    tickers = vec([getsecurity(secid).symbol.ticker for secid in secids])
+    output_ta = to(fromglobalstore(tickers, datatype), Date(enddate), horizon)
+    
+    return length(output_ta) < horizon ? nothing : output_ta
+      
 end
-
-
 
 function history(securities::Vector{Security},
                     datatype::String,
@@ -199,7 +362,7 @@ function history(secids::Array{Int,1},
     SIZE = 50
 
     if frequency!=:Day
-        Logger.info("""Only ":Day" frequency supported in history()""")
+        info("""Only ":Day" frequency supported in history()""")
         exit()
     end
 
@@ -218,11 +381,11 @@ function history(secids::Array{Int,1},
     ta = findinglobalstores(secids, datatype, frequency, horizon, enddate) 
 
     if ta!=nothing
-        #println("Found")
+        println("Reading from DATA STORES")
         return ta
     end
 
-    #println("Not Found")
+    println("Reading from DATABASE")
     ta = YRead.history(secids, datatype, frequency,
             horizon, enddate)
 
@@ -245,7 +408,7 @@ function history(tickers::Array{String,1},
     SIZE = 50
 
     if frequency!=:Day
-        Logger.info("""Only ":Day" frequency supported in history()""")
+        info("""Only ":Day" frequency supported in history()""")
         exit(0)
     end
 
@@ -260,13 +423,16 @@ function history(tickers::Array{String,1},
     
     tickers = length(tickers) > SIZE ? tickers[1:50] : tickers
 
-    #println("findinglobalstores")
     ta = findinglobalstores(tickers, datatype, frequency, horizon, enddate)
     
     if (ta!=nothing)
+        println("Reading from DATA STORES")
         return ta
     end
     
+
+    println("Reading from DATABASE")
+
     ta = YRead.history(tickers, datatype, frequency,
             horizon, enddate, 
             securitytype = securitytype, 
@@ -462,6 +628,7 @@ function history_unadj(tickers::Vector{String},
             exchange = exchange, country = country) 
 
     _updateglobaldatastores("Unadj_"*datatype, ta)
+    
     return ta 
 end
 
@@ -491,6 +658,7 @@ function history_unadj(secids::Vector{Int},
                 country = country)
 
     _updateglobaldatastores("Unadj_"*datatype, ta)
+    
     return ta 
 end
 
@@ -605,13 +773,38 @@ function getsecurity(ticker::String;
                         securitytype::String="EQ",
                         exchange::String="NSE",
                         country::String="IN")
-
-    sec =  YRead.getsecurity(ticker, 
+    
+    
+    mticker = ticker*"_"*securitytype*"_"*exchange*"_"*country
+    if haskey(_tickertosecurity, mticker)
+        return _tickertosecurity[mticker]
+    else
+        security =  YRead.getsecurity(ticker, 
                         securitytype, 
                         exchange, 
                         country)
-    convert(Raftaar.Security, sec)
+
+        _tickertosecurity[mticker] = security
+        
+        return security 
+    end   
+    
+    #convert(Raftaar.Security, sec)
 end
+
+
+function getsecurity(secid::Int64, search::Bool = true)
+
+    if haskey(_seciddtosecurity, secid)
+        return _seciddtosecurity[secid]
+    else
+        security = YRead.getsecurity(secid, 1)
+        _seciddtosecurity[secid] = security
+
+        return security
+    end
+end
+
 
 # Overriding getindex for history dataframes
 getindex(dataframe::DataFrame, security::Security) = getindex(dataframe, Symbol(security.symbol.ticker))

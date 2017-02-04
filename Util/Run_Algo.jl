@@ -15,8 +15,6 @@ import Logger: warn, info, error
 using DataFrames
 using TimeSeries
 
-alldata = DataFrame()
-
 function run_algo()
 
   benchmark = "CNX_NIFTY"
@@ -36,19 +34,16 @@ function run_algo()
   startdate = getstartdate()
   enddate = getenddate()
 
-  #println(startdate)
-  #println(enddate)
-
   cp = history_unadj(getuniverse(), "Close", :Day, startdate = DateTime(getstartdate()), enddate = DateTime(getenddate()))
   
   allsecurities_includingbenchmark = push!([d.symbol for d in getuniverse()], API.getbenchmark())
   adjustedprices = history(allsecurities_includingbenchmark, "Close", :Day, startdate = DateTime(getstartdate()), enddate = DateTime(getenddate()))
-  
+
   vol = history_unadj(getuniverse(), "Volume", :Day, startdate = DateTime(getstartdate()), enddate = DateTime(getenddate()))
-  
+
+
   #Join benchmark data with close prices
   cp = !isempty(cp) && !isempty(alldata) ? merge(cp, alldata, :outer) : cp
-  
   labels = Dict{String,Float64}()
   
   bvals = values(cp[benchmark.ticker])
@@ -77,6 +72,7 @@ function run_algo()
   if !isempty(cp)
     outputlabels(labels)  
   else
+    error("No price data found. Aborting Backtest!!!")
     return
   end
 
@@ -116,9 +112,6 @@ function mainfnc(date::Date, counter::Int, close, volume, adjustments; dynamic::
       names = push!([d.symbol.ticker for d in getuniverse()], API.getbenchmark().ticker)
       currentprices = TimeArray([date], zeros(1, length(names)), names)
     end
-
-    #println(currentvolume)
-    #println(currentprices)
 
     updatedatastores(date, currentprices, currentvolume, adjustments)
   end

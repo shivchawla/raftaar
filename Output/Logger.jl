@@ -10,11 +10,11 @@ module Logger
 
 type LogBook
     mode::Symbol
-    container::Dict{Date, Vector{String}}
+    container::Dict{DateTime, Vector{String}}
     savelimit::Int
 end
 
-LogBook() = LogBook(:json, Dict{Date, Vector{String}}(), 20)
+LogBook() = LogBook(:json, Dict{DateTime, Vector{String}}(), 200)
 
 @enum MessageType INFO WARN ERROR
 
@@ -26,12 +26,12 @@ const logbook = LogBook()
 const params = Dict{String, Any}("mode" => :console, 
                                 "save" => false,
                                 "datetime" => "",
-                                "limit" => 20,
+                                "limit" => 200,
                                 "counter" => 0)
 """
 Function to configure mode of the logger and change the datetime
 """
-function configure(;print_mode::Symbol = :console, save_mode::Bool = false, save_limit::Int = 20)
+function configure(;print_mode::Symbol = :console, save_mode::Bool = false, save_limit::Int = 200)
     params["mode"] = print_mode
     params["save"] = save_mode
     params["limit"] = save_limit
@@ -49,23 +49,36 @@ end
 """
 Function to record and print log messages
 """
-function info(msg::String)
-    _log(msg, MessageType(INFO))
+function info(msg::String, mode::Symbol; datetime::DateTime = DateTime())
+    _log(msg, MessageType(INFO), mode, datetime)
 end
 
-function warn(msg::String)
-    _log(msg, MessageType(WARN))
+function warn(msg::String, mode::Symbol; datetime::DateTime = DateTime())
+    _log(msg, MessageType(WARN), mode, datetime)
 end
 
-function error(msg::String)
-    _log(msg, MessageType(ERROR))
+function error(msg::String, mode::Symbol; datetime::DateTime = DateTime())
+    _log(msg, MessageType(ERROR), mode, datetime)
 end
 
+function info(msg::String; datetime::DateTime = now())
+    mode = :console 
+    _log(msg, MessageType(INFO), mode, datetime)
+end
 
-function _log(msg::String, msgtype::MessageType)
-    mode = params["mode"]
-    datetime = now()
-    if (params["datetime"] != "")
+function warn(msg::String; datetime::DateTime = now())
+    mode = :console
+    _log(msg, MessageType(WARN), mode, datetime)
+end
+
+function error(msg::String; datetime::DateTime = now())
+    mode = :console
+    _log(msg, MessageType(ERROR), mode, datetime)
+end
+
+function _log(msg::String, msgtype::MessageType, mode::Symbol, datetime::DateTime)
+    #mode = params["mode"]
+    if datetime == DateTime() && params["datetime"] != ""
         datetime = params["datetime"]
     end
        
@@ -96,23 +109,22 @@ Function to log message AS JSON (with timestamp) based on message type
 """
 function _logJSON(msg::String, msgtype::MessageType, datetime::DateTime) 
     
-    date = Date(datetime)
     counter = params["counter"];
     if(counter < params["limit"] && params["limit"] != -1)
         messagedict = Dict{String, String}("outputtype" => "log",
                                         "messagetype" => string(msgtype),
-                                        "datetime" => string(date), 
+                                        "datetime" => string(datetime), 
                                         "message" => msg)
         jsonmsg = JSON.json(messagedict);
         println(jsonmsg)
 
         if params["save"]
             
-            if !haskey(logbook.container, date)
-                logbook.container[date] = Vector{String}()
+            if !haskey(logbook.container, datetime)
+                logbook.container[datetime] = Vector{String}()
             end
 
-            logs = logbook.container[date]
+            logs = logbook.container[datetime]
             nmessages = length(logs)
             if nmessages < logbook.savelimit
                 push!(logs, jsonmsg);

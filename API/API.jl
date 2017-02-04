@@ -24,8 +24,11 @@ const algorithm = Raftaar.Algorithm()
 function setlogmode(mode::Symbol, save::Bool = false)
     Logger.configure(print_mode = mode, save_mode = save, save_limit = 20) 
 end
-
 export setlogmode
+
+info(message::String; datetime::DateTime = DateTime()) = 
+                    Logger.info(message, :json, datetime = datetime)
+export info
 
 include("TradingEnvAPI.jl")
 include("HistoryAPI.jl")
@@ -89,7 +92,6 @@ function setbenchmark(symbol::SecuritySymbol)
 end
 
 export setbenchmark
-
 
 """
 Functions to expose the tracking API
@@ -286,6 +288,5 @@ end
 
 #precompile(updatepricestores, (DateTime, DataFrame))
 export updatedatastores
-
 
 end
