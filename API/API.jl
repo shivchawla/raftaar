@@ -14,7 +14,7 @@ using DataFrames
 using TimeSeries
 using Logger
 
-import Logger: warn, info
+import Logger: info, error
 
 #Import list of functions to be overloaded
 import Raftaar: getuniverse, getopenorders
@@ -29,6 +29,16 @@ export setlogmode
 info(message::String; datetime::DateTime = DateTime()) = 
                     Logger.info(message, :json, datetime = datetime)
 export info
+
+warn(message::String; datetime::DateTime = DateTime()) = 
+                    Logger.warn(message, :json, datetime = datetime)
+
+export warn
+
+error(message::String; datetime::DateTime = DateTime()) = 
+                    Logger.error(message, :json, datetime = datetime)
+
+export error
 
 include("TradingEnvAPI.jl")
 include("HistoryAPI.jl")

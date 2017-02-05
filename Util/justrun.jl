@@ -31,7 +31,7 @@ info("Configuring datastore connections", datetime=now())
 YRead.configure(client)
 YRead.configure(priority=2)
 try
-    info("Processing parsed arguments from settings panel")    
+    info("Processing parsed arguments from settings panel", datetime = now())    
     fname = processargs(parsed_args)
 catch err
     handleexception(err)

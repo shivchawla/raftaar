@@ -25,28 +25,28 @@ function handleexception(error::Exception)
     line = ""
     
     for err in ss
-        push!(errorlist, String(err))      
+
+        err = string(err)
+        push!(errorlist, err)
+             
         if fname!=""
             if searchindex(err, fname) > 0 
                 lines = split(err,",")
                 
                 if(length(lines) > 1)
-                    line = String(lines[2])    
+                    line = string(lines[2])    
                 end
                 
             end
         end
- 
-        println(err)    
-        
     end
 
     if length(errorlist) > 1
-        error(errorlist[1]*" "*line)
+        API.error(errorlist[1]*" "*line)
     elseif length(errorlist) == 1 
-        error(errorlist[1])
+        API.error(errorlist[1])
     else
-        error(String(ss[1]))
+        API.error(string(ss[1]))
     end
 
     exit(0)

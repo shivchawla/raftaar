@@ -10,11 +10,12 @@ module Logger
 
 type LogBook
     mode::Symbol
-    container::Dict{DateTime, Vector{String}}
+    ## Key needs to be string as db can't handle fields with dots
+    container::Dict{String, Vector{String}} 
     savelimit::Int
 end
 
-LogBook() = LogBook(:json, Dict{DateTime, Vector{String}}(), 200)
+LogBook() = LogBook(:json, Dict{String, Vector{String}}(), 200)
 
 @enum MessageType INFO WARN ERROR
 
@@ -104,27 +105,31 @@ function _logstandard(msg::String, msgtype::MessageType, datetime::DateTime)
     end
 end 
 
+
+todbformat(datetime::DateTime) = Dates.format(datetime, "mm-dd-yyyy HH:MM:SS")
+
 """
 Function to log message AS JSON (with timestamp) based on message type
 """
 function _logJSON(msg::String, msgtype::MessageType, datetime::DateTime) 
     
+    datestr = todbformat(datetime)
     counter = params["counter"];
     if(counter < params["limit"] && params["limit"] != -1)
         messagedict = Dict{String, String}("outputtype" => "log",
                                         "messagetype" => string(msgtype),
-                                        "datetime" => string(datetime), 
+                                        "datetime" => datestr,
                                         "message" => msg)
         jsonmsg = JSON.json(messagedict);
         println(jsonmsg)
 
         if params["save"]
             
-            if !haskey(logbook.container, datetime)
-                logbook.container[datetime] = Vector{String}()
+            if !haskey(logbook.container, datestr)
+                logbook.container[datestr] = Vector{String}()
             end
 
-            logs = logbook.container[datetime]
+            logs = logbook.container[datestr]
             nmessages = length(logs)
             if nmessages < logbook.savelimit
                 push!(logs, jsonmsg);
