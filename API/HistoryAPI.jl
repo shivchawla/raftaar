@@ -389,7 +389,9 @@ function history(secids::Array{Int,1},
     ta = YRead.history(secids, datatype, frequency,
             horizon, enddate)
 
-    _updateglobaldatastores(datatype, ta)
+    if (ta != nothing)
+        _updateglobaldatastores(datatype, ta)
+    end
     
     return ta 
 
@@ -438,7 +440,9 @@ function history(tickers::Array{String,1},
             securitytype = securitytype, 
             exchange = exchange, country = country) 
 
-    _updateglobaldatastores(datatype, ta)
+    if (ta != nothing)
+        _updateglobaldatastores(datatype, ta)
+    end
 
     return ta 
 end
@@ -516,7 +520,9 @@ function history(secids::Vector{Int},
                 exchange = exchange,
                 country = country)
 
-    _updateglobaldatastores(datatype, ta)
+    if (ta != nothing)
+        _updateglobaldatastores(datatype, ta)
+    end
 
     return ta 
 
@@ -547,7 +553,9 @@ function history(tickers::Vector{String},
             securitytype = securitytype, 
             exchange = exchange, country = country) 
 
-    _updateglobaldatastores(datatype, ta)
+    if (ta != nothing)
+        _updateglobaldatastores(datatype, ta)
+    end
 
     return ta 
 end
@@ -627,7 +635,9 @@ function history_unadj(tickers::Vector{String},
             securitytype = securitytype, 
             exchange = exchange, country = country) 
 
-    _updateglobaldatastores("Unadj_"*datatype, ta)
+    if (ta != nothing)
+        _updateglobaldatastores("Unadj_"*datatype, ta)
+    end
     
     return ta 
 end
@@ -657,7 +667,10 @@ function history_unadj(secids::Vector{Int},
                 exchange = exchange,
                 country = country)
 
-    _updateglobaldatastores("Unadj_"*datatype, ta)
+    if (ta != nothing)
+        _updateglobaldatastores("Unadj_"*datatype, ta)
+    end
+    
     
     return ta 
 end

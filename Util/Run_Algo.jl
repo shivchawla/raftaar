@@ -40,8 +40,7 @@ function run_algo()
   adjustedprices = history(allsecurities_includingbenchmark, "Close", :Day, startdate = DateTime(getstartdate()), enddate = DateTime(getenddate()))
 
   vol = history_unadj(getuniverse(), "Volume", :Day, startdate = DateTime(getstartdate()), enddate = DateTime(getenddate()))
-
-
+  
   #Join benchmark data with close prices
   cp = !isempty(cp) && !isempty(alldata) ? merge(cp, alldata, :outer) : cp
   labels = Dict{String,Float64}()
@@ -98,16 +97,24 @@ function mainfnc(date::Date, counter::Int, close, volume, adjustments; dynamic::
     # check if volume dataframe has same rows as close OR if it has row
     #nrows_volume = length(volume)
     #currentvolume = nrows_volume > counter ? volume[date] : DataFrame()
-    currentvolume = volume[date]
+    currentvolume = nothing
+    try
+      currentvolume = volume[date]
+    end
 
     if (currentvolume == nothing)
       names = push!([d.symbol.ticker for d in getuniverse()], API.getbenchmark().ticker)
-      currentvolume = TimeArray([date], zeros(1, length(names)), names)
+      currentvolume = TimeArray([date], 10000000.*ones(1, length(names)), names)
     end
+    
 
     #nrows_close = length(close)
     #currentprices = nrows_close > counter ? close[:][counter] : DataFrame()
-    currentprices = close[date]
+    currentprices = nothing
+    try
+      currentprices = close[date]
+    end
+
     if (currentprices == nothing)
       names = push!([d.symbol.ticker for d in getuniverse()], API.getbenchmark().ticker)
       currentprices = TimeArray([date], zeros(1, length(names)), names)
