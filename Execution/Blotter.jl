@@ -108,12 +108,16 @@ function getorderfill(order::Order, slippage::Slippage, commission::Commission, 
     if (order.datetime > latesttradebar.datetime) || (order.orderstatus == OrderStatus(Canceled)) || latesttradebar.datetime == DateTime()
         return fill
     end
-        
-    fill.orderfee = getcommission(order, commission)
-    
+
     lastprice = latesttradebar.close
     volume = latesttradebar.volume
 
+    if isnan(lastprice) || isnan(volume)
+        return fill
+    end
+        
+    fill.orderfee = getcommission(order, commission)
+      
     slippage = getslippage(order, slippage, lastprice)
     # find the execution price based on slippage model
     if order.quantity  < 0

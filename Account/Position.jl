@@ -104,7 +104,7 @@ end
 Function to update position for latest price
 """
 function updateposition_price!(position::Position, tradebar::TradeBar)
-  if(tradebar.close > 0.0000000001)
+  if(tradebar.close > 0.0000000001 && !isnan(tradebar.close))
     position.lastprice = tradebar.close
     position.lasttradepnl = position.quantity * (position.lastprice - position.averageprice)
   end
