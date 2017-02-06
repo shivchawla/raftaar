@@ -269,12 +269,12 @@ function updatedatastores(date::Date, prices::TimeArray, volumes::TimeArray, adj
 
             if colname in close_names
                 close = values(prices[colname])[1]
-                #close = !isnan(close) ? close : 0.0
+                close = !isnan(close) ? close : -1.0
             end
             
             if colname in volume_names
                 volume = values(volumes[colname])[1]
-                #volume = !isnan(volume) ? volume : 0
+                volume = !isnan(volume) ? volume : 0
             end
 
             #check if price is DataArray NA

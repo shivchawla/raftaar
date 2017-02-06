@@ -112,7 +112,7 @@ function getorderfill(order::Order, slippage::Slippage, commission::Commission, 
     lastprice = latesttradebar.close
     volume = latesttradebar.volume
 
-    if isnan(lastprice) || isnan(volume)
+    if isnan(lastprice) || isnan(volume) || lastprice <= 0.0 || volume <= 0
         return fill
     end
         
