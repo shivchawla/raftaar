@@ -84,7 +84,7 @@ function outputbackteststatistics(accttrkr::AccountTracker,
                                     trsctrkr,
                                     ordrtrkr)
     
-    JSON.print(outputdict)
+    println(JSON.json(outputdict))
 end
 
 function outputbackteststatistics_full(accttrkr::AccountTracker,
@@ -125,8 +125,7 @@ function outputbackteststatistics_full(accttrkr::AccountTracker,
                                                     "yearly" => yearlyanalytics)
 
 
-    JSON.print(outputdict)
-    println()
+    println(JSON.json(outputdict))
 end
 
 function getaggregatereturns(pft::PerformanceTracker, symbol::Symbol = :All)
@@ -356,9 +355,7 @@ function outputperformanceJSON(performancetracker::PerformanceTracker, benchmark
         end
     end
 
-           
-    JSON.print(jsondict)
-    println()
+    println(JSON.json(jsondict))
 
 end
 
@@ -366,8 +363,7 @@ function outputlabels(labels::Dict{String, Float64})
 
     jsondict = Dict{String, Any}("outputtype" => "labels",
                                  "labels" => labels)
-    JSON.print(jsondict)
-    println()
+    println(JSON.json(jsondict))
 end
 export outputlabels
 

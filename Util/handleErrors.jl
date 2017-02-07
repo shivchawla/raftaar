@@ -3,29 +3,19 @@
 # Email: shiv.chawla@aimsquant.com
 # Organization: AIMSQUANT PVT. LTD.
 
-using BufferedStreams
+function handleexception(err::Any)
 
-function showerr(io::IO, exception::Exception, st::StackTrace)
-    Base.showerror(io, exception)
-    println(io)
-    for sf in st 
-        println(io, sf)
-    end
-end
-
-function handleexception(error::Exception)
+    msg = errormessage(err)
     
-    out = BufferedOutputStream()
-    showerr(out, error, catch_stacktrace())
-    str = takebuf_string(out) 
-  
+    #println(msg)
+
+    st = catch_stacktrace()
     errorlist = Vector{String}()
 
-    ss = split(str,'\n')
     line = ""
     
-    for err in ss
-
+    for err in st
+        
         err = string(err)
         push!(errorlist, err)
              
@@ -36,20 +26,47 @@ function handleexception(error::Exception)
                 if(length(lines) > 1)
                     line = string(lines[2])    
                 end
-                
             end
         end
     end
 
-    if length(errorlist) > 1
-        API.error(errorlist[1]*" "*line)
-    elseif length(errorlist) == 1 
-        API.error(errorlist[1])
-    else
-        API.error(string(ss[1]))
+    if line !=""
+        msg = msg*" "*line  
     end
 
-    exit(0)
+    API.error(msg)
 
+    exit(1)
+
+end
+
+function errormessage(err::Any)
+
+    if isa(err, UndefVarError)
+        return "UndefVarError: "*string(err.var)*" is not defined"
+    
+    elseif isa(err, MethodError)
+        
+        tpl = err.args
+
+        str = length(tpl) > 1 ? string(err.f)*"(" : ""
+        
+        if(length(tpl) > 0)
+            for i = 1:length(tpl)
+
+                str = str*"::$(typeof(tpl[i]))"
+                
+                if(i<length(tpl))
+                    str=str*", "
+                end
+            end
+            
+            str = str*")" 
+        end
+
+        return "MethodError: no method matching " *str
+    else
+        return string(err)
+    end 
 end
 

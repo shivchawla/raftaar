@@ -157,12 +157,11 @@ function mainfnc(date::Date, counter::Int, close, volume, adjustments; dynamic::
   #once orders are placed and performance is updated based on last know portfolio,
   #call the user defined
  
-  try
-    
+  try  
     ondata(alldata, getstate())
-    
   catch err
     handleexception(err)
+
   end
 
   _outputdailyperformance() 

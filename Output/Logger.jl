@@ -7,7 +7,6 @@ __precompile__()
 
 module Logger
 
-
 type LogBook
     mode::Symbol
     ## Key needs to be string as db can't handle fields with dots
@@ -15,7 +14,7 @@ type LogBook
     savelimit::Int
 end
 
-LogBook() = LogBook(:json, Dict{String, Vector{String}}(), 200)
+LogBook() = LogBook(:json, Dict{String, Vector{String}}(), 20)
 
 @enum MessageType INFO WARN ERROR
 
@@ -26,13 +25,14 @@ using JSON
 const logbook = LogBook()
 const params = Dict{String, Any}("mode" => :console, 
                                 "save" => false,
-                                "datetime" => "",
-                                "limit" => 200,
+                                "datetime" => DateTime(),
+                                "limit" => 30,
                                 "counter" => 0)
+                                
 """
 Function to configure mode of the logger and change the datetime
 """
-function configure(;print_mode::Symbol = :console, save_mode::Bool = false, save_limit::Int = 200)
+function configure(;print_mode::Symbol = :console, save_mode::Bool = false, save_limit::Int = 30)
     params["mode"] = print_mode
     params["save"] = save_mode
     params["limit"] = save_limit
@@ -113,30 +113,36 @@ Function to log message AS JSON (with timestamp) based on message type
 """
 function _logJSON(msg::String, msgtype::MessageType, datetime::DateTime) 
     
-    datestr = todbformat(datetime)
-    counter = params["counter"];
-    if(counter < params["limit"] && params["limit"] != -1)
-        messagedict = Dict{String, String}("outputtype" => "log",
+    datetimestr = todbformat(datetime)
+    limit = params["limit"]
+
+    datestr = string(Date(datetime))
+
+    messagedict = Dict{String, String}("outputtype" => "log",
                                         "messagetype" => string(msgtype),
-                                        "datetime" => datestr,
+                                        "datetime" => datetimestr,
                                         "message" => msg)
-        jsonmsg = JSON.json(messagedict);
+    
+    jsonmsg = JSON.json(messagedict);
+            
+    if !haskey(logbook.container, datestr)
+        logbook.container[datestr] = Vector{String}()
+    end
+
+    numlogs = length(logbook.container[datestr])
+    if (numlogs < limit && numlogs < 50) || msgtype == MessageType(ERROR)
         println(jsonmsg)
 
-        if params["save"]
-            
-            if !haskey(logbook.container, datestr)
-                logbook.container[datestr] = Vector{String}()
-            end
+        push!(logbook.container[datestr], jsonmsg);
+        numlogs = length(logbook.container[datestr])
 
-            logs = logbook.container[datestr]
-            nmessages = length(logs)
-            if nmessages < logbook.savelimit
-                push!(logs, jsonmsg);
-            end
+        if numlogs == limit || numlogs == 50
+            println(JSON.json(Dict{String, String}("outputtype" => "log",
+                                        "messagetype" => string(WARN),
+                                        "datetime" => datetimestr,
+                                        "message" => "Log limit reached!!")))
         end
-
-        params["counter"] = counter + 1
+        
     end
 
 end 
