@@ -158,7 +158,7 @@ function mainfnc(date::Date, counter::Int, close, volume, adjustments; dynamic::
   #call the user defined
  
   try  
-    ondata(alldata, getstate())
+    ondata(currentprices, getstate())
   catch err
     handleexception(err)
 
