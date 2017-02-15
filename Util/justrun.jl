@@ -25,17 +25,19 @@ end
 using JSON
 
 connection = JSON.parsefile("../../raftaar/Util/connection.json")
-const client = MongoClient(connection["mongo_host"], connection["mongo_port"], connection["mongo_user"], connection["mongo_pass"])
+const client = MongoClient(connection["mongo_host"], connection["mongo_user"], connection["mongo_pass"], connection["mongo_database"])
 info("Configuring datastore connections", datetime=now())    
 
-YRead.configure(client)
-YRead.configure(priority=2)
+YRead.configure(client, database = connection["mongo_database"])
+YRead.configure(priority = 2)
 try
     info("Processing parsed arguments from settings panel", datetime = now())    
     fname = processargs(parsed_args)
 catch err
     handleexception(err)
 end
+
+#fname = "/users/shivkumarchawla/raftaar/Examples/momentumStrategy.jl"
 
 setlogmode(:console, true)
   
