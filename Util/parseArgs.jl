@@ -5,7 +5,7 @@
 
 using ArgParse
 
-function parse_commandline()
+function getargparsesettings()
     s = ArgParseSettings()
 
     @add_arg_table s begin
@@ -59,6 +59,16 @@ function parse_commandline()
             default = "Variable, 0.05"
     end
 
+    return s
+end  
+
+function parse_commandline()
+    s = getargparsesettings()
     return parse_args(s)
+end
+
+function parse_arguments(args)
+    s = getargparsesettings()
+    return parse_args(args, s)
 end
 

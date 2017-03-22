@@ -36,7 +36,7 @@ function handleexception(err::Any)
 
     API.error(msg)
 
-    exit(1)
+    #exit(1)
 
 end
 

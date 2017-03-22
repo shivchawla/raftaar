@@ -60,19 +60,26 @@ Algorithm() = Algorithm("","", AlgorithmStatus(Initializing),
 """
 Reset algorithm variable to default
 """
-function reset(algorithm::Algorithm) 
-    algorithm.algorithmid=""
-    algorithm.status = AlgorithmStatus(Initializing) 
+function resetAlgo(algorithm::Algorithm) 
+    println("Resetting Algo")
+    algorithm.algorithmid = ""
+    algorithm.name = ""
+    algorithm.status = AlgorithmStatus(Initializing)
     algorithm.account = Account()
+    algorithm.portfolio = Portfolio()
     algorithm.universe = Universe()
     algorithm.tradeenv = TradingEnvironment()
     algorithm.brokerage = BacktestBrokerage()
     algorithm.accounttracker = AccountTracker() #To track evolution of account with time
     algorithm.cashtracker = CashTracker()
+    algorithm.performancetracker = PerformanceTracker()
+    algorithm.benchmarktracker = PerformanceTracker()
+    algorithm.transactiontracker = TransactionTracker()
+    algorithm.ordertracker = OrderTracker()
     algorithm.variabletracker = VariableTracker()
-    return
+    algorithm.state = AlgorithmState()
+    #return
 end
-
 
 """
 Function to track the orders at each time step
