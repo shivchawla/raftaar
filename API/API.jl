@@ -13,6 +13,7 @@ using Raftaar
 using DataFrames
 using TimeSeries
 using Logger
+using WebSockets
 
 import Logger: info, error
 
@@ -21,8 +22,8 @@ import Raftaar: getuniverse, getopenorders
 
 const algorithm = Raftaar.Algorithm()
  
-function setlogmode(mode::Symbol, save::Bool = false)
-    Logger.configure(print_mode = mode, save_mode = save) 
+function setlogmode(style::Symbol = :text, print::Symbol = :console, save::Bool = false, client::WebSocket = WebSocket(0, TCPSock()))
+    Logger.configure(style_mode = style, print_mode = print, save_mode = save, client = client) 
 end
 export setlogmode
 
@@ -78,8 +79,9 @@ export  setstartdate,
         hedgeportfolio,
         getopenorders,
         cancelallorders,
-        checkforparent,
-        reset
+        checkforparent
+
+
 """
 Function to set benchmark
 """
@@ -156,12 +158,15 @@ function _updateaccounttracker()
 end
 export _updateaccounttracker
 
+# NOT IN USE
+# NOT IN USE
 function _calculateperformance()
     calculateperformance(algorithm.accounttracker, algorithm.cashtracker)
-    Raftaar.reset(algorithm)
+    Raftaar.resetAlgo(algorithm)
 end
-
 export _calculateperformance
+# NOT IN USE
+# NOT IN USE
 
 function _updatedailyperformance()
     updateaccounttracker!(algorithm)
@@ -298,5 +303,10 @@ end
 
 #precompile(updatepricestores, (DateTime, DataFrame))
 export updatedatastores
+
+function reset()
+    Raftaar.resetAlgo(algorithm)
+    Logger.resetLog()
+end
 
 end

@@ -5,6 +5,7 @@
 
 using DataFrames
 using GLM
+using JSON
 
 type Drawdown
     currentdrawdown::Float64
@@ -134,6 +135,10 @@ function calculateperformance(algorithmreturns::Vector{Float64}, benchmarkreturn
 
     return ps
 end 
+
+function toJSON(performance::Performance)
+    JSON.json(performance.returns)
+end
 
 #println(precompile(calculateperformance,(Vector{Float64}, Vector{Float64})))
 

@@ -34,6 +34,10 @@ Position(fill::OrderFill) = Position(fill.securitysymbol, fill.fillquantity, fil
 
 Position(symbol::SecuritySymbol, quantity::Int64, averageprice::Float64, totalfees::Float64) = Position(symbol, quantity, averageprice, totalfees, 0.0,0.0,0.0,0.0)
 
+Position(symbol::SecuritySymbol, quantity::Int64, averageprice::Float64) = Position(symbol, quantity, averageprice, 0.0, 0.0,0.0,0.0,0.0)
+
+Position(symbol::SecuritySymbol, quantity::Int64) = Position(symbol, quantity, 0.0, 0.0, 0.0,0.0,0.0,0.0)
+
 empty(position::Position) = empty(position.securitysymbol) && position.quantity == 0 && position.averageprice==0.0
 
 """
