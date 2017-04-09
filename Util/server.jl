@@ -21,8 +21,7 @@ include("../Util/Run_Algo.jl")
 #Setup database connections
 connection = JSON.parsefile("../raftaar/Util/connection.json")
 println(connection)
-const client = MongoClient(connection["mongo_host"], connection["mongo_user"], connection["mongo_pass"], connection["mongo_database"])
-#const client = MongoClient()
+const client = MongoClient(connection["mongo_host"], connection["mongo_user"], connection["mongo_pass"])
 info("Configuring datastore connections", datetime=now())    
 
 YRead.configure(client, database = connection["mongo_database"])
