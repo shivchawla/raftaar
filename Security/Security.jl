@@ -53,13 +53,30 @@ Security(ticker::String; securitytype::String = "EQ", exchange::String="NSE", co
 Security(id::Int64, ticker::String, name::String; exchange::String="NSE", country::String = "IN", securitytype::String = "EQ") = 
           Security(SecuritySymbol(id, ticker), name, exchange, country, securitytype, DateTime(), DateTime())
 
+==(sec_one::Security, sec_two::Security) = sec_one.symbol == sec_two.symbol
 #Security(ticker::String) = Security(SecuritySymbol(0,ticker), "", "EQ", "NSE",DateTime(), DateTime())
             
                           #=securitytype = securitytype,
                           exchange = exchange, DateTime(), DateTime())=#
 #; securitytype::String = "EQ", exchange::String="NSE")
 
-            
+
+"""
+Serialize the security to dictionary object
+"""
+function serialize(sym::SecuritySymbol)
+  return Dict{String, Any}("id" => sym.id,
+                          "ticker" => sym.ticker)
+end
+
+function serialize(security::Security)
+  return Dict{String, Any}("ticker" => security.symbol.ticker,
+                          "name" => security.name,
+                          "exchange" => security.exchange,
+                          "country" => security.country,
+                          "securityType" => security.securitytype)
+end
+
 """
 Function to set security id for security
 """        

@@ -17,6 +17,12 @@ type PortfolioMetrics
 end
 
 PortfolioMetrics() = PortfolioMetrics(0.0, 0.0, 0.0, 0.0, 0, 0)
+==(pm1::PortfolioMetrics, pm2::PortfolioMetrics) = (pm1.netexposure == pm2.netexposure &&
+                                                   pm1.grossexposure == pm2.grossexposure &&
+                                                   pm1.shortexposure == pm2.shortexposure &&
+                                                   pm1.longexposure == pm2.longexposure &&
+                                                   pm1.shortcount == pm2.shortcount &&
+                                                   pm1.longcount == pm2.longcount)
 
 """
 Type to encapsulate positions and aggregated metrics
@@ -27,6 +33,7 @@ type Portfolio
 end
 
 Portfolio() = Portfolio(Dict(), PortfolioMetrics())
+==(p1::Portfolio, p2::Portfolio) = (p1.positions == p2.positions && p1.metrics == p2.metrics)
 
 """
 Indexing function to get position based 
@@ -37,6 +44,41 @@ getindex(portfolio::Portfolio, symbol::SecuritySymbol) = get(portfolio.positions
 getindex(portfolio::Portfolio, security::Security) = get(portfolio.positions, security.symbol, Position(security.symbol))
 setindex!(portfolio::Portfolio, position::Position, securitysymbol::SecuritySymbol) = 
                       setindex!(portfolio.positions, position, securitysymbol)
+
+
+"""
+Serialize the portfolio metrics to dictionary
+"""
+function serialize(metrics::PortfolioMetrics)
+  return Dict{String, Float64}("netexposure" => metrics.netexposure,
+                            "grossexposure" => metrics.grossexposure,
+                            "shortexposure" => metrics.shortexposure,
+                            "longexposure" => metrics.longexposure,
+                            "shortcount" => metrics.shortcount,
+                            "longcount" => metrics.longcount)
+end
+
+
+"""
+Serialize the Portfolio object to Dictionary
+"""
+function serialize(port::Portfolio)
+    output = Dict{String, Any}()
+
+    output["positions"] = Vector{Dict{String, Any}}()
+    for (sym, pos) in port.positions
+      println(sym)
+      println(pos)
+      push!(output["positions"], serialize(pos))
+    end
+
+    println("Output: $(output)")
+    output["metrics"] = serialize(port.metrics)
+
+    println("Output: $(output)")
+    return output
+end
+
 
 """
 function to get all positions in a portfolio

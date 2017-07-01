@@ -10,7 +10,7 @@
 Encapsulate the characteristics of the order fill
 """
 type OrderFill
-	orderid::UInt64
+	orderid::Int64
 	securitysymbol::SecuritySymbol
 	datetime::DateTime
 	orderfee::Float64
@@ -23,6 +23,9 @@ OrderFill(order::Order, datetime::DateTime, orderfee::Float64, message = "") =
 	OrderFill(order.id, order.securitysymbol, datetime, orderfee, 0.0, 0, message)
 
 OrderFill(order::Order, datetime::DateTime) = OrderFill(order, datetime, 0.0)
+
+OrderFill(securitysymbol::SecuritySymbol, fillprice::Float64, fillquantity::Int, fee::Float64 = 0.0) = 
+    OrderFill(convert(Int, now()), securitysymbol, DateTime(), fee, fillprice, fillquantity, "")
 
 """
 Function to check if order fill is complete

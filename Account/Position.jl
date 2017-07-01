@@ -40,6 +40,22 @@ Position(symbol::SecuritySymbol, quantity::Int64) = Position(symbol, quantity, 0
 
 empty(position::Position) = empty(position.securitysymbol) && position.quantity == 0 && position.averageprice==0.0
 
+
+"""
+Serialize the position object
+"""
+function serialize(pos::Position)
+  return Dict{String, Any}("securitysymbol" => serialize(pos.securitysymbol),
+                              "quantity" => pos.quantity,
+                              "averageprice" => pos.averageprice,
+                              "totalfees" => pos.totalfees,
+                              "lastprice" => pos.lastprice,
+                              "lasttradepnl" => pos.lasttradepnl,
+                              "realizedpnl" => pos.realizedpnl,
+                              "totaltradedvolume" => pos.totaltradedvolume)
+end
+
+
 """
 Holding cost of position based on average price
 """
