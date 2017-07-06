@@ -15,7 +15,7 @@ include("../Enums/enums.jl")
 include("../DataTypes/Split.jl")
 include("../Security/Security.jl")
 include("../Security/Adjustment.jl")
-include("../Execution/Order.jl") 
+include("../Execution/Order.jl")
 include("../Execution/OrderFill.jl")
 include("../Algorithm/Universe.jl")
 include("../Account/Position.jl")
@@ -32,6 +32,8 @@ include("../Execution/Brokerage.jl")
 include("../Algorithm/TradingEnvironment.jl")
 include("../Algorithm/AlgorithmState.jl")
 include("../Algorithm/Algorithm.jl")
+include("../Progress/saveProgress.jl")
+include("../Progress/loadProgress.jl")
 
 #export Universe, Security, SecuritySymbol,
 #       Commission, Slippage, Order, TradeBar
@@ -73,7 +75,7 @@ for s in instances(Rebalance)
     @eval export $(Symbol(s))
 end
 
-export  setstartdate!, 
+export  setstartdate!,
         setenddate!,
         setresolution!,
         setenddate!,
@@ -89,10 +91,10 @@ export  setstartdate!,
         cantrade,
         setcash!,
         addcash!,
-        getposition,    
+        getposition,
         getportfolio,
         getportfoliovalue,
-        setcancelpolicy!,    
+        setcancelpolicy!,
         setcommission!,
         setslippage!,
         setparticipationrate!,
@@ -121,8 +123,3 @@ export  setstartdate!,
         reset;
 
 end #end of Module
-
-
-
-
-
