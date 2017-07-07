@@ -35,7 +35,7 @@ end
 
 Portfolio() = Portfolio(Dict(), PortfolioMetrics())
 
-Portfolio(data::BSONObject) = Portfolio(Dict(map((ticker, pos) -> (SecuritySymbol(k), Position(pos)), data["positions"])),
+Portfolio(data::BSONObject) = Portfolio(Dict(map((id, pos) -> (SecuritySymbol(id), Position(pos)), data["positions"])),
                                           PortfolioMetrics(data["metrics"]))
 
 """

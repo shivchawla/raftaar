@@ -20,6 +20,8 @@ Empty Constructor
 """
 SecuritySymbol() = SecuritySymbol(0, "")
 
+SecuritySymbol(id::Int64) = getsecurity(id).symbol
+
 """
 Definition of empty SecuritySymbol
 """
@@ -42,27 +44,30 @@ type Security
   #currency::Symbol
 end
 
-empty(security::Security) = empty(security.symbol) 
+empty(security::Security) = empty(security.symbol)
 
 Security() = Security(SecuritySymbol(),"","","","", DateTime(), DateTime())
-Security(ticker::String; securitytype::String = "EQ", exchange::String="NSE", country::String="IN") = 
+Security(ticker::String; securitytype::String = "EQ", exchange::String="NSE", country::String="IN") =
                   Security(SecuritySymbol(0,ticker), "",
                             exchange, securitytype,
                             DateTime(), DateTime())
 
-Security(id::Int64, ticker::String, name::String; exchange::String="NSE", country::String = "IN", securitytype::String = "EQ") = 
+Security(id::Int64, ticker::String, name::String; exchange::String="NSE", country::String = "IN", securitytype::String = "EQ") =
           Security(SecuritySymbol(id, ticker), name, exchange, country, securitytype, DateTime(), DateTime())
 
+Security(data::BSONObject) = Security(SecuritySymbol(data["symbol"]["id"], data["symbol"]["ticker"]),
+                                      data["name"], data["exchange"], data["country"], data["securitytype"], data["startdate"], data["enddate"])
+
 #Security(ticker::String) = Security(SecuritySymbol(0,ticker), "", "EQ", "NSE",DateTime(), DateTime())
-            
+
                           #=securitytype = securitytype,
                           exchange = exchange, DateTime(), DateTime())=#
 #; securitytype::String = "EQ", exchange::String="NSE")
 
-            
+
 """
 Function to set security id for security
-"""        
+"""
 function setsecurityid!(security::Security, id::Int)
     setsecurityid!(security.symbol, id)
 end
@@ -75,8 +80,8 @@ function setsecurityid!(symbol::SecuritySymbol, id::Int)
 end
 
 
-#=Security(symbol::SecuritySymbol, securitytype::SecurityType) = 
-              Security(symbol, securitytype, "", DateTime(), 
+#=Security(symbol::SecuritySymbol, securitytype::SecurityType) =
+              Security(symbol, securitytype, "", DateTime(),
                        DateTime())
 
 empty(security::Security) = empty(security.symbol)
@@ -91,5 +96,3 @@ Function to check whether security is active
 function cantrade(security::Security, datetime::DateTime)
   return datetime >= security.startdate && datetime <= security.enddate
 end
-
-

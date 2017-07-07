@@ -31,6 +31,13 @@ TradeBar(datetime::DateTime, open::Float64, high::Float64, low::Float64, close::
 
 TradeBar() = TradeBar(DateTime(), 0.0, 0.0, 0.0, 0.0, 0)
 
+TradeBar(data::BSONObject) = TradeBar(data["datetime"],
+                                      data["open"],
+                                      data["high"],
+                                      data["low"],
+                                      data["close"],
+                                      data["volume"])
+
 """
 type to encapuslate securities and latest prices of the securities
 """
@@ -46,6 +53,26 @@ end
 Empty constructor
 """
 Universe() = Universe(Dict(), Dict(), Dict(), Dict())
+
+Universe(data::BSONObject) = Universe(getsecurity(data["tickertosymbol"]),
+                                      Dict(
+                                        map(
+                                          (id, security) -> (SecuritySymbol(id), Security(security)),
+                                          data["securities"]
+                                        )
+                                      ),
+                                      Dict(
+                                        map(
+                                          (id, vectorTradebar) -> (SecuritySymbol(id), [TradeBar(tradebar) for tradebar in vectorTradebar]),
+                                          data["tradebars"]
+                                        )
+                                      ),
+                                      Dict(
+                                        map(
+                                          (id, adj) -> (SecuritySymbol(id), Adjustment(adj)),
+                                          data["adjustments"]
+                                        )
+                                      ))
 
 """
 Index function to retrieve the security based on symbol
