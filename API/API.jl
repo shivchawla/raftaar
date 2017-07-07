@@ -307,20 +307,20 @@ export updatedatastores
 """
 Function to save progress
 """
-function _saveprogress()
-  Raftaar.saveProgress!(algorithm, UID = "user1", backtestID = "backtest1")
+function _serializeData()
+  Raftaar.serializeData(algorithm, UID = "user1", backtestID = "backtest1")
 end
 
-export _saveprogress
+export _serializeData
 
 """
 Function to load previously saved progress
 """
-function _loadprogress()
-  Raftaar.loadProgress!(algorithm, UID = "user1", backtestID = "backtest1")
+function _deserializeData()
+  Raftaar.deserializeData!(algorithm, UID = "user1", backtestID = "backtest1")
 end
 
-export _loadprogress
+export _deserializeData
 
 function reset()
     Raftaar.resetAlgo(algorithm)

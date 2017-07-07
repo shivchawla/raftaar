@@ -3,21 +3,21 @@ using LibBSON
 
 t2s = Dict{String, SecuritySymbol}() # ticker to symbol list
 
-function loadAlgorithm(algorithm::Algorithm, data::BSONObject)
+function deserialize!(algorithm::Algorithm, data::BSONObject)
   algorithm.name = data["name"]
   algorithm.algorithmid   = data["id"]
   algorithm.status = eval(parse(data["status"]))
 end
 
-function loadAccount(account::Account, data::BSONObject)
+function deserialize!(account::Account, data::BSONObject)
   account.seedcash = data["seedcash"]
   account.cash     = data["cash"]
   account.netvalue = data["netvalue"]
   account.leverage = data["leverage"]
 end
 
-function loadPortfolio(portfolio::Portfolio, data::BSONObject)
-  function loadPortfolioMetrics(metrics::PortfolioMetrics, data::BSONObject)
+function deserialize!(portfolio::Portfolio, data::BSONObject)
+  function deserialize!(metrics::PortfolioMetrics, data::BSONObject)
     metrics.netexposure   = data["netexposure"]
     metrics.grossexposure = data["grossexposure"]
     metrics.shortexposure = data["shortexposure"]
@@ -26,7 +26,7 @@ function loadPortfolio(portfolio::Portfolio, data::BSONObject)
     metrics.longcount     = data["longcount"]
   end
 
-  function loadPosition(positions::Dict{SecuritySymbol, Position}, ticker::String, data::BSONObject)
+  function deserialize!(positions::Dict{SecuritySymbol, Position}, ticker::String, data::BSONObject)
     symbol    = t2s[ticker]
     position  = Position()
 
@@ -43,14 +43,14 @@ function loadPortfolio(portfolio::Portfolio, data::BSONObject)
   end
 
   portfolio.positions = Dict{SecuritySymbol, Position}()
-  loadPortfolioMetrics(portfolio.metrics, data["metrics"])
+  deserialize!(portfolio.metrics, data["metrics"])
   for (ticker, posData) in data["positions"]
-    loadPosition(portfolio.positions, ticker, posData)
+    deserialize!(portfolio.positions, ticker, posData)
   end
 end
 
-function loadUniverse(universe::Universe, data::BSONObject)
-  function loadSecurity(securities::Dict{SecuritySymbol, Security}, ticker::String, data::BSONObject)
+function deserialize!(universe::Universe, data::BSONObject)
+  function deserialize!(securities::Dict{SecuritySymbol, Security}, ticker::String, data::BSONObject)
     security = Security()
     security.symbol.ticker = data["symbol"]
     security.symbol.id = data["id"]
@@ -65,7 +65,7 @@ function loadUniverse(universe::Universe, data::BSONObject)
     t2s[ticker] = security.symbol
   end
 
-  function loadTradebar(tradebars::Dict{SecuritySymbol, Vector{TradeBar}}, ticker::String, data::BSONArray)
+  function deserialize!(tradebars::Dict{SecuritySymbol, Vector{TradeBar}}, ticker::String, data::BSONArray)
     symbol = t2s[ticker]
     tradebars[symbol] = Vector{TradeBar}()
 
@@ -80,7 +80,7 @@ function loadUniverse(universe::Universe, data::BSONObject)
     end
   end
 
-  function loadAdjustments(adjustments::Dict{SecuritySymbol, Adjustment}, ticker::String, data::BSONObject)
+  function deserialize!(adjustments::Dict{SecuritySymbol, Adjustment}, ticker::String, data::BSONObject)
     adj = Adjustment()
     adj.close = data["close"]
     adj.adjustmenttype = data["adjustmenttype"]
@@ -95,19 +95,19 @@ function loadUniverse(universe::Universe, data::BSONObject)
   universe.adjustments = Dict()
 
   for (ticker, securityData) in data["securities"]
-    loadSecurity(universe.securities, ticker, securityData)
+    deserialize!(universe.securities, ticker, securityData)
   end
 
   for (ticker, tradebarData) in data["tradebars"]
-    loadTradebar(universe.tradebars, ticker, tradebarData)
+    deserialize!(universe.tradebars, ticker, tradebarData)
   end
 
   for (ticker, adjData) in data["adjustments"]
-    loadAdjustments(universe.adjustments, ticker, adjData)
+    deserialize!(universe.adjustments, ticker, adjData)
   end
 end
 
-function loadTradeEnv(tradeenv::TradingEnvironment, data::BSONObject)
+function deserialize!(tradeenv::TradingEnvironment, data::BSONObject)
   tradeenv.startdate = data["startdate"]
   tradeenv.enddate = data["enddate"]
   tradeenv.currentdate = data["currentdate"]
@@ -124,53 +124,53 @@ function loadTradeEnv(tradeenv::TradingEnvironment, data::BSONObject)
   end
 end
 
-function loadBrokerage(brokerage::BacktestBrokerage, data::BSONObject)
-  function loadBlotter(blotter::Blotter, data::BSONObject)
-    loadOrderTracker(blotter.ordertracker, data["ordertracker"])
+function deserialize!(brokerage::BacktestBrokerage, data::BSONObject)
+  function deserialize!(blotter::Blotter, data::BSONObject)
+    deserialize!(blotter.ordertracker, data["ordertracker"])
 
     blotter.openorders[t2s[ticker]] = Vector{Order}()
     for (ticker, orders) in data["openorders"]
       for order in orders
         temp = Order()
-        loadOrder(temp, order)
+        deserialize!(temp, order)
         push!(blotter.openorders[t2s[ticker]], temp)
       end
     end
   end
 
-  function loadCommission(commission::Commission, data::BSONObject)
+  function deserialize!(commission::Commission, data::BSONObject)
     commission.model = eval(parse(data["model"]))
     commission.value = data["value"]
   end
 
-  function loadMargin(margin::Margin, data::BSONObject)
+  function deserialize!(margin::Margin, data::BSONObject)
     margin.initialmargin = data["initialmargin"]
     margin.maintenancemargin = data["maintenancemargin"]
   end
 
-  function loadSlippage(slippage::Slippage, data::BSONObject)
+  function deserialize!(slippage::Slippage, data::BSONObject)
     slippage.model = eval(parse(data["model"]))
     slippage.value = data["value"]
   end
 
-  # loadBlotter(brokerage.blotter, data["blotter"])
-  loadCommission(brokerage.commission, data["commission"])
-  loadMargin(brokerage.margin, data["margin"])
-  loadSlippage(brokerage.slippage, data["slippage"])
+  # deserialize!(brokerage.blotter, data["blotter"])
+  deserialize!(brokerage.commission, data["commission"])
+  deserialize!(brokerage.margin, data["margin"])
+  deserialize!(brokerage.slippage, data["slippage"])
   brokerage.cancelpolicy = eval(parse(data["cancelpolicy"]))
   brokerage.participationrate = data["participationrate"]
 end
 
-function loadAccountTracker(accounttracker::AccountTracker, data::BSONObject)
+function deserialize!(accounttracker::AccountTracker, data::BSONObject)
   for (date, account) in data
     if date!="object" && date!="_id"
       accounttracker[myDate(date)] = Account()
-      loadAccount(accounttracker[myDate(date)], account)
+      deserialize!(accounttracker[myDate(date)], account)
     end
   end
 end
 
-function loadCashTracker(cashtracker::CashTracker, data::BSONObject)
+function deserialize!(cashtracker::CashTracker, data::BSONObject)
   for (date, cash) in cashtracker
     if date!="object" && date!="_id"
       cashtracker[myDate(date)] = cash
@@ -178,43 +178,41 @@ function loadCashTracker(cashtracker::CashTracker, data::BSONObject)
   end
 end
 
-function loadPerformanceTracker(performancetracker::PerformanceTracker, data::BSONObject)
+function deserialize!(performancetracker::PerformanceTracker, data::BSONObject)
+  # The same function definition works for benchmarktracker too
   for (date, perfData) in data
     if date!="object" && date!="_id"
       performancetracker[myDate(date)] = Performance()
-      loadPerformance(performancetracker[myDate(date)], perfData)
+      deserialize!(performancetracker[myDate(date)], perfData)
     end
   end
 end
 
-function loadBenchmarkTracker(benchmarktracker::PerformanceTracker, data::BSONObject)
-  for (date, benchData) in data
-    if date!="object" && date!="_id"
-      benchmarktracker[myDate(date)] = Performance()
-      loadPerformance(benchmarktracker[myDate(date)], benchData)
+function deserialize!(transactiontracker::TransactionTracker, data::BSONObject)
+  for (date, fills) in data
+    if date=="object" || date=="_id"; continue; end
+    transactiontracker[myDate(date)] = Vector{OrderFill}()
+    for fillData in fills
+      temp = OrderFill()
+      deserialize!(temp, fillData)
+      push!(transactiontracker[myDate(date)], temp)
     end
   end
 end
 
-function loadTransactionTracker(transactiontracker::TransactionTracker, data::BSONObject)
-  for (date, fillData) in data
-    if date!="object" && date!="_id"
-      transactiontracker[myDate(date)] = Vector{OrderFill}()
-      loadOrderFill(transactiontracker[myDate(date)], fillData)
+function deserialize!(ordertracker::OrderTracker, data::BSONObject)
+  for (date, orders) in data
+    if date=="object" || date=="_id"; continue; end
+    ordertracker[myDate(date)] = Vector{Order}()
+    for orderData in orders
+      temp = Order()
+      deserialize!(temp, orderData)
+      push!(ordertracker[myDate(date)], temp)
     end
   end
 end
 
-function loadOrderTracker(ordertracker::OrderTracker, data::BSONObject)
-  for (date, orderData) in data
-    if date!="object" && date!="_id"
-      ordertracker[myDate(date)] = Vector{Order}()
-      loadOrder(ordertracker[myDate(date)], orderData)
-    end
-  end
-end
-
-function loadVariableTracker(variabletracker::VariableTracker, data::BSONObject)
+function deserialize!(variabletracker::VariableTracker, data::BSONObject)
   for (date, varData) in data
     if date=="object" || date=="_id"; continue; end
     variabletracker[myDate(date)] = Dict{String, Float64}()
@@ -224,39 +222,39 @@ function loadVariableTracker(variabletracker::VariableTracker, data::BSONObject)
   end
 end
 
-function loadAlgorithmState(state::AlgorithmState, data::BSONObject)
-  loadAccount(state.account, data["account"])
-  loadPortfolio(state.portfolio, data["portfolio"])
-  loadPerformance(state.performance, data["performance"])
+function deserialize!(state::AlgorithmState, data::BSONObject)
+  deserialize!(state.account, data["account"])
+  deserialize!(state.portfolio, data["portfolio"])
+  deserialize!(state.performance, data["performance"])
   for (str, dat) in data["params"]
     state.params[str] = dat
   end
 end
 
-function loadProgress!(algorithm::Algorithm; UID::String = "anonymous", backtestID::String = "backtest0")
-  loadProgressClient = MongoClient()
-  loadProgressCollection = MongoCollection(loadProgressClient, UID, backtestID)
+function deserializeData!(algorithm::Algorithm; UID::String = "anonymous", backtestID::String = "backtest0")
+  deserializeClient = MongoClient()
+  deserializeCollection = MongoCollection(deserializeClient, UID, backtestID)
 
-  loadAlgorithm(algorithm, first(find(loadProgressCollection, Dict("object" => "algorithm"))))
-  loadAccount(algorithm.account, first(find(loadProgressCollection, Dict("object" => "account"))))
-  loadUniverse(algorithm.universe, first(find(loadProgressCollection, Dict("object" => "universe"))))
-  loadPortfolio(algorithm.portfolio, first(find(loadProgressCollection, Dict("object" => "portfolio"))))
-  loadTradeEnv(algorithm.tradeenv, first(find(loadProgressCollection, Dict("object" => "tradeenv"))))
-  loadBrokerage(algorithm.brokerage, first(find(loadProgressCollection, Dict("object" => "backtestbrokerage"))))
-  loadAccountTracker(algorithm.accounttracker, first(find(loadProgressCollection, Dict("object" => "accounttracker"))))
-  loadCashTracker(algorithm.cashtracker, first(find(loadProgressCollection, Dict("object" => "cashtracker"))))
-  loadPerformanceTracker(algorithm.performancetracker, first(find(loadProgressCollection, Dict("object" => "performancetracker"))))
-  loadBenchmarkTracker(algorithm.benchmarktracker, first(find(loadProgressCollection, Dict("object" => "benchmarktracker"))))
-  loadTransactionTracker(algorithm.transactiontracker, first(find(loadProgressCollection, Dict("object" => "transactiontracker"))))
-  loadOrderTracker(algorithm.ordertracker, first(find(loadProgressCollection, Dict("object" => "ordertracker"))))
-  loadVariableTracker(algorithm.variabletracker, first(find(loadProgressCollection, Dict("object" => "variabletracker"))))
-  loadAlgorithmState(algorithm.state, first(find(loadProgressCollection, Dict("object" => "algorithmstate"))))
+  deserialize!(algorithm, first(find(deserializeCollection, Dict("object" => "algorithm"))))
+  deserialize!(algorithm.account, first(find(deserializeCollection, Dict("object" => "account"))))
+  deserialize!(algorithm.universe, first(find(deserializeCollection, Dict("object" => "universe"))))
+  deserialize!(algorithm.portfolio, first(find(deserializeCollection, Dict("object" => "portfolio"))))
+  deserialize!(algorithm.tradeenv, first(find(deserializeCollection, Dict("object" => "tradeenv"))))
+  deserialize!(algorithm.brokerage, first(find(deserializeCollection, Dict("object" => "backtestbrokerage"))))
+  deserialize!(algorithm.accounttracker, first(find(deserializeCollection, Dict("object" => "accounttracker"))))
+  deserialize!(algorithm.cashtracker, first(find(deserializeCollection, Dict("object" => "cashtracker"))))
+  deserialize!(algorithm.performancetracker, first(find(deserializeCollection, Dict("object" => "performancetracker"))))
+  deserialize!(algorithm.benchmarktracker, first(find(deserializeCollection, Dict("object" => "benchmarktracker"))))
+  deserialize!(algorithm.transactiontracker, first(find(deserializeCollection, Dict("object" => "transactiontracker"))))
+  deserialize!(algorithm.ordertracker, first(find(deserializeCollection, Dict("object" => "ordertracker"))))
+  deserialize!(algorithm.variabletracker, first(find(deserializeCollection, Dict("object" => "variabletracker"))))
+  deserialize!(algorithm.state, first(find(deserializeCollection, Dict("object" => "algorithmstate"))))
 
 end
 
 ## AUXILLARY LOAD FUNCTIONS
 
-function loadOrder(order::Order, data::BSONObject)
+function deserialize!(order::Order, data::BSONObject)
   order.id = data["id"]
   order.securitysymbol = t2s[data["securitysymbol"]]
   order.quantity = data["quantity"]
@@ -270,7 +268,7 @@ function loadOrder(order::Order, data::BSONObject)
   order.tag = data["tag"]
 end
 
-function loadOrderFill(orderfill::OrderFill, data::BSONObject)
+function deserialize!(orderfill::OrderFill, data::BSONObject)
   orderfill.orderid = data["orderid"]
 	orderfill.securitysymbol = t2s[data["securitysymbol"]]
 	orderfill.datetime = data["datetime"]
@@ -280,13 +278,13 @@ function loadOrderFill(orderfill::OrderFill, data::BSONObject)
 	orderfill.message = data["message"]
 end
 
-function loadPerformance(performance::Performance, data::BSONObject)
-  function loadDrawdown(dw::Drawdown, data::BSONObject)
+function deserialize!(performance::Performance, data::BSONObject)
+  function deserialize!(dw::Drawdown, data::BSONObject)
     dw.currentdrawdown = data["currentdrawdown"]
     dw.maxdrawdown = data["maxdrawdown"]
   end
 
-  function loadDeviation(dv::Deviation, data::BSONObject)
+  function deserialize!(dv::Deviation, data::BSONObject)
     dv.annualstandarddeviation = data["annualstandarddeviation"]
     dv.annualvariance = data["annualvariance"]
     dv.annualsemideviation = data["annualsemideviation"]
@@ -296,7 +294,7 @@ function loadPerformance(performance::Performance, data::BSONObject)
     dv.sumdailyreturn = data["sumdailyreturn"]
   end
 
-  function loadRatios(rt::Ratios, data::BSONObject)
+  function deserialize!(rt::Ratios, data::BSONObject)
     rt.sharperatio = data["sharperatio"]
     rt.informationratio = data["informationratio"]
     rt.calmarratio = data["calmarratio"]
@@ -307,7 +305,7 @@ function loadPerformance(performance::Performance, data::BSONObject)
     rt.stability = data["stability"]
   end
 
-  function loadReturns(rs::Returns, data::BSONObject)
+  function deserialize!(rs::Returns, data::BSONObject)
     rs.dailyreturn = data["dailyreturn"]
     rs.dailyreturn_benchmark = data["dailyreturn_benchmark"]
     rs.averagedailyreturn = data["averagedailyreturn"]
@@ -316,18 +314,18 @@ function loadPerformance(performance::Performance, data::BSONObject)
     rs.peaktotalreturn = data["peaktotalreturn"]
   end
 
-  function loadPortfolioStats(ps::PortfolioStats, data::BSONObject)
+  function deserialize!(ps::PortfolioStats, data::BSONObject)
     ps.netvalue = data["netvalue"]
     ps.leverage = data["leverage"]
     ps.concentration = data["concentration"]
   end
 
   performance.period = data["period"]
-  loadReturns(performance.returns, data["returns"])
-  loadDeviation(performance.deviation, data["deviation"])
-  loadRatios(performance.ratios, data["ratios"])
-  loadDrawdown(performance.drawdown, data["drawdown"])
-  loadPortfolioStats(performance.portfoliostats, data["portfoliostats"])
+  deserialize!(performance.returns, data["returns"])
+  deserialize!(performance.deviation, data["deviation"])
+  deserialize!(performance.ratios, data["ratios"])
+  deserialize!(performance.drawdown, data["drawdown"])
+  deserialize!(performance.portfoliostats, data["portfoliostats"])
 end
 
 function myDate(s::String)

@@ -1,13 +1,13 @@
 using Mongo
 
-function saveAlgorithm(algorithm::Algorithm)
+function serialize(algorithm::Algorithm)
   return Dict{String, Any}("object"   => "algorithm",
                             "name"    => algorithm.name,
                             "id"      => algorithm.algorithmid,
                             "status"  => string(algorithm.status))
 end
 
-function saveAccount(account::Account)
+function serialize(account::Account)
   return Dict{String, Any}("object"    => "account",
                             "seedcash" => account.seedcash,
                             "cash"     => account.cash,
@@ -15,8 +15,8 @@ function saveAccount(account::Account)
                             "leverage" => account.leverage)
 end
 
-function savePortfolio(portfolio::Portfolio)
-  function savePortfolioMetrics(metrics::PortfolioMetrics)
+function serialize(portfolio::Portfolio)
+  function serialize(metrics::PortfolioMetrics)
     return Dict{String, Any}("object"         => "portfoliometrics",
                               "netexposure"   => metrics.netexposure,
                               "grossexposure" => metrics.grossexposure,
@@ -26,7 +26,7 @@ function savePortfolio(portfolio::Portfolio)
                               "longcount"     => metrics.longcount)
   end
 
-  function savePosition(symbol::SecuritySymbol, position::Position)
+  function serialize(symbol::SecuritySymbol, position::Position)
     return Dict{String, Any}("securitysymbol"   => symbol.ticker,
                             "quantity"          => position.quantity,
                             "averageprice"      => position.averageprice,
@@ -38,17 +38,17 @@ function savePortfolio(portfolio::Portfolio)
   end
 
   temp = Dict{String, Any}("object"     => "portfolio",
-                            "metrics"   => savePortfolioMetrics(portfolio.metrics),
+                            "metrics"   => serialize(portfolio.metrics),
                             "positions" => Dict{String, Any}())
   for symbol in keys(portfolio.positions)
-    temp["positions"][symbol.ticker] = savePosition(symbol, portfolio.positions[symbol])
+    temp["positions"][symbol.ticker] = serialize(symbol, portfolio.positions[symbol])
   end
 
   return temp
 end
 
-function saveUniverse(universe::Universe)
-  function saveSecurity(security::Security)
+function serialize(universe::Universe)
+  function serialize(security::Security)
     return Dict{String, Any}("symbol"        => security.symbol.ticker,
                               "id"           => security.symbol.id,
                               "name"         => security.name,
@@ -59,7 +59,7 @@ function saveUniverse(universe::Universe)
                               "enddate"      => security.enddate)
   end
 
-  function saveTradebar(tradebars::Vector{TradeBar})
+  function serialize(tradebars::Vector{TradeBar})
     arr = []
     for tb in tradebars
       push!(arr, Dict{String, Any}("datetime" => tb.datetime,
@@ -72,7 +72,7 @@ function saveUniverse(universe::Universe)
     return arr
   end
 
-  function saveAdjustments(adj::Adjustment)
+  function serialize(adj::Adjustment)
     return Dict{String, Any}("close"              => adj.close,
                               "adjustmenttype"    => adj.adjustmenttype,
                               "adjustmentfactor"  => adj.adjustmentfactor)
@@ -83,19 +83,19 @@ function saveUniverse(universe::Universe)
                             "tradebars"   => Dict{String, Any}(),
                             "adjustments" => Dict{String, Any}())
   for (symbol, security) in universe.securities
-    temp["security"][symbol.ticker] = saveSecurity(security)
+    temp["securities"][symbol.ticker] = serialize(security)
   end
   for (symbol, vec) in universe.tradebars
-    temp["tradebars"][symbol.ticker] = saveTradebar(vec)
+    temp["tradebars"][symbol.ticker] = serialize(vec)
   end
   for (symbol, adj) in universe.adjustments
-    temp["adjustments"][symbol.ticker] = saveAdjustments(adj)
+    temp["adjustments"][symbol.ticker] = serialize(adj)
   end
 
   return temp
 end
 
-function saveTradeEnv(tradeenv::TradingEnvironment)
+function serialize(tradeenv::TradingEnvironment)
   return Dict{String, Any}("object"               => "tradeenv",
                             "startdate"           => tradeenv.startdate,
                             "enddate"             => tradeenv.enddate,
@@ -111,55 +111,55 @@ function saveTradeEnv(tradeenv::TradingEnvironment)
                             "benchmarkvalues"     => tradeenv.benchmarkvalues)
 end
 
-function saveBrokerage(brokerage::BacktestBrokerage)
-  function saveBlotter(blotter::Blotter)
+function serialize(brokerage::BacktestBrokerage)
+  function serialize(blotter::Blotter)
     temp = Dict{String, Any}()
     for (symbol, orders) in blotter.openorders
-      temp[symbol.ticker] = [saveOrder(order) for order in orders]
+      temp[symbol.ticker] = [serialize(order) for order in orders]
     end
     return Dict{String, Any}("object"         => "blotter",
                               "openorders"    => temp,
-                              "ordertracker"  => saveOrderTracker(blotter.ordertracker))
+                              "ordertracker"  => serialize(blotter.ordertracker))
   end
 
-  function saveCommission(commission::Commission)
+  function serialize(commission::Commission)
     return Dict{String, Any}("object" => "commission",
                               "model" => string(commission.model),
                               "value" => commission.value)
   end
 
-  function saveMargin(margin::Margin)
+  function serialize(margin::Margin)
     return Dict{String, Any}("object"             => "margin",
                               "initialmargin"     => margin.initialmargin,
                               "maintenancemargin" => margin.maintenancemargin)
   end
 
-  function saveSlippage(slippage::Slippage)
+  function serialize(slippage::Slippage)
     return Dict{String, Any}("object" => "slippage",
                               "model" => string(slippage.model),
                               "value" => slippage.value)
   end
 
   temp = Dict{String, Any}("object"             => "backtestbrokerage",
-                            # "blotter"           => saveBlotter(brokerage.blotter),
-                            "commission"        => saveCommission(brokerage.commission),
-                            "margin"            => saveMargin(brokerage.margin),
-                            "slippage"          => saveSlippage(brokerage.slippage),
+                            # "blotter"           => serialize(brokerage.blotter),
+                            "commission"        => serialize(brokerage.commission),
+                            "margin"            => serialize(brokerage.margin),
+                            "slippage"          => serialize(brokerage.slippage),
                             "cancelpolicy"      => string(brokerage.cancelpolicy),
                             "participationrate" => brokerage.participationrate)
 
   return temp
 end
 
-function saveAccountTracker(accounttracker::AccountTracker)
+function serialize(accounttracker::AccountTracker)
   temp = Dict{String, Any}("object" => "accounttracker")
   for (date, account) in accounttracker
-    temp[string(date)] = saveAccount(account)
+    temp[string(date)] = serialize(account)
   end
   return temp
 end
 
-function saveCashTracker(cashtracker::CashTracker)
+function serialize(cashtracker::CashTracker)
   temp = Dict{String, Any}("object" => "cashtracker")
   for (date, cash) in cashtracker
     temp[string(date)] = cash
@@ -167,39 +167,35 @@ function saveCashTracker(cashtracker::CashTracker)
   return temp
 end
 
-function savePerformanceTracker(performancetracker::PerformanceTracker)
-  temp = Dict{String, Any}("object" => "performancetracker")
+function serialize(performancetracker::PerformanceTracker, benchmarkPerformance::Bool = false)
+  if !benchmarkPerformance
+    temp = Dict{String, Any}("object" => "performancetracker")
+  else
+    temp = Dict{String, Any}("object" => "benchmarktracker")
+  end
   for (date, perf) in performancetracker
-    temp[string(date)] = savePerformance(perf)
+    temp[string(date)] = serialize(perf)
   end
   return temp
 end
 
-function saveBenchmarkTracker(benchmarktracker::PerformanceTracker)
-  temp = Dict{String, Any}("object" => "benchmarktracker")
-  for (date, perf) in benchmarktracker
-    temp[string(date)] = savePerformance(perf)
-  end
-  return temp
-end
-
-function saveTransactionTracker(transactiontracker::TransactionTracker)
+function serialize(transactiontracker::TransactionTracker)
   temp = Dict{String, Any}("object" => "transactiontracker")
   for (date, orderfills) in transactiontracker
-    temp[string(date)] = [saveOrderFill(orderfill) for orderfill in orderfills]
+    temp[string(date)] = [serialize(orderfill) for orderfill in orderfills]
   end
   return temp
 end
 
-function saveOrderTracker(ordertracker::OrderTracker)
+function serialize(ordertracker::OrderTracker)
   temp = Dict{String, Any}("object" => "ordertracker")
   for (date, orders) in ordertracker
-    temp[string(date)] = [saveOrder(order) for order in orders]
+    temp[string(date)] = [serialize(order) for order in orders]
   end
   return temp
 end
 
-function saveVariableTracker(variabletracker::VariableTracker)
+function serialize(variabletracker::VariableTracker)
   temp = Dict{String, Any}("object" => "variabletracker")
   for (date, var) in variabletracker
     temp[string(date)] = var
@@ -207,36 +203,37 @@ function saveVariableTracker(variabletracker::VariableTracker)
   return temp
 end
 
-function saveAlgorithmState(as::AlgorithmState)
+function serialize(as::AlgorithmState)
   return Dict{String, Any}("object"       => "algorithmstate",
-                            "account"     => saveAccount(as.account),
-                            "portfolio"   => savePortfolio(as.portfolio),
-                            "performance" => savePerformance(as.performance),
+                            "account"     => serialize(as.account),
+                            "portfolio"   => serialize(as.portfolio),
+                            "performance" => serialize(as.performance),
                             "params"      => as.params)
 end
 
-function saveProgress!(algorithm::Algorithm; UID::String = "anonymous", backtestID::String = "backtest0")
-  saveProgressClient = MongoClient()
-  saveProgressCollection = MongoCollection(saveProgressClient, UID, backtestID)
-  insert(saveProgressCollection, saveAlgorithm(algorithm))
-  insert(saveProgressCollection, saveAccount(algorithm.account))
-  insert(saveProgressCollection, saveUniverse(algorithm.universe))
-  insert(saveProgressCollection, savePortfolio(algorithm.portfolio))
-  insert(saveProgressCollection, saveTradeEnv(algorithm.tradeenv))
-  insert(saveProgressCollection, saveBrokerage(algorithm.brokerage))
-  insert(saveProgressCollection, saveAccountTracker(algorithm.accounttracker))
-  insert(saveProgressCollection, saveCashTracker(algorithm.cashtracker))
-  insert(saveProgressCollection, savePerformanceTracker(algorithm.performancetracker))
-  insert(saveProgressCollection, saveBenchmarkTracker(algorithm.benchmarktracker))
-  insert(saveProgressCollection, saveTransactionTracker(algorithm.transactiontracker))
-  insert(saveProgressCollection, saveOrderTracker(algorithm.ordertracker))
-  insert(saveProgressCollection, saveVariableTracker(algorithm.variabletracker))
-  insert(saveProgressCollection, saveAlgorithmState(algorithm.state))
+function serializeData(algorithm::Algorithm; UID::String = "anonymous", backtestID::String = "backtest0")
+  serializeClient = MongoClient()
+  serializeCollection = MongoCollection(serializeClient, UID, backtestID)
+
+  insert(serializeCollection, serialize(algorithm))
+  insert(serializeCollection, serialize(algorithm.account))
+  insert(serializeCollection, serialize(algorithm.universe))
+  insert(serializeCollection, serialize(algorithm.portfolio))
+  insert(serializeCollection, serialize(algorithm.tradeenv))
+  insert(serializeCollection, serialize(algorithm.brokerage))
+  insert(serializeCollection, serialize(algorithm.accounttracker))
+  insert(serializeCollection, serialize(algorithm.cashtracker))
+  insert(serializeCollection, serialize(algorithm.performancetracker))
+  insert(serializeCollection, serialize(algorithm.benchmarktracker, true))
+  insert(serializeCollection, serialize(algorithm.transactiontracker))
+  insert(serializeCollection, serialize(algorithm.ordertracker))
+  insert(serializeCollection, serialize(algorithm.variabletracker))
+  insert(serializeCollection, serialize(algorithm.state))
 end
 
 ## AUXILLARY SAVE FUNCTIONS
 
-function saveOrder(order::Order)
+function serialize(order::Order)
   return Dict{String, Any}("object" => "order",
                             "id" => order.id,
                             "securitysymbol" => order.securitysymbol.ticker,
@@ -251,7 +248,7 @@ function saveOrder(order::Order)
                             "tag" => order.tag)
 end
 
-function saveOrderFill(orderfill::OrderFill)
+function serialize(orderfill::OrderFill)
   return Dict{String, Any}("object" => "orderfill",
                             "orderid" => orderfill.orderid,
                             "securitysymbol" => orderfill.securitysymbol.ticker,
@@ -262,13 +259,13 @@ function saveOrderFill(orderfill::OrderFill)
                             "message" => orderfill.message)
 end
 
-function savePerformance(performance::Performance)
-  function saveDrawdown(dw::Drawdown)
+function serialize(performance::Performance)
+  function serialize(dw::Drawdown)
     return Dict{String, Any}("currentdrawdown" => dw.currentdrawdown,
                               "maxdrawdown" => dw.maxdrawdown)
   end
 
-  function saveDeviation(dv::Deviation)
+  function serialize(dv::Deviation)
     return Dict{String, Any}("annualstandarddeviation" => dv.annualstandarddeviation,
                               "annualvariance" => dv.annualvariance,
                               "annualsemideviation" => dv.annualsemideviation,
@@ -278,7 +275,7 @@ function savePerformance(performance::Performance)
                               "sumdailyreturn" => dv.sumdailyreturn)
   end
 
-  function saveRatios(rt::Ratios)
+  function serialize(rt::Ratios)
     return Dict{String, Any}("sharperatio" => rt.sharperatio,
                               "informationratio" => rt.informationratio,
                               "calmarratio" => rt.calmarratio,
@@ -289,7 +286,7 @@ function savePerformance(performance::Performance)
                               "stability" => rt.stability)
   end
 
-  function saveReturns(rs::Returns)
+  function serialize(rs::Returns)
     return Dict{String, Any}("dailyreturn" => rs.dailyreturn,
                               "dailyreturn_benchmark" => rs.dailyreturn_benchmark,
                               "averagedailyreturn" => rs.averagedailyreturn,
@@ -298,7 +295,7 @@ function savePerformance(performance::Performance)
                               "peaktotalreturn" => rs.peaktotalreturn)
   end
 
-  function savePortfolioStats(ps::PortfolioStats)
+  function serialize(ps::PortfolioStats)
     return Dict{String, Any}("netvalue" => ps.netvalue,
                               "leverage" => ps.leverage,
                               "concentration" => ps.concentration)
@@ -306,9 +303,9 @@ function savePerformance(performance::Performance)
 
   return Dict{String, Any}("object" => "performance",
                             "period" => performance.period,
-                            "returns" => saveReturns(performance.returns),
-                            "deviation" => saveDeviation(performance.deviation),
-                            "ratios" => saveRatios(performance.ratios),
-                            "drawdown" => saveDrawdown(performance.drawdown),
-                            "portfoliostats" => savePortfolioStats(performance.portfoliostats))
+                            "returns" => serialize(performance.returns),
+                            "deviation" => serialize(performance.deviation),
+                            "ratios" => serialize(performance.ratios),
+                            "drawdown" => serialize(performance.drawdown),
+                            "portfoliostats" => serialize(performance.portfoliostats))
 end

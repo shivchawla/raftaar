@@ -43,17 +43,16 @@ end
 
 # setlogmode(:text, :console, true)
 
-# try
+try
     info("Building user algorithm", datetime=now())
 
-    # include(fname)
-    include("/home/kishlaya/aimsquant/raftaar/Examples/constantshares.jl")
+    include(fname)
 
     info("Starting Backtest", datetime=now())
 
     run_algo()
 
     info("Ending Backtest", datetime=now())
-  # catch err
-  #     handleexception(err)
-  # end
+catch err
+    handleexception(err)
+end

@@ -29,12 +29,11 @@ function run_algo(forward_test::Bool = true)
       handleexception(err)
     end
   else
-    _loadprogress()
+    _deserializeData()
+
     # Set the start date from where you want to continue the forward testing
     setstartdate(DateTime("01/01/2010","dd/mm/yyyy"))
   	setenddate(DateTime("31/12/2011","dd/mmm/yyyy"))
-    _outputbackteststatistics()
-    exit()
   end
 
 
@@ -91,9 +90,9 @@ function run_algo(forward_test::Bool = true)
       i = i + 1
   end
 
-  _saveprogress()
-
   _outputbackteststatistics()
+
+  _serializeData()
 
 end
 
