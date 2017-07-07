@@ -1,44 +1,44 @@
 using Mongo
 
 function saveAlgorithm(algorithm::Algorithm)
-  return Dict{String, Any}("object" => "algorithm",
-                    "name" => algorithm.name,
-                    "id" => algorithm.algorithmid,
-                    "status" => string(algorithm.status))
+  return Dict{String, Any}("object"   => "algorithm",
+                            "name"    => algorithm.name,
+                            "id"      => algorithm.algorithmid,
+                            "status"  => string(algorithm.status))
 end
 
 function saveAccount(account::Account)
-  return Dict{String, Any}("object" => "account",
+  return Dict{String, Any}("object"    => "account",
                             "seedcash" => account.seedcash,
-                            "cash" => account.cash,
+                            "cash"     => account.cash,
                             "netvalue" => account.netvalue,
                             "leverage" => account.leverage)
 end
 
 function savePortfolio(portfolio::Portfolio)
   function savePortfolioMetrics(metrics::PortfolioMetrics)
-    return Dict{String, Any}("object" => "portfoliometrics",
-                              "netexposure" => metrics.netexposure,
+    return Dict{String, Any}("object"         => "portfoliometrics",
+                              "netexposure"   => metrics.netexposure,
                               "grossexposure" => metrics.grossexposure,
                               "shortexposure" => metrics.shortexposure,
-                              "longexposure" => metrics.longexposure,
-                              "shortcount" => metrics.shortcount,
-                              "longcount" => metrics.longcount)
+                              "longexposure"  => metrics.longexposure,
+                              "shortcount"    => metrics.shortcount,
+                              "longcount"     => metrics.longcount)
   end
 
   function savePosition(symbol::SecuritySymbol, position::Position)
-    return Dict{String, Any}("securitysymbol" => symbol.ticker,
-                            "quantity" => position.quantity,
-                            "averageprice" => position.averageprice,
-                            "totalfees" => position.totalfees,
-                            "lastprice" => position.lastprice,
-                            "lasttradepnl" => position.lasttradepnl,
-                            "realizedpnl" => position.realizedpnl,
+    return Dict{String, Any}("securitysymbol"   => symbol.ticker,
+                            "quantity"          => position.quantity,
+                            "averageprice"      => position.averageprice,
+                            "totalfees"         => position.totalfees,
+                            "lastprice"         => position.lastprice,
+                            "lasttradepnl"      => position.lasttradepnl,
+                            "realizedpnl"       => position.realizedpnl,
                             "totaltradedvolume" => position.totaltradedvolume)
   end
 
-  temp = Dict{String, Any}("object" => "portfolio",
-                            "metrics" => savePortfolioMetrics(portfolio.metrics),
+  temp = Dict{String, Any}("object"     => "portfolio",
+                            "metrics"   => savePortfolioMetrics(portfolio.metrics),
                             "positions" => Dict{String, Any}())
   for symbol in keys(portfolio.positions)
     temp["positions"][symbol.ticker] = savePosition(symbol, portfolio.positions[symbol])
@@ -49,38 +49,38 @@ end
 
 function saveUniverse(universe::Universe)
   function saveSecurity(security::Security)
-    return Dict{String, Any}("symbol" => security.symbol.ticker,
-                              "id" => security.symbol.id,
-                              "name" => security.name,
-                              "exchange" => security.exchange,
-                              "country" => security.country,
+    return Dict{String, Any}("symbol"        => security.symbol.ticker,
+                              "id"           => security.symbol.id,
+                              "name"         => security.name,
+                              "exchange"     => security.exchange,
+                              "country"      => security.country,
                               "securitytype" => security.securitytype,
-                              "startdate" => security.startdate,
-                              "enddate" => security.enddate)
+                              "startdate"    => security.startdate,
+                              "enddate"      => security.enddate)
   end
 
   function saveTradebar(tradebars::Vector{TradeBar})
     arr = []
     for tb in tradebars
       push!(arr, Dict{String, Any}("datetime" => tb.datetime,
-                              "open" => tb.open,
-                              "high" => tb.high,
-                              "low" => tb.low,
-                              "close" => tb.close,
-                              "volume" => tb.volume))
+                                    "open"    => tb.open,
+                                    "high"    => tb.high,
+                                    "low"     => tb.low,
+                                    "close"   => tb.close,
+                                    "volume"  => tb.volume))
     end
     return arr
   end
 
   function saveAdjustments(adj::Adjustment)
-    return Dict{String, Any}("close" => adj.close,
-                              "adjustmenttype" => adj.adjustmenttype,
-                              "adjustmentfactor" => adj.adjustmentfactor)
+    return Dict{String, Any}("close"              => adj.close,
+                              "adjustmenttype"    => adj.adjustmenttype,
+                              "adjustmentfactor"  => adj.adjustmentfactor)
   end
 
-  temp = Dict{String, Any}("object" => "universe",
-                            "security" => Dict{String, Any}(),
-                            "tradebars" => Dict{String, Any}(),
+  temp = Dict{String, Any}("object"       => "universe",
+                            "securities"    => Dict{String, Any}(),
+                            "tradebars"   => Dict{String, Any}(),
                             "adjustments" => Dict{String, Any}())
   for (symbol, security) in universe.securities
     temp["security"][symbol.ticker] = saveSecurity(security)
@@ -96,19 +96,19 @@ function saveUniverse(universe::Universe)
 end
 
 function saveTradeEnv(tradeenv::TradingEnvironment)
-  return Dict{String, Any}("object" => "TradeEnv",
-                            "startdate" => tradeenv.startdate,
-                            "enddate" => tradeenv.enddate,
-                            "currentdate" => tradeenv.currentdate,
-                            "livemode" => tradeenv.livemode,
-                            "benchmark" => tradeenv.benchmark.ticker,
-                            "resolution" => string(tradeenv.resolution),
-                            "rebalance" => string(tradeenv.rebalance),
-                            "investmentplan" => string(tradeenv.investmentplan),
-                            "fullrun" => tradeenv.fullrun,
+  return Dict{String, Any}("object"               => "tradeenv",
+                            "startdate"           => tradeenv.startdate,
+                            "enddate"             => tradeenv.enddate,
+                            "currentdate"         => tradeenv.currentdate,
+                            "livemode"            => tradeenv.livemode,
+                            "benchmark"           => tradeenv.benchmark.ticker,
+                            "resolution"          => string(tradeenv.resolution),
+                            "rebalance"           => string(tradeenv.rebalance),
+                            "investmentplan"      => string(tradeenv.investmentplan),
+                            "fullrun"             => tradeenv.fullrun,
                             "defaultsecuritytype" => string(tradeenv.defaultsecuritytype),
-                            "defaultmarket" => tradeenv.defaultmarket,
-                            "benchmarkvalues" => tradeenv.benchmarkvalues)
+                            "defaultmarket"       => tradeenv.defaultmarket,
+                            "benchmarkvalues"     => tradeenv.benchmarkvalues)
 end
 
 function saveBrokerage(brokerage::BacktestBrokerage)
@@ -117,9 +117,9 @@ function saveBrokerage(brokerage::BacktestBrokerage)
     for (symbol, orders) in blotter.openorders
       temp[symbol.ticker] = [saveOrder(order) for order in orders]
     end
-    return Dict{String, Any}("object" => "blotter",
-                              "openorders" => temp,
-                              "ordertracker" => saveOrderTracker(blotter.ordertracker))
+    return Dict{String, Any}("object"         => "blotter",
+                              "openorders"    => temp,
+                              "ordertracker"  => saveOrderTracker(blotter.ordertracker))
   end
 
   function saveCommission(commission::Commission)
@@ -129,8 +129,8 @@ function saveBrokerage(brokerage::BacktestBrokerage)
   end
 
   function saveMargin(margin::Margin)
-    return Dict{String, Any}("object" => "margin",
-                              "initialmargin" => margin.initialmargin,
+    return Dict{String, Any}("object"             => "margin",
+                              "initialmargin"     => margin.initialmargin,
                               "maintenancemargin" => margin.maintenancemargin)
   end
 
@@ -140,19 +140,19 @@ function saveBrokerage(brokerage::BacktestBrokerage)
                               "value" => slippage.value)
   end
 
-  temp = Dict{String, Any}("object" => "BacktestBrokerage",
-                            # "blotter" => saveBlotter(brokerage.blotter),
-                            "commission" => saveCommission(brokerage.commission),
-                            "margin" => saveMargin(brokerage.margin),
-                            "slippage" => saveSlippage(brokerage.slippage),
-                            "cancelpolicy" => string(brokerage.cancelpolicy),
+  temp = Dict{String, Any}("object"             => "backtestbrokerage",
+                            # "blotter"           => saveBlotter(brokerage.blotter),
+                            "commission"        => saveCommission(brokerage.commission),
+                            "margin"            => saveMargin(brokerage.margin),
+                            "slippage"          => saveSlippage(brokerage.slippage),
+                            "cancelpolicy"      => string(brokerage.cancelpolicy),
                             "participationrate" => brokerage.participationrate)
 
   return temp
 end
 
 function saveAccountTracker(accounttracker::AccountTracker)
-  temp = Dict{String, Any}("object" => "AccountTracker")
+  temp = Dict{String, Any}("object" => "accounttracker")
   for (date, account) in accounttracker
     temp[string(date)] = saveAccount(account)
   end
@@ -160,7 +160,7 @@ function saveAccountTracker(accounttracker::AccountTracker)
 end
 
 function saveCashTracker(cashtracker::CashTracker)
-  temp = Dict{String, Any}("object" => "CashTracker")
+  temp = Dict{String, Any}("object" => "cashtracker")
   for (date, cash) in cashtracker
     temp[string(date)] = cash
   end
@@ -168,7 +168,7 @@ function saveCashTracker(cashtracker::CashTracker)
 end
 
 function savePerformanceTracker(performancetracker::PerformanceTracker)
-  temp = Dict{String, Any}("object" => "PerformanceTracker")
+  temp = Dict{String, Any}("object" => "performancetracker")
   for (date, perf) in performancetracker
     temp[string(date)] = savePerformance(perf)
   end
@@ -176,7 +176,7 @@ function savePerformanceTracker(performancetracker::PerformanceTracker)
 end
 
 function saveBenchmarkTracker(benchmarktracker::PerformanceTracker)
-  temp = Dict{String, Any}("object" => "BenchmarkTracker")
+  temp = Dict{String, Any}("object" => "benchmarktracker")
   for (date, perf) in benchmarktracker
     temp[string(date)] = savePerformance(perf)
   end
@@ -184,7 +184,7 @@ function saveBenchmarkTracker(benchmarktracker::PerformanceTracker)
 end
 
 function saveTransactionTracker(transactiontracker::TransactionTracker)
-  temp = Dict{String, Any}("object" => "TransactionTracker")
+  temp = Dict{String, Any}("object" => "transactiontracker")
   for (date, orderfills) in transactiontracker
     temp[string(date)] = [saveOrderFill(orderfill) for orderfill in orderfills]
   end
@@ -192,7 +192,7 @@ function saveTransactionTracker(transactiontracker::TransactionTracker)
 end
 
 function saveOrderTracker(ordertracker::OrderTracker)
-  temp = Dict{String, Any}("object" => "OrderTracker")
+  temp = Dict{String, Any}("object" => "ordertracker")
   for (date, orders) in ordertracker
     temp[string(date)] = [saveOrder(order) for order in orders]
   end
@@ -200,7 +200,7 @@ function saveOrderTracker(ordertracker::OrderTracker)
 end
 
 function saveVariableTracker(variabletracker::VariableTracker)
-  temp = Dict{String, Any}("object" => "VariableTracker")
+  temp = Dict{String, Any}("object" => "variabletracker")
   for (date, var) in variabletracker
     temp[string(date)] = var
   end
@@ -208,11 +208,11 @@ function saveVariableTracker(variabletracker::VariableTracker)
 end
 
 function saveAlgorithmState(as::AlgorithmState)
-  return Dict{String, Any}("object" => "algorithmstate",
-                            "account" => saveAccount(as.account),
-                            "portfolio" => savePortfolio(as.portfolio),
-                            "performance" => savePerformance(as.performance))
-                            #"params" => as.params)
+  return Dict{String, Any}("object"       => "algorithmstate",
+                            "account"     => saveAccount(as.account),
+                            "portfolio"   => savePortfolio(as.portfolio),
+                            "performance" => savePerformance(as.performance),
+                            "params"      => as.params)
 end
 
 function saveProgress!(algorithm::Algorithm; UID::String = "anonymous", backtestID::String = "backtest0")
@@ -220,8 +220,8 @@ function saveProgress!(algorithm::Algorithm; UID::String = "anonymous", backtest
   saveProgressCollection = MongoCollection(saveProgressClient, UID, backtestID)
   insert(saveProgressCollection, saveAlgorithm(algorithm))
   insert(saveProgressCollection, saveAccount(algorithm.account))
-  insert(saveProgressCollection, savePortfolio(algorithm.portfolio))
   insert(saveProgressCollection, saveUniverse(algorithm.universe))
+  insert(saveProgressCollection, savePortfolio(algorithm.portfolio))
   insert(saveProgressCollection, saveTradeEnv(algorithm.tradeenv))
   insert(saveProgressCollection, saveBrokerage(algorithm.brokerage))
   insert(saveProgressCollection, saveAccountTracker(algorithm.accounttracker))
@@ -305,6 +305,7 @@ function savePerformance(performance::Performance)
   end
 
   return Dict{String, Any}("object" => "performance",
+                            "period" => performance.period,
                             "returns" => saveReturns(performance.returns),
                             "deviation" => saveDeviation(performance.deviation),
                             "ratios" => saveRatios(performance.ratios),

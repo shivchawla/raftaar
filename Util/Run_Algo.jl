@@ -15,14 +15,14 @@ import Logger: warn, info, error
 using DataFrames
 using TimeSeries
 
-function run_algo(saved::Bool = false)
+function run_algo(forward_test::Bool = true)
 
   benchmark = "JBFIND"
   setbenchmark(benchmark)
 
   benchmark = API.getbenchmark()
 
-  if(!saved)
+  if(!forward_test)
     try
       initialize(getstate())
     catch err
@@ -30,6 +30,11 @@ function run_algo(saved::Bool = false)
     end
   else
     _loadprogress()
+    # Set the start date from where you want to continue the forward testing
+    setstartdate(DateTime("01/01/2010","dd/mm/yyyy"))
+  	setenddate(DateTime("31/12/2011","dd/mmm/yyyy"))
+    _outputbackteststatistics()
+    exit()
   end
 
 
@@ -89,7 +94,7 @@ function run_algo(saved::Bool = false)
   _saveprogress()
 
   _outputbackteststatistics()
-  
+
 end
 
 function mainfnc(date::Date, counter::Int, close, volume, adjustments; dynamic::Bool = true)
