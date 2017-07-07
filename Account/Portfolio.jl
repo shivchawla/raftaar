@@ -18,6 +18,13 @@ end
 
 PortfolioMetrics() = PortfolioMetrics(0.0, 0.0, 0.0, 0.0, 0, 0)
 
+PortfolioMetrics(data::BSONObject) = PortfolioMetrics(data["netexposure"],
+                                                      data["grossexposure"],
+                                                      data["shortexposure"],
+                                                      data["longexposure"],
+                                                      data["shortcount"],
+                                                      data["longcount"])
+
 """
 Type to encapsulate positions and aggregated metrics
 """
@@ -27,6 +34,9 @@ type Portfolio
 end
 
 Portfolio() = Portfolio(Dict(), PortfolioMetrics())
+
+Portfolio(data::BSONObject) = Portfolio(Dict(map((ticker, pos) -> (SecuritySymbol(k), Position(pos)), data["positions"])),
+                                          PortfolioMetrics(data["metrics"]))
 
 """
 Indexing function to get position based
