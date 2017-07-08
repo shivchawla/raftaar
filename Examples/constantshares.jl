@@ -3,7 +3,7 @@
 # Email: shiv.chawla@aimsquant.com
 # Organization: AIMSQUANT PVT. LTD.
 using Raftaar
-#=function initialize(state)	
+#=function initialize(state)
 	setcash(1000000.0)
 	setresolution("Day")
 	setcancelpolicy(CancelPolicy(EOD))
@@ -27,11 +27,11 @@ end
 function ondata(data, state)
 	universe = getuniverse()
 	numsecurities = length(universe)
-	
+
 	for security in universe
 		setholdingpct(security, 1.0/numsecurities)
-	end	
-	
+	end
+
 	track("Net Value", state.account.netvalue)
 
 	# setholdingshares(56502, 100)
@@ -43,20 +43,19 @@ function ondata(data, state)
 
 end=#
 
-function initialize(state)	
-	#setstartdate(DateTime("01/01/2016","dd/mm/yyyy"))
-	#setenddate(DateTime("20/07/2016","dd/mmm/yyyy"))
+function initialize(state)
+	setstartdate(DateTime("01/01/2010","dd/mm/yyyy"))
+	setenddate(DateTime("31/03/2010","dd/mmm/yyyy"))
 	setcash(1000000.0)
 	setresolution("Day")
 	setcancelpolicy(CancelPolicy(EOD))
-	setbenchmark("CNX_BANK")
-	setuniverse("CNX_NIFTY")
+	setbenchmark("JBFIND")
+	setuniverse("RANASUG")
 end
 
 function ondata(data, state)
 
-	setholdingpct("CNX_NIFTY", 0.5)	
-	
+	setholdingpct("CNX_NIFTY", 0.5)
+
 	track("portfoliovalue", state.account.netvalue)
 end
-        
