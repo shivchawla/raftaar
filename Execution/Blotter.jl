@@ -17,7 +17,7 @@ type Blotter
 	openorders::Dict{SecuritySymbol, Vector{Order}}
 	ordertracker::OrderTracker
 	#transactiontracker::TransactionTracker
-end 
+end
 
 """
 Empty blotter construction
@@ -28,20 +28,20 @@ Blotter() = Blotter(Dict(), OrderTracker())
 Function to add order to the blotter
 """
 function addorder!(blotter::Blotter, order::Order)
-    
+
     if !haskey(blotter.openorders, order.securitysymbol)
         blotter.openorders[order.securitysymbol] = Vector{Order}()
-    end 
+    end
 
     push!(blotter.openorders[order.securitysymbol], order)
-    
+
     ordertracker = blotter.ordertracker
 
     dateoforder = Date(order.datetime)
     if !haskey(ordertracker, dateoforder)
         ordertracker[dateoforder] = [order]
     end
-    
+
     push!(ordertracker[dateoforder], order)
 
 end
@@ -69,11 +69,14 @@ end
 Function to get all the open orders
 """
 function getopenorders(blotter::Blotter, symbol::SecuritySymbol)
+		#=
     if haskey(blotter.openorders, symbol)
         return blotter.openorders[symbol]
-    else 
-        Vector{Order}()    
+    else
+        Vector{Order}()
     end
+		=#
+		return get(blotter.openorders, symbol, Vector{Order}())
 end
 
 """
@@ -84,11 +87,11 @@ function removeopenorder!(blotter::Blotter, orderid::Integer)
         ind = find(order->(order.id == orderid), orders)
         if isempty(ind)
             continue
-        else        
+        else
             order = splice!(orders, ind[1])
             return order
         end
-    end   
+    end
 end
 
 """
@@ -115,9 +118,9 @@ function getorderfill(order::Order, slippage::Slippage, commission::Commission, 
     if isnan(lastprice) || isnan(volume) || lastprice <= 0.0 || volume <= 0
         return fill
     end
-        
+
     fill.orderfee = getcommission(order, commission)
-      
+
     slippage = getslippage(order, slippage, lastprice)
     # find the execution price based on slippage model
     if order.quantity  < 0
@@ -127,16 +130,16 @@ function getorderfill(order::Order, slippage::Slippage, commission::Commission, 
     end
 
     #find the quantity that can be executed...assume 5% of the total volume
-    availablequantity = Int(round(participationrate * volume))      
+    availablequantity = Int(round(participationrate * volume))
 
     if availablequantity > abs(order.remainingquantity)
         fill.fillquantity = order.remainingquantity
-    else 
+    else
         fill.fillquantity = sign(order.remainingquantity) * availablequantity
     end
 
-    return fill 
-end 
+    return fill
+end
 
 
 """
@@ -144,8 +147,8 @@ Function to record fill history
 """
 function addtransaction!(blotter::Blotter, fill::OrderFill)
 
-    dateoffill = Date(fill.datetime) 
-    
+    dateoffill = Date(fill.datetime)
+
     if haskey(blotter.transactiontracker, dateoffill)
         push!(blotter.transactiontracker[dateoffill], fill)
     else
@@ -153,4 +156,3 @@ function addtransaction!(blotter::Blotter, fill::OrderFill)
     end
 
 end
-

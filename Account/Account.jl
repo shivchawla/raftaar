@@ -2,12 +2,12 @@
 # Author: Shiv Chawla
 # Email: shiv.chawla@aimsquant.com
 # Organization: AIMSQUANT PVT. LTD.
- 
+
 
 """
 Account type
 An account encapsulates the underlying portfolio and
-cash  
+cash
 """
 type Account
     seedcash::Float64
@@ -16,23 +16,25 @@ type Account
     leverage::Float64
 end
 
-Account() = Account(0.0, 0.0, 0.0, 0.0) 
+Account() = Account(0.0, 0.0, 0.0, 0.0)
+
+Account(data::BSONObject) = Account(data["seedcash"], data["cash"], data["netvalue"], data["leverage"])
 
 """
 function to reset the cash position of the account
 """
 function setcash!(account::Account, portfolio::Portfolio, amount::Float64)
     account.seedcash = amount
-    account.cash = amount 
-    updateaccount!(account, portfolio)  
+    account.cash = amount
+    updateaccount!(account, portfolio)
 end
 
 """
-function to add more cash to the account 
+function to add more cash to the account
 """
 function addcash!(account::Account, portfolio::Portfolio, amount::Float64)
-    account.cash += amount 
-    updateaccount!(account, portfolio)   
+    account.cash += amount
+    updateaccount!(account, portfolio)
 end
 
 """
@@ -64,7 +66,7 @@ function to update the account portfolio with corporate adjustments
 """
 function updateaccount_splits_dividends!(account::Account, portfolio::Portfolio, adjustments::Dict{SecuritySymbol, Adjustment})
     updateportfolio_splits_dividends!(portfolio, adjustments)
-    
+
     cashfromdividends = 0.0
     for (symbol, adjustment) in adjustments
         cashfromdividends += (adjustment.adjustmenttype == "17.0") ? portfolio[symbol].quantity * adjustment.adjustmentfactor : 0.0
@@ -79,7 +81,7 @@ function to update the account with from orderfills (adding/removing positions)
 function updateaccount_fills!(account::Account, portfolio::Portfolio, fills::Vector{OrderFill})
     if !isempty(fills)
         cashgenerated = updateportfolio_fills!(portfolio, fills)
-        
+
         updateaccount!(account, portfolio, cashgenerated)
     end
 end

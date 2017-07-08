@@ -8,7 +8,7 @@
 """
 Position Type
 Type to encapsulate details like underlying symbol,
-quantity, price etc. 
+quantity, price etc.
 """
 type Position
   securitysymbol::SecuritySymbol
@@ -17,7 +17,7 @@ type Position
   totalfees::Float64
   lastprice::Float64
   lasttradepnl::Float64
-  realizedpnl::Float64 
+  realizedpnl::Float64
   totaltradedvolume::Float64
 end
 
@@ -27,6 +27,15 @@ export Position
 Constructors
 """
 Position() = Position(SecuritySymbol())
+
+Position(data::BSONObject) = Position(SecuritySymbol(data["symbol"]["id"], data["symbol"]["ticker"]),
+                                      data["quantity"],
+                                      data["averageprice"],
+                                      data["totalfees"],
+                                      data["lastprice"],
+                                      data["lasttradepnl"],
+                                      data["realizedpnl"],
+                                      data["totaltradedvolume"])
 
 Position(securitysymbol::SecuritySymbol) = Position(securitysymbol, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
 
@@ -99,14 +108,14 @@ function isshort(position::Position)
 end
 
 """
-Unrealized profit % of the position 
+Unrealized profit % of the position
 """
 function unrealizedprofitpercent(position::Position)
   absholdingcost(position) == 0.0 ? 0.0 : 100.0 * unrealizedpnl(position)/absholdingcost(position)
 end
 
 """
-Unrealized profit in position (value) 
+Unrealized profit in position (value)
 """
 function unrealizedpnl(position::Position)
   orderFee = getfees(MarketOrder(position.Security, -position.quantity))
@@ -137,10 +146,10 @@ function updateposition_fill!(position::Position, fill::OrderFill)
 
   #apply sales value to holdings
   position.totaltradedvolume += fill.fillprice*abs(fill.fillquantity)
-  
+
   #update total fees paid
   position.totalfees += fill.orderfee
-  
+
   #calculate the last trade profit
   updatetradeprofit!(position, fill)
 
@@ -149,10 +158,10 @@ function updateposition_fill!(position::Position, fill::OrderFill)
 
   #calculate cash generated
   cashgenerated = -(fill.fillquantity*fill.fillprice) - fill.orderfee
-  
+
   return cashgenerated
 
-end    
+end
 
 """
 function to update totoal fee for the position
@@ -174,82 +183,77 @@ function to update the trade profit
 function updatetradeprofit!(position::Position, fill::OrderFill)
   #did we close or open a position further?
 
-  if isclosingtrade(position, fill)  
+  if isclosingtrade(position, fill)
     absquantityclosed = min(abs(fill.fillquantity), abs(position.quantity))
     closedsalevalue = sign(-fill.fillquantity) * fill.fillprice * absquantityclosed
     closedcost = sign(-fill.fillquantity) * absquantityclosed * position.averageprice
 
-    lasttradepnl_wofee = (closedsalevalue - closedcost) 
+    lasttradepnl_wofee = (closedsalevalue - closedcost)
     #*conversionFactor
     position.lasttradepnl = lasttradepnl_wofee - fill.orderfee
     position.realizedpnl += position.lasttradepnl
   end
-  
+
 end
 
 """
 funtion to update the average price after an order fill
 """
 function updateaverageprice!(position::Position, fill::OrderFill)
-  
-  if position.quantity == 0  
+
+  if position.quantity == 0
       position.quantity = fill.fillquantity
       position.averageprice = fill.fillprice
       position.lastprice = fill.fillprice
-            
+
   #Long position
-  elseif position.quantity > 0 
+  elseif position.quantity > 0
     #Sell Trade
-    if fill.fillquantity < 0 
+    if fill.fillquantity < 0
       position.quantity = position.quantity + fill.fillquantity
       #cover and short sell
-      if position.quantity < 0 
+      if position.quantity < 0
         position.averageprice = fill.fillprice
-      elseif position.quantity == 0 
-        position.averageprice = 0  
-      end  
-    else 
+      elseif position.quantity == 0
+        position.averageprice = 0
+      end
+    else
       #Buy Trade
-      if fill.fillquantity > 0 
+      if fill.fillquantity > 0
         position.averageprice = (position.averageprice * position.quantity + fill.fillprice * fill.fillquantity)/(position.quantity + fill.fillquantity)
-        position.quantity = position.quantity + fill.fillquantity  
-      end      
+        position.quantity = position.quantity + fill.fillquantity
+      end
     end
 
-  #Short position  
-  elseif position.quantity < 0 
-    
+  #Short position
+  elseif position.quantity < 0
+
     #Buy Trade
-    if fill.fillquantity > 0 
+    if fill.fillquantity > 0
       position.quantity = position.quantity + fill.fillquantity
       #Buy-to-cover and Buy Long
-      if position.quantity > 0 
-        position.averageprice = fill.fillprice 
-      elseif position.quantity == 0 
-        position.averageprice = 0  
-      end  
-    else 
+      if position.quantity > 0
+        position.averageprice = fill.fillprice
+      elseif position.quantity == 0
+        position.averageprice = 0
+      end
+    else
       #Sell Trade
-      if fill.fillquantity < 0 
+      if fill.fillquantity < 0
         position.averageprice = (position.averageprice * position.quantity + fill.fillprice * fill.fillquantity)/(position.quantity + fill.fillquantity)
-        position.quantity = position.quantity + fill.fillquantity         
-      end      
+        position.quantity = position.quantity + fill.fillquantity
+      end
     end
-  
+
   end
-end 
+end
 
 """
 Function to update position for corporate adjustment (not cash dividend)
 """
-function updateposition_splits_dividends!(position::Position, adjustment::Adjustment) 
+function updateposition_splits_dividends!(position::Position, adjustment::Adjustment)
     if(adjustment.adjustmenttype != "17.0")
         position.averageprice = position.averageprice * adjustment.adjustmentfactor
         position.quantity = Int(round(position.quantity * (1.0/adjustment.adjustmentfactor)))
     end
-end  
-
-
-
-
-
+end

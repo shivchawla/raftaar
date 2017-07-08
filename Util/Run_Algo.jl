@@ -15,51 +15,60 @@ import Logger: warn, info, error
 using DataFrames
 using TimeSeries
 
-function run_algo()
+function run_algo(forward_test::Bool = true)
 
-  benchmark = "CNX_NIFTY"
+  benchmark = "JBFIND"
   setbenchmark(benchmark)
 
   benchmark = API.getbenchmark()
 
-  #alldata = history([benchmark], "Close", :Day, 100, enddate = "2016-01-01")
-  global alldata = history_unadj([benchmark], "Close", :Day, startdate = DateTime(getstartdate()), enddate = DateTime(getenddate()))
-  
-  try
-    initialize(getstate()) 
-  catch err
-    handleexception(err)
+  if(!forward_test)
+    try
+      initialize(getstate())
+    catch err
+      handleexception(err)
+    end
+  else
+    _deserializeData()
+
+    # Set the start date from where you want to continue the forward testing
+    setstartdate(DateTime("01/01/2010","dd/mm/yyyy"))
+  	setenddate(DateTime("31/12/2011","dd/mmm/yyyy"))
   end
-   
+
+
   startdate = getstartdate()
   enddate = getenddate()
 
+  #alldata = history([benchmark], "Close", :Day, 100, enddate = "2016-01-01")
+  global alldata = history_unadj([benchmark], "Close", :Day, startdate = DateTime(getstartdate()), enddate = DateTime(getenddate()))
+
   cp = history_unadj(getuniverse(), "Close", :Day, startdate = DateTime(getstartdate()), enddate = DateTime(getenddate()))
-  
+
   allsecurities_includingbenchmark = push!([d.symbol for d in getuniverse()], API.getbenchmark())
   adjustedprices = history(allsecurities_includingbenchmark, "Close", :Day, startdate = DateTime(getstartdate()), enddate = DateTime(getenddate()))
 
   vol = history_unadj(getuniverse(), "Volume", :Day, startdate = DateTime(getstartdate()), enddate = DateTime(getenddate()))
-  
   #Join benchmark data with close prices
+
   cp = !isempty(cp) && !isempty(alldata) ? merge(cp, alldata, :outer) : cp
   labels = Dict{String,Float64}()
-  
+
   bvals = values(cp[benchmark.ticker])
- 
+
   for i = 1:length(cp)
     val = bvals[i]
 
     j = i-1
-    
+
     while isnan(val) && j > 0
       val = bvals[j]
       j = j - 1
     end
 
     val = isnan(val) ? 0.0 : val
-    
-    labels[string(cp.timestamp[i])] = val 
+
+    labels[string(cp.timestamp[i])] = val
   end
 
   #Set benchmark value and Output labels from graphs
@@ -69,7 +78,7 @@ function run_algo()
 
   #continue with backtest if there are any rows in price data.
   if !isempty(cp)
-    outputlabels(labels)  
+    outputlabels(labels)
   else
     error("No price data found. Aborting Backtest!!!")
     return
@@ -83,20 +92,23 @@ function run_algo()
 
   _outputbackteststatistics()
 
+  _serializeData()
+
 end
 
-function mainfnc(date::Date, counter::Int, close, volume, adjustments; dynamic::Bool = true)  
+function mainfnc(date::Date, counter::Int, close, volume, adjustments; dynamic::Bool = true)
 
   setcurrentdate(date)
-  if dynamic  
+  if dynamic
     #DYNAMIC doesn't work
     updatedatastores(date, fetchprices(date), fetchvolumes(date), getadjustments())
-  else 
+  else
     setcurrentdate(date)
 
     # check if volume dataframe has same rows as close OR if it has row
     #nrows_volume = length(volume)
     #currentvolume = nrows_volume > counter ? volume[date] : DataFrame()
+
     currentvolume = nothing
     try
       currentvolume = volume[date]
@@ -106,10 +118,11 @@ function mainfnc(date::Date, counter::Int, close, volume, adjustments; dynamic::
       names = push!([d.symbol.ticker for d in getuniverse()], API.getbenchmark().ticker)
       currentvolume = TimeArray([date], 10000000.*ones(1, length(names)), names)
     end
-    
+
 
     #nrows_close = length(close)
     #currentprices = nrows_close > counter ? close[:][counter] : DataFrame()
+
     currentprices = nothing
     try
       currentprices = close[date]
@@ -125,7 +138,7 @@ function mainfnc(date::Date, counter::Int, close, volume, adjustments; dynamic::
 
   ip = getinvestmentplan()
   seedcash = getstate().account.seedcash
-  
+
   if (ip == InvestmentPlan(IP_Weekly) && Dates.dayofweek(date)==1)
       addcash(seedcash)
   elseif (ip == InvestmentPlan(IP_Monthly) && Dates.dayofweek(date)==1 && Dates.dayofmonth(date)<=7)
@@ -133,48 +146,44 @@ function mainfnc(date::Date, counter::Int, close, volume, adjustments; dynamic::
   end
 
   _updateaccount_splits_dividends()
-  
+
   _updatependingorders_splits()
-  
+
   #Internal function to execute pending orders using todays's close
 
-  _updatependingorders_price()   
+  _updatependingorders_price()
   _updateaccount_price()
-  
+
   #Internal function to update portfolio value using today's close
   #What if there is no price and it doesnn't trade anymore?
 
   #Internal system already has the close price but not yet visible to the user
-  #Internal system fetches prices for all the stocks in the portfolio 
+  #Internal system fetches prices for all the stocks in the portfolio
   #and for all the stocks with pending orders.
 
   #beforeclose()
 
   #this should only be called once a day in case of high frequency data
   _updatedailyperformance()
-  _updatestate() 
+  _updatestate()
 
   #once orders are placed and performance is updated based on last know portfolio,
   #call the user defined
- 
-  try  
+
+  try
     ondata(currentprices, getstate())
   catch err
     handleexception(err)
 
   end
 
-  _outputdailyperformance() 
+  _outputdailyperformance()
 
-  #this is called every data stamp, user can 
-  # user defines this functions where he sets universe, 
-  #creates new orders for the next session 
+  #this is called every data stamp, user can
+  # user defines this functions where he sets universe,
+  #creates new orders for the next session
   #(give option to trading at open/close/or worst price)
   #Internal system checks policy for stocks not in universe
   #If liquidation is set to true, add additional pending orders of liquidation
 
 end
-
-
-
-

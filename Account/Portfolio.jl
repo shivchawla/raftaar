@@ -4,7 +4,7 @@
 # Organization: AIMSQUANT PVT. LTD.
 
 """
-Type to encapsulate the aggregated analytics like 
+Type to encapsulate the aggregated analytics like
 various exposures and security counts
 """
 type PortfolioMetrics
@@ -24,6 +24,13 @@ PortfolioMetrics() = PortfolioMetrics(0.0, 0.0, 0.0, 0.0, 0, 0)
                                                    pm1.shortcount == pm2.shortcount &&
                                                    pm1.longcount == pm2.longcount)
 
+PortfolioMetrics(data::BSONObject) = PortfolioMetrics(data["netexposure"],
+                                                      data["grossexposure"],
+                                                      data["shortexposure"],
+                                                      data["longexposure"],
+                                                      data["shortcount"],
+                                                      data["longcount"])
+
 """
 Type to encapsulate positions and aggregated metrics
 """
@@ -35,14 +42,17 @@ end
 Portfolio() = Portfolio(Dict(), PortfolioMetrics())
 ==(p1::Portfolio, p2::Portfolio) = (p1.positions == p2.positions && p1.metrics == p2.metrics)
 
+Portfolio(data::BSONObject) = Portfolio(Dict(map((id, pos) -> (SecuritySymbol(id), Position(pos)), data["positions"])),
+                                          PortfolioMetrics(data["metrics"]))
+
 """
-Indexing function to get position based 
+Indexing function to get position based
 on security symbol or security directly from portfolio
 """
 
 getindex(portfolio::Portfolio, symbol::SecuritySymbol) = get(portfolio.positions, symbol, Position(symbol))
 getindex(portfolio::Portfolio, security::Security) = get(portfolio.positions, security.symbol, Position(security.symbol))
-setindex!(portfolio::Portfolio, position::Position, securitysymbol::SecuritySymbol) = 
+setindex!(portfolio::Portfolio, position::Position, securitysymbol::SecuritySymbol) =
                       setindex!(portfolio.positions, position, securitysymbol)
 
 
@@ -97,14 +107,17 @@ export getposition
 function to update/set position with average price and quantity
 """
 function setposition!(portfolio::Portfolio, security::Security, avgprice::Float64, quantity::Int64)
+  #=
   position = getposition(portfolio, security)
 
   if empty(position)
     return
   else
     position.quantity = quantity
-    position.averageprice = avgprice  
+    position.averageprice = avgprice
   end
+  =#
+  setposition!(portfolio, security.symbol, avgprice, quantity)
 end
 
 """
@@ -117,7 +130,7 @@ function setposition!(portfolio::Portfolio, symbol::SecuritySymbol, avgprice::Fl
     return
   else
     position.quantity = quantity
-    position.averageprice = avgprice  
+    position.averageprice = avgprice
   end
 end
 
@@ -150,10 +163,13 @@ end=#
 function to get absolute of holding cost
 """
 function totalabsoluteholdingscost(portfolio::Portfolio)
+  #=
   tahc = 0
   for (sec, pos) in enumerate(portfolio.positions)
     tahc += absholdingcost(pos)
   end
+  =#
+  tahc = sum(map(x -> absholdingcost(x), values(portfolio.positions)))
   return tahc
 end
 
@@ -161,8 +177,8 @@ end
 function to update portfolio with multiple fills
 """
 function updateportfolio_fills!(portfolio::Portfolio, fills::Vector{OrderFill})
-  cash = 0.0 
-  for fill in fills 
+  cash = 0.0
+  for fill in fills
     cash += updateportfolio_fill!(portfolio, fill)
   end
 
@@ -175,15 +191,15 @@ end
 function to update portfolio for single fill
 """
 function updateportfolio_fill!(portfolio::Portfolio, fill::OrderFill)
-   
-  securitysymbol = fill.securitysymbol  
-  
+
+  securitysymbol = fill.securitysymbol
+
   if !haskey(portfolio.positions, securitysymbol)
-      portfolio[securitysymbol] = Position(securitysymbol)  
-  end  
+      portfolio[securitysymbol] = Position(securitysymbol)
+  end
 
   position = portfolio[securitysymbol]
-  
+
   #function to adjust position for fill and update cash in portfolio
   return updateposition_fill!(position, fill)
 
@@ -191,10 +207,10 @@ end
 
 """
 function to update portfolio for a split
-"""  
+"""
 function updateportfolioforsplit!(portfolio::Portfolio, split::Split)
   position = portfolio[split.symbol]
-   
+
   if !empty(position)
       quantity = position.quantity/split.splitFactor
       avgprice = position.averagePrice*split.splitFactor
@@ -204,8 +220,8 @@ function updateportfolioforsplit!(portfolio::Portfolio, split::Split)
       extraCash = leftOver*split.ReferencePrice
       addcash!(portfolio, extraCash);
       setposition!(portfolio, split.symbol, avgprice, (int)quantity)
-    end       
-end 
+    end
+end
 
 """
 function to update portfolio for a split
@@ -217,32 +233,32 @@ function updateportfolio_price!(portfolio::Portfolio, tradebars::Dict{SecuritySy
       if haskey(tradebars, securitysymbol)
         updateposition_price!(position, tradebars[securitysymbol][1])
       end
-  end 
+  end
 
   updateportfoliometrics!(portfolio::Portfolio)
 end
 
 function updateportfolio_splits_dividends!(portfolio::Portfolio, adjustments::Dict{SecuritySymbol, Adjustment})
     for (symbol, adjustment) in adjustments
-        
+
         if (adjustment.adjustmenttype != "17.0" && portfolio[symbol].quantity != 0)
             updateposition_splits_dividends!(portfolio[symbol], adjustment)
         end
 
-    end 
+    end
 
-    updateportfoliometrics!(portfolio::Portfolio) 
+    updateportfoliometrics!(portfolio::Portfolio)
 end
 
 """
 function to update portfolio metrics
 """
-function updateportfoliometrics!(portfolio::Portfolio) 
-  
+function updateportfoliometrics!(portfolio::Portfolio)
+
   portfolio.metrics = PortfolioMetrics()
 
   for (symbol, position) in portfolio.positions
-    portfolio.metrics.netexposure += position.quantity * position.lastprice  
+    portfolio.metrics.netexposure += position.quantity * position.lastprice
     portfolio.metrics.grossexposure += abs(position.quantity * position.lastprice)
     portfolio.metrics.shortexposure += position.quantity < 0 ? abs(position.quantity * position.lastprice) : 0.0
     portfolio.metrics.shortcount +=  position.quantity < 0 ? 1 : 0
@@ -251,6 +267,3 @@ function updateportfoliometrics!(portfolio::Portfolio)
   end
 
 end
-
-
-

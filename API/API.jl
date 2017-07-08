@@ -21,22 +21,22 @@ import Logger: info, error
 import Raftaar: getuniverse, getopenorders
 
 const algorithm = Raftaar.Algorithm()
- 
+
 function setlogmode(style::Symbol = :text, print::Symbol = :console, save::Bool = false, client::WebSocket = WebSocket(0, TCPSock()))
-    Logger.configure(style_mode = style, print_mode = print, save_mode = save, client = client) 
+    Logger.configure(style_mode = style, print_mode = print, save_mode = save, client = client)
 end
 export setlogmode
 
-info(message::String; datetime::DateTime = DateTime()) = 
+info(message::String; datetime::DateTime = DateTime()) =
                     Logger.info(message, :json, datetime = datetime)
 export info
 
-warn(message::String; datetime::DateTime = DateTime()) = 
+warn(message::String; datetime::DateTime = DateTime()) =
                     Logger.warn(message, :json, datetime = datetime)
 
 export warn
 
-error(message::String; datetime::DateTime = DateTime()) = 
+error(message::String; datetime::DateTime = DateTime()) =
                     Logger.error(message, :json, datetime = datetime)
 
 export error
@@ -48,7 +48,7 @@ include("UniverseAPI.jl")
 include("BrokerageAPI.jl")
 #include("../Util/Run_Algo.jl")
 
-export  setstartdate, 
+export  setstartdate,
         setenddate,
         setresolution,
         setenddate,
@@ -63,10 +63,10 @@ export  setstartdate,
         cantrade,
         setcash,
         addcash,
-        getposition,    
+        getposition,
         getportfolio,
         getportfoliovalue,
-        setcancelpolicy,    
+        setcancelpolicy,
         setcommission,
         setslippage,
         setparticipationrate,
@@ -99,7 +99,7 @@ end
 
 function setbenchmark(symbol::SecuritySymbol)
     #removeuniverse(getbenchmark())
-    setbenchmark!(algorithm.tradeenv, symbol) 
+    setbenchmark!(algorithm.tradeenv, symbol)
     #adduniverse(symbol.ticker)
 end
 
@@ -107,7 +107,7 @@ export setbenchmark
 
 """
 Functions to expose the tracking API
-""" 
+"""
 function track(name::String, value::Float64)
     addvariable!(algorithm, name, value)
 end
@@ -116,9 +116,9 @@ export track
 
 """
 Functions to support the backtest logic
-""" 
+"""
 function _updatestate()
-    updatestate(algorithm)  
+    updatestate(algorithm)
 end
 
 export _updatestate
@@ -134,7 +134,7 @@ function _updatependingorders_splits()
     updatependingorders_splits!(algorithm.brokerage, algorithm.universe.adjustments)
 end
 export _updatependingorders_splits
-    
+
 function _updateaccount_price()
     updateaccount_price!(algorithm.account, algorithm.portfolio, algorithm.universe.tradebars, DateTime(algorithm.tradeenv.currentdate))
 end
@@ -142,7 +142,7 @@ end
 export _updateaccount_price
 
 function _updatedatastores(tradebars::Dict{SecuritySymbol, TradeBar}, adjustments::Dict{SecuritySymbol, Adjustment})
-    
+
     updateprices!(algorithm.universe, tradebars)
     updateadjustments!(algorithm.universe, adjustments)
 end
@@ -177,9 +177,9 @@ export _updatedailyperformance
 
 function _outputbackteststatistics()
     outputbackteststatistics(algorithm)
-end 
+end
 
-export _outputbackteststatistics   
+export _outputbackteststatistics
 
 function _outputdailyperformance()
     outputperformance(algorithm.tradeenv, algorithm.performancetracker, algorithm.benchmarktracker, algorithm.variabletracker, getcurrentdate())
@@ -196,8 +196,8 @@ export _updateuniverse
 
 function securitysymbol(ticker::String)
     id = getsecurityid(ticker)
-    
-    if id == -1  
+
+    if id == -1
         Logger.warn("Not a valid ticker: $(ticker)")
     end
 
@@ -207,8 +207,8 @@ end
 
 function securitysymbol(id::Int)
     security = getsecurity(id)
-    
-    if security == Security()  
+
+    if security == Security()
         Logger.warn("Not a valid secid: $(id)")
     end
 
@@ -220,18 +220,18 @@ export securitysymbol
 isvalid(ss::SecuritySymbol) = ss.ticker!="NULL" && ss.id!=0 && ss.id!=-1
 
 function updateuniverseforids()
-  
+
     #if dynamic universe
     for security in getuniverse()
-    
+
         id = getsecurityid(security.symbol.ticker,
                       securitytype = security.securitytype,
                       exchange = security.exchange)
-        if id == -1  
+        if id == -1
           warn("Not a valid security")
           removeuniverse(security)
           continue
-        
+
         else
           updatesecurity(security, id)
         end
@@ -244,7 +244,7 @@ function fetchprices(date::DateTime)
     ids = Vector{Int}()
 
     for security in getuniverse()
-        id = security.symbol.id  
+        id = security.symbol.id
         push!(ids, id)
     end
 
@@ -254,21 +254,21 @@ end
 export fetchprices
 
 function updatedatastores(date::Date, prices::TimeArray, volumes::TimeArray, adjustments)
-    
+
     datetime = DateTime(date)
 
     tradebars = Dict{SecuritySymbol, TradeBar}()
     adjs = Dict{SecuritySymbol, Adjustment}()
 
     for security in getuniverse()
-        
+
         close = 0.0
         volume = 10000000
 
         close_names = colnames(prices)
         volume_names = colnames(volumes)
         #added try to prevent error in case security is not present
-        #try 
+        #try
 
             colname = security.symbol.ticker
 
@@ -276,7 +276,7 @@ function updatedatastores(date::Date, prices::TimeArray, volumes::TimeArray, adj
                 close = values(prices[colname])[1]
                 close = !isnan(close) ? close : -1.0
             end
-            
+
             if colname in volume_names
                 volume = values(volumes[colname])[1]
                 volume = !isnan(volume) ? volume : 0
@@ -293,7 +293,7 @@ function updatedatastores(date::Date, prices::TimeArray, volumes::TimeArray, adj
                     adj = adjustments[security.symbol.id][date]
                     adjs[security.symbol] = Adjustment(adj[1], string(adj[3]), adj[2])
                 end
-            end          
+            end
 
         #end
     end
@@ -303,6 +303,24 @@ end
 
 #precompile(updatepricestores, (DateTime, DataFrame))
 export updatedatastores
+
+"""
+Function to save progress
+"""
+function _serializeData()
+  Raftaar.serializeData(algorithm, UID = "user1", backtestID = "backtest1")
+end
+
+export _serializeData
+
+"""
+Function to load previously saved progress
+"""
+function _deserializeData()
+  Raftaar.deserializeData!(algorithm, UID = "user1", backtestID = "backtest1")
+end
+
+export _deserializeData
 
 function reset()
     Raftaar.resetAlgo(algorithm)

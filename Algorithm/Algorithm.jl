@@ -17,9 +17,9 @@
 =#
 
 """
-Algorithm type 
-Encapsulates various entities that characterise an Algorithm    
-"""  
+Algorithm type
+Encapsulates various entities that characterise an Algorithm
+"""
 type Algorithm
     name::String
 	algorithmid::String
@@ -42,25 +42,44 @@ end
 """
 Algorithm empty constructor
 """
-Algorithm() = Algorithm("","", AlgorithmStatus(Initializing), 
+Algorithm() = Algorithm("","", AlgorithmStatus(Initializing),
                                             Account(),
-                                            Portfolio(), 
-                                            Universe(), 
-                                            TradingEnvironment(), 
-                                            BacktestBrokerage(), 
-                                            AccountTracker(), 
-                                            CashTracker(), 
+                                            Portfolio(),
+                                            Universe(),
+                                            TradingEnvironment(),
+                                            BacktestBrokerage(),
+                                            AccountTracker(),
+                                            CashTracker(),
                                             PerformanceTracker(),
                                             PerformanceTracker(),
                                             TransactionTracker(),
-                                            OrderTracker(), 
+                                            OrderTracker(),
                                             VariableTracker(),
                                             AlgorithmState())
 
 """
+Algorithm deserialize constructor
+"""
+Algorithm(data::BSONObject) = Algorithm(data["name"],
+                                        data["id"],
+                                        eval(parse(data["status"])),
+                                        Account(data["account"]),
+                                        Portfolio(data["portfolio"]),
+                                        Universe(data["universe"]),
+                                        TradingEnvironment(data["tradeenv"]),
+                                        BacktestBrokerage(data["brokerage"]),
+                                        AccountTracker(data["accounttracker"]),
+                                        CashTracker(data["cashtracker"]),
+                                        PerformanceTracker(data["performancetracker"]),
+                                        PerformanceTracker(data["benchmarktracker"]),
+                                        OrderTracker(data["ordertracker"]),
+                                        VariableTracker(data["variabletracker"]),
+                                        AlgorithmState(data["state"]))
+
+"""
 Reset algorithm variable to default
 """
-function resetAlgo(algorithm::Algorithm) 
+function resetAlgo(algorithm::Algorithm)
     println("Resetting Algo")
     algorithm.algorithmid = ""
     algorithm.name = ""
@@ -88,9 +107,9 @@ function updateordertracker!(algorithm::Algorithm, order::Order)
     currentdate = getcurrentdate(algorithm.tradeenv)
     if haskey(algorithm.ordertracker, currentdate)
         push!(algorithm.ordertracker[currentdate], order)
-    else 
+    else
         algorithm.ordertracker[currentdate] = [order]
-    end 
+    end
 end
 
 """
@@ -101,9 +120,9 @@ function updatetransactiontracker!(algorithm::Algorithm, fill::OrderFill)
     tracker = algorithm.transactiontracker
     if haskey(tracker, currentdate)
         push!(tracker[currentdate], fill)
-    else 
+    else
         tracker[currentdate] = [fill]
-    end 
+    end
 end
 
 
@@ -115,9 +134,9 @@ function updatetransactiontracker!(algorithm::Algorithm, fills::Vector{OrderFill
     tracker = algorithm.transactiontracker
     if haskey(tracker, currentdate)
         append!(tracker[currentdate], fills)
-    else 
+    else
         tracker[currentdate] = fills
-    end 
+    end
 end
 
 
@@ -140,12 +159,12 @@ end
 """
 Function to track the performance at each time step
 """
-function updateperformancetracker!(algorithm::Algorithm)      
+function updateperformancetracker!(algorithm::Algorithm)
     date = getcurrentdate(algorithm.tradeenv)
     latestbenchmarkvalue = getbenchmarkvalue(algorithm.tradeenv, date)
-    updatelatestperformance_benchmark(algorithm.benchmarktracker, latestbenchmarkvalue, date)       
-    updatelatestperformance_algorithm(algorithm.accounttracker, algorithm.cashtracker, algorithm.performancetracker, algorithm.benchmarktracker, date)          
-    
+    updatelatestperformance_benchmark(algorithm.benchmarktracker, latestbenchmarkvalue, date)
+    updatelatestperformance_algorithm(algorithm.accounttracker, algorithm.cashtracker, algorithm.performancetracker, algorithm.benchmarktracker, date)
+
 end
 
 #precompile(updateperformancetracker!, (Algorithm,))
@@ -162,7 +181,7 @@ end
 
 """
 Function to add more cash to the algorithm
-""" 
+"""
 function addcash!(algorithm::Algorithm, cash::Float64)
     updatecashtracker!(algorithm, cash)
     addcash!(algorithm.account, algorithm.portfolio, cash)
@@ -195,7 +214,7 @@ end
 export updatestate
 
 function outputbackteststatistics(algorithm::Algorithm)
-     
+
     outputbackteststatistics_full(algorithm.accounttracker,
                         algorithm.performancetracker,
                         algorithm.benchmarktracker,
@@ -207,14 +226,11 @@ function outputbackteststatistics(algorithm::Algorithm)
 
     #what stastics calculations do we want?
     #1. Daily Returns and Net value
-    #2. Statistics [Monthly window/Yearly window] - 
+    #2. Statistics [Monthly window/Yearly window] -
                 #based on return and portfolio
         #2a. Average Return
         #2b. Total Return
         #
-end 
+end
 
-export outputbackteststatistics    
-
-
-
+export outputbackteststatistics

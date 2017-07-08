@@ -34,7 +34,7 @@ type Ratios
     treynorratio::Float64
     beta::Float64
     alpha::Float64
-    stability::Float64   
+    stability::Float64
 end
 
 Ratios() = Ratios(0.0,0.0,0.0,0.0,0.0,1.0,0.0,1.0)
@@ -44,13 +44,13 @@ type Returns
     dailyreturn_benchmark::Float64
     averagedailyreturn::Float64
     annualreturn::Float64
-    totalreturn::Float64 
-    peaktotalreturn::Float64 
+    totalreturn::Float64
+    peaktotalreturn::Float64
 end
 
 Returns() = Returns(0.0,0.0,0.0,0.0,1.0,1.0)
 
-type PortfolioStats  
+type PortfolioStats
     netvalue::Float64
     #peaknormalizednetvalue::Float64
     #normalizednetvalue::Float64
@@ -75,7 +75,7 @@ Performance() = Performance(0, Returns(), Deviation(), Ratios(), Drawdown(), Por
 
 typealias AccountTracker Dict{Date, Account}
 typealias CashTracker Dict{Date, Float64}
-typealias PerformanceTracker Dict{Date, Performance} 
+typealias PerformanceTracker Dict{Date, Performance}
 typealias VariableTracker Dict{Date, Dict{String, Float64}}
 
 
@@ -83,7 +83,7 @@ typealias VariableTracker Dict{Date, Dict{String, Float64}}
 Get performance for a specific period
 """
 function getperformanceforperiod(performancetracker::PerformanceTracker, startdate::Date, enddate::Date)
-    
+
     algorithmreturns = Vector{Float64}()
     benchmarkreturns = Vector{Float64}()
 
@@ -100,7 +100,8 @@ function getperformanceforperiod(performancetracker::PerformanceTracker, startda
 end
 
 function getlatestperformance(performancetracker::PerformanceTracker)
-    lastdate = sort(collect(keys(performancetracker)))[end]
+    # lastdate = sort(collect(keys(performancetracker)))[end]
+    lastdate = maximum(keys(performancetracker))
 
     return performancetracker[lastdate]
 end
@@ -110,15 +111,15 @@ end
 Function to compute performance based on vector of returns
 """
 function calculateperformance(algorithmreturns::Vector{Float64}, benchmarkreturns::Vector{Float64})
-   
+
     ps = Performance()
 
-    ps.returns = aggregatereturns(algorithmreturns)   
-    ps.deviation = calculatedeviation(algorithmreturns)  
+    ps.returns = aggregatereturns(algorithmreturns)
+    ps.deviation = calculatedeviation(algorithmreturns)
     ps.drawdown = calculatedrawdown(algorithmreturns)
-    
-    ps.ratios = calculateratios(ps.returns, ps.deviation, ps.drawdown) 
-    
+
+    ps.ratios = calculateratios(ps.returns, ps.deviation, ps.drawdown)
+
     df = DataFrame(X = benchmarkreturns, Y = algorithmreturns)
     OLS = lm(Y ~ X, df)
     coefficients = coef(OLS)
@@ -134,7 +135,7 @@ function calculateperformance(algorithmreturns::Vector{Float64}, benchmarkreturn
     ps.period = length(algorithmreturns)
 
     return ps
-end 
+end
 
 function toJSON(performance::Performance)
     JSON.json(performance.returns)
@@ -145,7 +146,7 @@ end
 """
 Function to compute annual returns
 """
-function calculateannualreturns(returns::Vector{Float64}) 
+function calculateannualreturns(returns::Vector{Float64})
     (calculatetotalreturn(returns)/sum(length(returns))) * 252.0
 end
 
@@ -193,23 +194,23 @@ Function to compute drawdown
 function calculatedrawdown(returns::Vector{Float64})
     drawdown = Drawdown()
 
-    netvalue = 100000.0 * cumprod(1.0 + returns) 
+    netvalue = 100000.0 * cumprod(1.0 + returns)
     currentdrawdown = zeros(length(returns))
     maxdrawdown = zeros(length(returns))
     peak = -9999.0
     len = length(returns)
-    
+
     for i in 1:len
       # peak will be the maximum value seen so far (0 to i), only get updated when higher NAV is seen
-      if (netvalue[i] > peak) 
+      if (netvalue[i] > peak)
         peak = netvalue[i]
       end
       currentdrawdown[i] = (peak - netvalue[i]) / peak
       # Same idea as peak variable, MDD keeps track of the maximum drawdown so far. Only get updated when higher DD is seen.
-      if (currentdrawdown[i] > maxdrawdown[i]) 
+      if (currentdrawdown[i] > maxdrawdown[i])
         maxdrawdown[i] = currentdrawdown[i]
       elseif i > 1
-        maxdrawdown[i] = maxdrawdown[i-1] 
+        maxdrawdown[i] = maxdrawdown[i-1]
       end
     end
 
@@ -227,14 +228,8 @@ Function to compute risk measuring ratios
 """
 function calculateratios(returns::Returns, deviation::Deviation, drawdown::Drawdown)
     ratios = Ratios()
-    ratios.sharperatio = deviation.annualstandarddeviation > 0.0 ? (returns.annualreturn - 0.065) / deviation.annualstandarddeviation : 0.0 
+    ratios.sharperatio = deviation.annualstandarddeviation > 0.0 ? (returns.annualreturn - 0.065) / deviation.annualstandarddeviation : 0.0
     ratios.sortinoratio = deviation.annualsemideviation > 0.0 ? returns.annualreturn / deviation.annualsemideviation : 0.0
     ratios.calmarratio = drawdown.maxdrawdown > 0.0 ? returns.annualreturn/drawdown.maxdrawdown : 0.0
     return ratios
 end
-
-
-
-
-
-
