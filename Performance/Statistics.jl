@@ -43,7 +43,7 @@ function outputbackteststatistics_partial(accttrkr::AccountTracker,
     outputdict = Dict{String, Any}(
                     "outputtype" => "backtest",
                     "detail" => false,
-                    "summary" => convert(Dict, lastperformance),
+                    "summary" => serialize(lastperformance),
                     "equity" => equity,
                     "variables" => vartrkr,
                     "totalreturn" =>
@@ -61,7 +61,7 @@ function outputbackteststatistics_partial(accttrkr::AccountTracker,
                         ),
                     "analytics" =>
                         Dict{String, Any}(
-                            "rolling" => convert(Dict, lastperformance)
+                            "rolling" => serialize(lastperformance)
 
                         ),
                     "logs" => Logger.getlogbook()
@@ -226,8 +226,13 @@ function getaggregatereturns(pft::PerformanceTracker, symbol::Symbol = :All)
 
 end
 
+<<<<<<< HEAD
 function convert(::Type{Dict}, performance::Performance)
     Dict{String, Any}(  "annualreturn" => round(100.0 * performance.returns.annualreturn, 2),
+=======
+function serialize(performance::Performance)
+    return Dict{String, Any}(  "annualreturn" => round(100.0 * performance.returns.annualreturn, 2),
+>>>>>>> 68a0e61e61d7c0217dfd402052c6fb97ffc29227
                         "totalreturn" => round(100.0 * (performance.returns.totalreturn - 1.0), 2),
                         "annualstandarddeviation" => round(100.0 * performance.deviation.annualstandarddeviation, 2),
                         #"annualvariance" => round(100.0 * 100.0 * performance.annualvariance,2),
@@ -274,8 +279,13 @@ function getmonthlyanalytics(pft::PerformanceTracker)
             mstr = string(Dates.year(fdate)) * string(fmonth)
         end
 
+<<<<<<< HEAD
         monthlyanalytics[mstr] =  convert(Dict, getperformanceforperiod(pft, fdate, ldate))
 
+=======
+        monthlyanalytics[mstr] =  serialize(getperformanceforperiod(pft, fdate, ldate))
+
+>>>>>>> 68a0e61e61d7c0217dfd402052c6fb97ffc29227
     end
 
     return monthlyanalytics
@@ -309,7 +319,7 @@ function getyearlyanalytics(pft::PerformanceTracker)
 
         ystr = string(Dates.year(fdate))
 
-        yearlyanalytics[ystr] =  convert(Dict, getperformanceforperiod(pft, fdate, ldate))
+        yearlyanalytics[ystr] =  serialize(getperformanceforperiod(pft, fdate, ldate))
     end
 
     return yearlyanalytics

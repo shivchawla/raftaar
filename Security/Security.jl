@@ -55,14 +55,9 @@ Security(ticker::String; securitytype::String = "EQ", exchange::String="NSE", co
 Security(id::Int64, ticker::String, name::String; exchange::String="NSE", country::String = "IN", securitytype::String = "EQ") =
           Security(SecuritySymbol(id, ticker), name, exchange, country, securitytype, DateTime(), DateTime())
 
+==(sec_one::Security, sec_two::Security) = sec_one.symbol == sec_two.symbol
 Security(data::BSONObject) = Security(SecuritySymbol(data["symbol"]["id"], data["symbol"]["ticker"]),
                                       data["name"], data["exchange"], data["country"], data["securitytype"], data["startdate"], data["enddate"])
-
-#Security(ticker::String) = Security(SecuritySymbol(0,ticker), "", "EQ", "NSE",DateTime(), DateTime())
-
-                          #=securitytype = securitytype,
-                          exchange = exchange, DateTime(), DateTime())=#
-#; securitytype::String = "EQ", exchange::String="NSE")
 
 
 """
@@ -96,6 +91,10 @@ Function to check whether security is active
 function cantrade(security::Security, datetime::DateTime)
   return datetime >= security.startdate && datetime <= security.enddate
 end
+
+"""
+Serialize the security to dictionary object
+"""
 
 function serialize(security::Security)
   return Dict{String, Any}("symbol"        => Dict("id"             => security.symbol.id,

@@ -242,6 +242,10 @@ function updateposition_splits_dividends!(position::Position, adjustment::Adjust
     end
 end
 
+"""
+Serialize the position to dictionary object
+"""
+
 function serialize(position::Position)
   return Dict{String, Any}("securitysymbol"   => Dict("id"      => position.securitysymbol.id,
                                                       "ticker"  => position.securitysymbol.ticker),

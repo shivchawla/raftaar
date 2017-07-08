@@ -1,6 +1,8 @@
 {
-  "mongo_user":"root",
-"mongo_pass":"f8kxpR25JTLl",
+  "mongo_database":"aimsquant",
+  "mongo_user":"raftaar_prod",
+"mongo_pass":"pwd_raftaar_prod",
 "mongo_host":"35.154.134.30",
 "mongo_port":27017
 }
+
