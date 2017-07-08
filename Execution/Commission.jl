@@ -16,6 +16,8 @@ Empty Constructor
 """
 Commission() = Commission(CommissionModel(PerTrade), 1.0)
 
+Commission(data::BSONObject) = Commission(eval(parse(data["model"])), data["value"])
+
 """
 Function to get commission for the order
 """
@@ -23,8 +25,8 @@ function getcommission(order::Order, commission::Commission)
   if commission.model == CommissionModel(PerShare)
     return abs(order.quantity) * commission.value
   elseif commission.model == CommissionModel(PerTrade)
-    return commission.value  
-  end 
+    return commission.value
+  end
 
   return 0.0
 end
@@ -36,6 +38,11 @@ function getcommission(fill::OrderFill, commission::Commission)
     if commission.model == CommissionModel(PerValue)
         return abs(fill.fillquantity* fill.fillprice) * commission.value
     end
-    
+
     return 0.0
-end    
+end
+
+function serialize(commission::Commission)
+  return Dict{String, Any}("model" => string(commission.model),
+                            "value" => commission.value)
+end

@@ -19,6 +19,8 @@ Empty Constructor
 """
 Slippage() = Slippage(SlippageModel(Variable), 0.001)
 
+Slippage(data::BSONObject) = Slippage(eval(parse(data["model"])), data["value"])
+
 """
 Function to get slippage for the order based on latest price and slippage model
 """
@@ -27,7 +29,7 @@ function getslippage(order::Order, slippage::Slippage, latestprice::Float64)
 		return getslippageforvariableslippagemodel(slippage.value, latestprice)
 	elseif slippage.model == SlippageModel(Fixed)
 		return getslippageforspreadslippagemodel(order, security, slippage.value)
-	end	
+	end
 end
 
 """
@@ -42,3 +44,8 @@ end
 
 	#Return the half of bid-ask spread3
 #end
+
+function serialize(slippage::Slippage)
+  return Dict{String, Any}("model" => string(slippage.model),
+                            "value" => slippage.value)
+end

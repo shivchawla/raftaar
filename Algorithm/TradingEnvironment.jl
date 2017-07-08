@@ -9,7 +9,7 @@
 
 """
 Trading Environment for the algorithm
-Encapsulates date range, mode, benchmak etc. 
+Encapsulates date range, mode, benchmak etc.
 """
 type TradingEnvironment
   startdate::Date
@@ -32,9 +32,22 @@ end
 Empty constructor for the trading environment
 """
 TradingEnvironment() = TradingEnvironment(
-                          Date(), Date(), Date(), false, 
+                          Date(), Date(), Date(), false,
                           SecuritySymbol(), Resolution(Resolution_Day), Rebalance(Rebalance_Daily), InvestmentPlan(IP_AllIn), true,
                           SecurityType(Equity), "IN", Dict{Date, Float64}())
+
+TradingEnvironment(data::BSONObject) = TradingEnvironment(data["startdate"],
+                                                          data["enddate"],
+                                                          data["currentdate"],
+                                                          data["livemode"],
+                                                          SecuritySymbol(data["benchmark"]["id"], data["benchmark"]["ticker"]),
+                                                          eval(parse(data["resolution"])),
+                                                          eval(parse(data["rebalance"])),
+                                                          eval(parse(data["investmentplan"])),
+                                                          data["fullrun"],
+                                                          eval(parse(data["defaultsecuritytype"])),
+                                                          data["defaultmarket"],
+                                                          Dict(data["benchmarkvalues"]))
 
 """
 Function to set time resolution of the backtest
@@ -55,7 +68,7 @@ function setstartdate!(tradeenv::TradingEnvironment, date::Date)
 end
 
 """
-Function to set the end date of the backtest  
+Function to set the end date of the backtest
 """
 function setenddate!(tradeenv::TradingEnvironment, date::Date)
   tradeenv.enddate = date
@@ -72,9 +85,9 @@ end
 function to set the current algorithm time (mainly used for backtest)
 """
 function setcurrentdate!(tradeenv::TradingEnvironment, date::Date)
-  if !tradeenv.livemode 
+  if !tradeenv.livemode
     tradeenv.currentdate = date
-  end 
+  end
 end
 
 function setinvestmentplan!(tradeenv::TradingEnvironment, plan::String)
@@ -94,7 +107,7 @@ function setrebalance!(tradeenv::TradingEnvironment, rebalance::Rebalance)
 end
 
 function setbenchmarkvalues!(tradeenv::TradingEnvironment, prices::Dict{String, Float64})
-  tradeenv.benchmarkvalues = prices  
+  tradeenv.benchmarkvalues = prices
 end
 
 export setinvestmentplan!, setrebalance!, setbenchmarkvalues!
@@ -123,7 +136,7 @@ function getinvestmentplan(tradeenv::TradingEnvironment)
 end
 
 function getrebalancefrequency(tradeenv::TradingEnvironment)
-  return tradeenv.rebalance 
+  return tradeenv.rebalance
 end
 
 function getbenchmarkvalue(tradeenv::TradingEnvironment, date::Date)
@@ -138,7 +151,7 @@ Function to log values or string from the algorithms
 """
 function log!(tradeenv::TradingEnvironment, msg::String, msgType::MessageType)
     dt = getcurrentdatetime(tradeenv)
-    
+
     logJSON!(tradeenv.logger, dt, msg, msgType)
     #log!(tradeenv.logger, dt, msg, msgType)
 end=#
@@ -164,7 +177,7 @@ helps in limiting the use of API functions
     frames = Base.stacktrace()
     len = length(frames)
 
-    for i in 1:len 
+    for i in 1:len
         parent = frames[i].func
         if (parent != reqparent) && i==len
             Logger.error(string(func)*"() can only be called within the context of "*string(reqparent)*"()")
@@ -176,12 +189,12 @@ helps in limiting the use of API functions
 end
 
 function checkforparent(reqparent::Symbol)
-    
+
     frames = Base.stacktrace()
     func = frames[2].func
     len = length(frames)
 
-    parenttree = Vector{Symbol}(len - 2) 
+    parenttree = Vector{Symbol}(len - 2)
 
     for i = 1:length(parenttree)
       parenttree[i] = frames[i+2].func
@@ -192,23 +205,23 @@ function checkforparent(reqparent::Symbol)
         Logger.error(string(func)*"() can only be called from the context of "*string(reqparent)*"()")
         exit(0)
     end
-    
+
     return true
 end=#
 
 function checkforparent(reqparents::Vector{Symbol})
-    
+
     return true
 
     frames = Base.stacktrace()
     func = frames[2].func
 
     len = length(frames)
-    parenttree = Vector{Symbol}(len - 2) 
+    parenttree = Vector{Symbol}(len - 2)
 
     for i = 1:length(parenttree)
       parenttree[i] = Symbol(strip(string(frames[i+2].func),';'))
-    end  
+    end
 
     nparents = length(reqparents)
 
@@ -221,11 +234,11 @@ function checkforparent(reqparents::Vector{Symbol})
         break
       end
 
-      if j == nparents && idx == 0  
+      if j == nparents && idx == 0
         Logger.error(string(func)*"() can only be called from the context of "*str*"]")
         exit(0)
-      end  
-    end  
+      end
+    end
 
     return true
 end
@@ -236,7 +249,7 @@ function hasparent(reqparent::Symbol)
     frames = Base.stacktrace()
     len = length(frames)
 
-    for i in 1:len 
+    for i in 1:len
         parent = frames[i].func
         if parent == reqparent
             return true
@@ -246,3 +259,19 @@ function hasparent(reqparent::Symbol)
     return false
 end
 export hasparent
+
+function serialize(tradeenv::TradingEnvironment)
+  return Dict{String, Any}("startdate"           => tradeenv.startdate,
+                            "enddate"             => tradeenv.enddate,
+                            "currentdate"         => tradeenv.currentdate,
+                            "livemode"            => tradeenv.livemode,
+                            "benchmark"           => Dict("id"     => tradeenv.benchmark.id,
+                                                          "ticker" => tradeenv.benchmark.ticker),
+                            "resolution"          => string(tradeenv.resolution),
+                            "rebalance"           => string(tradeenv.rebalance),
+                            "investmentplan"      => string(tradeenv.investmentplan),
+                            "fullrun"             => tradeenv.fullrun,
+                            "defaultsecuritytype" => string(tradeenv.defaultsecuritytype),
+                            "defaultmarket"       => tradeenv.defaultmarket,
+                            "benchmarkvalues"     => tradeenv.benchmarkvalues)
+end

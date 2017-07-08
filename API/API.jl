@@ -20,7 +20,7 @@ import Logger: info, error
 #Import list of functions to be overloaded
 import Raftaar: getuniverse, getopenorders
 
-const algorithm = Raftaar.Algorithm()
+algorithm = Raftaar.Algorithm()
 
 function setlogmode(style::Symbol = :text, print::Symbol = :console, save::Bool = false, client::WebSocket = WebSocket(0, TCPSock()))
     Logger.configure(style_mode = style, print_mode = print, save_mode = save, client = client)
@@ -317,7 +317,7 @@ export _serializeData
 Function to load previously saved progress
 """
 function _deserializeData()
-  Raftaar.deserializeData!(algorithm, UID = "user1", backtestID = "backtest1")
+  global algorithm = Raftaar.deserializeData(UID = "user1", backtestID = "backtest1")
 end
 
 export _deserializeData

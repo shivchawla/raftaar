@@ -41,7 +41,7 @@ end
 
 #fname = "/users/shivkumarchawla/raftaar/Examples/momentumStrategy.jl"
 
-# setlogmode(:text, :console, true)
+setlogmode(:text, :console, true)
 
 try
     info("Building user algorithm", datetime=now())

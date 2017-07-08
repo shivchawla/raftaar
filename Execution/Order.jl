@@ -5,9 +5,9 @@
 
 
 """
-Encapsulate the order characteristics    
+Encapsulate the order characteristics
 """
-type Order 
+type Order
   id::UInt64 # unique order id for submission/tracking
   securitysymbol::SecuritySymbol # security symbol (NIFTY, VOLTAS)
   quantity::Int64 # value of position change targeted
@@ -18,39 +18,51 @@ type Order
   orderstatus::OrderStatus # :pending :complete :cancelled
   stopprice::Float64 # stop price
   stopReached::Bool # :
-  tag::String # custom string 
+  tag::String # custom string
 end
 
 """
 Empty Constructor
 """
 Order() = Order(0, SecuritySymbol(), 0, 0,
-                0, OrderType(Market), DateTime(), 0, 
-                OrderDuration(EOD), OrderStatus(New), 
+                0, OrderType(Market), DateTime(), 0,
+                OrderDuration(EOD), OrderStatus(New),
                 0, false, "")
 
 """
 More Constructors
 """
-Order(symbol::SecuritySymbol, quantity::Int64, time::DateTime, tag = "") = 
+Order(symbol::SecuritySymbol, quantity::Int64, time::DateTime, tag = "") =
                               Order(0, symbol, quantity, quantity, 0,
                                     OrderType(Market), time,
                                     OrderStatus(New), 0, false, tag)
 
 Order(symbol::SecuritySymbol, quantity::Int64) =
             Order(0, symbol, quantity, quantity, 0,
-                                    OrderType(Market), DateTime(), 
+                                    OrderType(Market), DateTime(),
                                     OrderStatus(New), 0, false, "")
 
 Order(symbol::SecuritySymbol, quantity::Int64, price::Float64) =
-            Order(0, symbol, quantity, quantity, price, 
+            Order(0, symbol, quantity, quantity, price,
                                     OrderType(Limit), DateTime(),
                                     OrderStatus(New), 0, false,"")
-            
+
+Order(data::BSONObject) = Order(data["id"],
+                                SecuritySymbol(data["securitysymbol"]["id"], data["securitysymbol"]["ticker"]),
+                                data["quantity"],
+                                data["remainingquantity"],
+                                data["price"],
+                                eval(parse(data["ordertype"])),
+                                data["datetime"],
+                                eval(parse(data["orderstatus"])),
+                                data["stopprice"],
+                                data["stopReached"],
+                                data["tag"])
+
 #LimitOrder(symbol::SecuritySymbol, quantity::Int64, price::Float64) = Order(symbol, quantity, price)
-  
+
 #MarketOrder(symbol::SecuritySymbol, quantity::Int64) = Order(symbol, quantity)
-  
+
 
 
 
@@ -81,11 +93,11 @@ function MarketOnOpenOrder(symbol::SecuritySymbol, quantity::Int64)
 end
 
 #Check if order status is CLOSED
-function isclosed(order::Order) 
-  return order.status == OrderStatus(Filled) || 
-         order.status == OrderStatus(Canceled) || 
+function isclosed(order::Order)
+  return order.status == OrderStatus(Filled) ||
+         order.status == OrderStatus(Canceled) ||
          order.status == OrderStatus(Invalid)
-end=#    
+end=#
 
 #Change order status to 'Canceled'
 #=
@@ -96,7 +108,20 @@ setinvalid!(order::Order) order.status = OrderStatus(Invalid)
 
 =#
 function getordervalue(order::Order)
-  return order.quantity  
+  return order.quantity
 end
 
-
+function serialize(order::Order)
+  return Dict{String, Any}("id" => order.id,
+                            "securitysymbol" => Dict("id"      => order.securitysymbol.id,
+                                                      "ticker" => order.securitysymbol.ticker),
+                            "quantity" => order.quantity,
+                            "remainingquantity" => order.remainingquantity,
+                            "price" => order.price,
+                            "ordertype" => string(order.ordertype),
+                            "datetime" => order.datetime,
+                            "orderstatus" => string(order.orderstatus),
+                            "stopprice" => order.stopprice,
+                            "stopReached" => order.stopReached,
+                            "tag" => order.tag)
+end

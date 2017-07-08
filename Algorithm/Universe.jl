@@ -54,25 +54,18 @@ Empty constructor
 """
 Universe() = Universe(Dict(), Dict(), Dict(), Dict())
 
-Universe(data::BSONObject) = Universe(getsecurity(data["tickertosymbol"]),
-                                      Dict(
-                                        map(
-                                          (id, security) -> (SecuritySymbol(id), Security(security)),
-                                          data["securities"]
+Universe(data::BSONObject) = Universe(
+                                        Dict(),
+                                        Dict(
+                                          [(SecuritySymbol(parse(Int64, id)), Security(security)) for (id, security) in data["securities"]]
+                                        ),
+                                        Dict(
+                                          [(SecuritySymbol(parse(Int64, id)), [TradeBar(tradebar) for tradebar in vectorTradebar]) for (id, vectorTradebar) in data["tradebars"]]
+                                        ),
+                                        Dict(
+                                          [(SecuritySymbol(parse(Int64, id)), Adjustment(adj)) for (id, adj) in data["adjustments"]]
                                         )
-                                      ),
-                                      Dict(
-                                        map(
-                                          (id, vectorTradebar) -> (SecuritySymbol(id), [TradeBar(tradebar) for tradebar in vectorTradebar]),
-                                          data["tradebars"]
-                                        )
-                                      ),
-                                      Dict(
-                                        map(
-                                          (id, adj) -> (SecuritySymbol(id), Adjustment(adj)),
-                                          data["adjustments"]
-                                        )
-                                      ))
+                                      )
 
 """
 Index function to retrieve the security based on symbol
@@ -380,4 +373,34 @@ function shiftforwardandinsert!(tradebars::Vector{TradeBar}, newtradebar::TradeB
         tradebars[1] = newtradebar
     end
 
+end
+
+function serialize(tradebars::Vector{TradeBar})
+  arr = []
+  for tb in tradebars
+    push!(arr, Dict{String, Any}("datetime" => tb.datetime,
+                                  "open"    => tb.open,
+                                  "high"    => tb.high,
+                                  "low"     => tb.low,
+                                  "close"   => tb.close,
+                                  "volume"  => tb.volume))
+  end
+  return arr
+end
+
+function serialize(universe::Universe)
+  temp = Dict{String, Any}("securities"  => Dict{String, Any}(),
+                            "tradebars"   => Dict{String, Any}(),
+                            "adjustments" => Dict{String, Any}())
+  for (symbol, security) in universe.securities
+    temp["securities"][string(symbol.id)] = serialize(security)
+  end
+  for (symbol, vec) in universe.tradebars
+    temp["tradebars"][string(symbol.id)] = serialize(vec)
+  end
+  for (symbol, adj) in universe.adjustments
+    temp["adjustments"][string(symbol.id)] = serialize(adj)
+  end
+
+  return temp
 end

@@ -17,25 +17,26 @@ function outputbackteststatistics_partial(accttrkr::AccountTracker,
                                     ordrtrkr::OrderTracker)
 
     #Create a sorted list of dates
+
     sorteddates = sort(collect(keys(pftrkr)))
- 
+
     #creating the right format datastructures to save backtest info
 
     #Cumulative Strategy Equity Data
     equity = OrderedDict{String,Float64}()
     totalreturn_algorithm = OrderedDict{String,Float64}()
     totalreturn_benchmark = OrderedDict{String,Float64}()
-        
+
     for i = 1:length(sorteddates)
         equity[string(sorteddates[i])] = round(pftrkr[sorteddates[i]].portfoliostats.netvalue,2)
         totalreturn_algorithm[string(sorteddates[i])] = round(100.0 * (pftrkr[sorteddates[i]].returns.totalreturn - 1.0),2)
         totalreturn_benchmark[string(sorteddates[i])] = round(100.0 * (bnchtrkr[sorteddates[i]].returns.totalreturn - 1.0),2)
     end
 
-    lastperformance = pftrkr[sorteddates[end]] 
-    
+    lastperformance = pftrkr[sorteddates[end]]
+
     # Create aggregate returns (JSON ready format)
-    # Just the onthly returns in the basic run      
+    # Just the onthly returns in the basic run
     monthlyreturns_algorithm = getaggregatereturns(pftrkr, :Monthly)
     monthlyreturns_benchmark = getaggregatereturns(bnchtrkr, :Monthly)
 
@@ -44,28 +45,28 @@ function outputbackteststatistics_partial(accttrkr::AccountTracker,
                     "detail" => false,
                     "summary" => convert(Dict, lastperformance),
                     "equity" => equity,
-                    "variables" => vartrkr,            
-                    "totalreturn" => 
+                    "variables" => vartrkr,
+                    "totalreturn" =>
                         Dict{String, Any}(
                             "algorithm" => totalreturn_algorithm,
                             "benchmark" => totalreturn_benchmark,
                         ),
-                    "returns" => 
+                    "returns" =>
                         Dict{String, Any}(
-                            "monthly" => 
+                            "monthly" =>
                                 Dict{String,Any}(
                                     "algorithm" => monthlyreturns_algorithm,
                                     "benchmark" => monthlyreturns_benchmark,
-                                ), 
+                                ),
                         ),
-                    "analytics" => 
+                    "analytics" =>
                         Dict{String, Any}(
                             "rolling" => convert(Dict, lastperformance)
-                            
+
                         ),
-                    "logs" => Logger.getlogbook() 
+                    "logs" => Logger.getlogbook()
                     )
- 
+
 end
 
 function outputbackteststatistics(accttrkr::AccountTracker,
@@ -75,7 +76,7 @@ function outputbackteststatistics(accttrkr::AccountTracker,
                                     cshtrkr::CashTracker,
                                     trsctrkr::TransactionTracker,
                                     ordrtrkr::OrderTracker)
-    
+
     outputdict = outputbackteststatistics_partial(accttrkr,
                                     pftrkr,
                                     bnchtrkr,
@@ -83,7 +84,7 @@ function outputbackteststatistics(accttrkr::AccountTracker,
                                     cshtrkr,
                                     trsctrkr,
                                     ordrtrkr)
-    
+
     Logger.print(JSON.json(outputdict))
 end
 
@@ -106,7 +107,7 @@ function outputbackteststatistics_full(accttrkr::AccountTracker,
 
     #update the detail to true
     outputdict["detail"] = true
-    
+
     #Compute yearly and Weekly returns
     weeklyreturns, monthlyreturns, yearlyreturns = getaggregatereturns(pftrkr)
     outputdict["returns"]["weekly"] = weeklyreturns
@@ -115,7 +116,7 @@ function outputbackteststatistics_full(accttrkr::AccountTracker,
     #Now add fixed window based analytics too
 
     #Create a sorted list of dates
-    monthlyanalytics = getmonthlyanalytics(pftrkr) 
+    monthlyanalytics = getmonthlyanalytics(pftrkr)
     yearlyanalytics = getyearlyanalytics(pftrkr)
 
     #update the output dictionary with analytics
@@ -131,7 +132,7 @@ end
 function getaggregatereturns(pft::PerformanceTracker, symbol::Symbol = :All)
     sorteddates = sort(collect(keys(pft)))
     date = sorteddates[1]
-    
+
     yearlyreturns = OrderedDict{String, Float64}()
     monthlyreturns = OrderedDict{String, Float64}()
     weeklyreturns = OrderedDict{String, Float64}()
@@ -146,9 +147,9 @@ function getaggregatereturns(pft::PerformanceTracker, symbol::Symbol = :All)
     nweek = week = Dates.week(date)
 
     wstr = mstr = ystr = ""
-    
+
     while i < length(sorteddates)
-        
+
         dailyreturn = pft[sorteddates[i]].returns.dailyreturn
 
         #Yearly
@@ -168,9 +169,9 @@ function getaggregatereturns(pft::PerformanceTracker, symbol::Symbol = :All)
             mstr = ystr*"0"*string(month)
         else
             mstr = ystr*string(month)
-        end 
-        
-        nmonth = Dates.month(sorteddates[i])       
+        end
+
+        nmonth = Dates.month(sorteddates[i])
         if (nmonth == month)
             mret *= (1.0 + dailyreturn)
         else
@@ -185,8 +186,8 @@ function getaggregatereturns(pft::PerformanceTracker, symbol::Symbol = :All)
             wstr = mstr*"0"*string(week)
         else
             wstr = mstr*string(week)
-        end 
-        
+        end
+
         nweek = Dates.week(sorteddates[i])
         if (nweek == week)
             wret *= (1.0 + dailyreturn)
@@ -198,7 +199,7 @@ function getaggregatereturns(pft::PerformanceTracker, symbol::Symbol = :All)
         week = nweek
 
         i = i + 1
-        
+
     end
 
     if (year == nyear)
@@ -218,15 +219,15 @@ function getaggregatereturns(pft::PerformanceTracker, symbol::Symbol = :All)
     elseif symbol == :Weekly
         return weeklyreturns
     elseif symbol == :Monthly
-        return monthlyreturns 
+        return monthlyreturns
     elseif symbol == :Yearly
-        return yearlyreturns  
+        return yearlyreturns
     end
 
-end   
+end
 
 function convert(::Type{Dict}, performance::Performance)
-    Dict{String, Any}(  "annualreturn" => round(100.0 * performance.returns.annualreturn, 2), 
+    Dict{String, Any}(  "annualreturn" => round(100.0 * performance.returns.annualreturn, 2),
                         "totalreturn" => round(100.0 * (performance.returns.totalreturn - 1.0), 2),
                         "annualstandarddeviation" => round(100.0 * performance.deviation.annualstandarddeviation, 2),
                         #"annualvariance" => round(100.0 * 100.0 * performance.annualvariance,2),
@@ -255,7 +256,7 @@ function getmonthlyanalytics(pft::PerformanceTracker)
         fmonth = Dates.month(fdate)
         ldate = sorteddates[i]
         lmonth = Dates.month(ldate)
-        
+
         while fmonth == lmonth && i <= length(sorteddates)
             ldate = sorteddates[i]
             lmonth = Dates.month(ldate)
@@ -268,13 +269,13 @@ function getmonthlyanalytics(pft::PerformanceTracker)
         end
 
         if fmonth < 10
-            mstr = string(Dates.year(fdate)) * "0" * string(fmonth) 
-        else    
+            mstr = string(Dates.year(fdate)) * "0" * string(fmonth)
+        else
             mstr = string(Dates.year(fdate)) * string(fmonth)
         end
 
         monthlyanalytics[mstr] =  convert(Dict, getperformanceforperiod(pft, fdate, ldate))
-        
+
     end
 
     return monthlyanalytics
@@ -294,7 +295,7 @@ function getyearlyanalytics(pft::PerformanceTracker)
         fyear = Dates.year(fdate)
         ldate = sorteddates[i]
         lyear = Dates.year(ldate)
-        
+
         while fyear == lyear && i <= length(sorteddates)
             ldate = sorteddates[i]
             lyear = Dates.year(ldate)
@@ -318,7 +319,7 @@ end
 function outputperformanceJSON(performancetracker::PerformanceTracker, benchmarktracker::PerformanceTracker, variabletracker::VariableTracker, date::Date)
     if date == Date()
         return
-    else 
+    else
         if !haskey(performancetracker, date)
             return
         end
@@ -347,7 +348,7 @@ function outputperformanceJSON(performancetracker::PerformanceTracker, benchmark
                                 "maxdrawdown" => round(100.0*performance.drawdown.maxdrawdown,2),
                                 "leverage" => round(performance.portfoliostats.leverage, 2)
                             )
-    if haskey(variabletracker, date) 
+    if haskey(variabletracker, date)
         jsondict["variables"] = Dict{String, Float64}()
 
         for (k,v) in variabletracker[date]
@@ -366,6 +367,3 @@ function outputlabels(labels::Dict{String, Float64})
     Logger.print(JSON.json(jsondict))
 end
 export outputlabels
-
-
-                        

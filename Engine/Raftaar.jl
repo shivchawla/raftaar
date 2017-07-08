@@ -9,7 +9,9 @@
 __precompile__(true)
 module Raftaar
 
-import Base: ==, getindex, setindex!
+import Base: ==, getindex, setindex!, Date
+
+using LibBSON, Mongo
 
 include("../Enums/enums.jl")
 include("../DataTypes/Split.jl")
@@ -32,8 +34,6 @@ include("../Execution/Brokerage.jl")
 include("../Algorithm/TradingEnvironment.jl")
 include("../Algorithm/AlgorithmState.jl")
 include("../Algorithm/Algorithm.jl")
-include("../ForwardTest/serialize.jl")
-include("../ForwardTest/deserialize.jl")
 
 #export Universe, Security, SecuritySymbol,
 #       Commission, Slippage, Order, TradeBar

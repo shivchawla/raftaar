@@ -14,6 +14,8 @@ end
 
 Drawdown() = Drawdown(0.0,0.0)
 
+Drawdown(data::BSONObject) = Drawdown(data["currentdrawdown"], data["maxdrawdown"])
+
 type Deviation
     annualstandarddeviation::Float64
     annualvariance::Float64
@@ -25,6 +27,14 @@ type Deviation
 end
 
 Deviation() = Deviation(0.0,0.0,0.0,0.0,0.0,0.0,0.0)
+
+Deviation(data::BSONObject) = Deviation(data["annualstandarddeviation"],
+                                        data["annualvariance"],
+                                        data["annualsemideviation"],
+                                        data["annualsemivariance"],
+                                        data["squareddailyreturn"],
+                                        data["sumsquareddailyreturn"],
+                                        data["sumdailyreturn"])
 
 type Ratios
     sharperatio::Float64
@@ -39,6 +49,15 @@ end
 
 Ratios() = Ratios(0.0,0.0,0.0,0.0,0.0,1.0,0.0,1.0)
 
+Ratios(data::BSONObject) = Ratios(data["sharperatio"],
+                                  data["informationratio"],
+                                  data["calmarratio"],
+                                  data["sortinoratio"],
+                                  data["treynorratio"],
+                                  data["beta"],
+                                  data["alpha"],
+                                  data["stability"])
+
 type Returns
     dailyreturn::Float64
     dailyreturn_benchmark::Float64
@@ -50,6 +69,13 @@ end
 
 Returns() = Returns(0.0,0.0,0.0,0.0,1.0,1.0)
 
+Returns(data::BSONObject) = Returns(data["dailyreturn"],
+                                    data["dailyreturn_benchmark"],
+                                    data["averagedailyreturn"],
+                                    data["annualreturn"],
+                                    data["totalreturn"],
+                                    data["peaktotalreturn"])
+
 type PortfolioStats
     netvalue::Float64
     #peaknormalizednetvalue::Float64
@@ -59,6 +85,8 @@ type PortfolioStats
 end
 
 PortfolioStats() = PortfolioStats(0.0,0.0,0.0)
+
+PortfolioStats(data::BSONObject) = PortfolioStats(data["netvalue"], data["leverage"], data["concentration"])
 
 type Performance
     period::Int
@@ -73,10 +101,22 @@ end
 
 Performance() = Performance(0, Returns(), Deviation(), Ratios(), Drawdown(), PortfolioStats())
 
+Performance(data::BSONObject) = Performance(data["period"],
+                                            Returns(data["returns"]),
+                                            Deviation(data["deviation"]),
+                                            Ratios(data["ratios"]),
+                                            Drawdown(data["drawdown"]),
+                                            PortfolioStats(data["portfoliostats"]))
+
 typealias AccountTracker Dict{Date, Account}
 typealias CashTracker Dict{Date, Float64}
 typealias PerformanceTracker Dict{Date, Performance}
 typealias VariableTracker Dict{Date, Dict{String, Float64}}
+
+AccountTracker(data::BSONObject) = Dict([(Date(date), Account(acc)) for (date, acc) in data])
+CashTracker(data::BSONObject) = Dict([(Date(date), val) for (date, val) in data])
+PerformanceTracker(data::BSONObject) = Dict([(Date(date), Performance(perf)) for (date, perf) in data])
+VariableTracker(data::BSONObject) = Dict([(Date(date), Dict(dt)) for (date, dt) in data])
 
 
 """
@@ -232,4 +272,86 @@ function calculateratios(returns::Returns, deviation::Deviation, drawdown::Drawd
     ratios.sortinoratio = deviation.annualsemideviation > 0.0 ? returns.annualreturn / deviation.annualsemideviation : 0.0
     ratios.calmarratio = drawdown.maxdrawdown > 0.0 ? returns.annualreturn/drawdown.maxdrawdown : 0.0
     return ratios
+end
+
+function serialize(accounttracker::AccountTracker)
+  temp = Dict{String, Any}()
+  for (date, account) in accounttracker
+    temp[string(date)] = serialize(account)
+  end
+  return temp
+end
+
+function serialize(cashtracker::CashTracker)
+  temp = Dict{String, Any}()
+  for (date, cash) in cashtracker
+    temp[string(date)] = cash
+  end
+  return temp
+end
+
+function serialize(performancetracker::PerformanceTracker)
+  temp = Dict{String, Any}()
+  for (date, perf) in performancetracker
+    temp[string(date)] = serialize(perf)
+  end
+  return temp
+end
+
+function serialize(variabletracker::VariableTracker)
+  temp = Dict{String, Any}()
+  for (date, var) in variabletracker
+    temp[string(date)] = var
+  end
+  return temp
+end
+
+function serialize(dw::Drawdown)
+  return Dict{String, Any}("currentdrawdown" => dw.currentdrawdown,
+                            "maxdrawdown" => dw.maxdrawdown)
+end
+
+function serialize(dv::Deviation)
+  return Dict{String, Any}("annualstandarddeviation" => dv.annualstandarddeviation,
+                            "annualvariance" => dv.annualvariance,
+                            "annualsemideviation" => dv.annualsemideviation,
+                            "annualsemivariance" => dv.annualsemivariance,
+                            "squareddailyreturn" => dv.squareddailyreturn,
+                            "sumsquareddailyreturn" => dv.sumsquareddailyreturn,
+                            "sumdailyreturn" => dv.sumdailyreturn)
+end
+
+function serialize(rt::Ratios)
+  return Dict{String, Any}("sharperatio" => rt.sharperatio,
+                            "informationratio" => rt.informationratio,
+                            "calmarratio" => rt.calmarratio,
+                            "sortinoratio" => rt.sortinoratio,
+                            "treynorratio" => rt.treynorratio,
+                            "beta" => rt.beta,
+                            "alpha" => rt.alpha,
+                            "stability" => rt.stability)
+end
+
+function serialize(rs::Returns)
+  return Dict{String, Any}("dailyreturn" => rs.dailyreturn,
+                            "dailyreturn_benchmark" => rs.dailyreturn_benchmark,
+                            "averagedailyreturn" => rs.averagedailyreturn,
+                            "annualreturn" => rs.annualreturn,
+                            "totalreturn" => rs.totalreturn,
+                            "peaktotalreturn" => rs.peaktotalreturn)
+end
+
+function serialize(ps::PortfolioStats)
+  return Dict{String, Any}("netvalue" => ps.netvalue,
+                            "leverage" => ps.leverage,
+                            "concentration" => ps.concentration)
+end
+
+function serialize(performance::Performance)
+  return Dict{String, Any}("period" => performance.period,
+                            "returns" => serialize(performance.returns),
+                            "deviation" => serialize(performance.deviation),
+                            "ratios" => serialize(performance.ratios),
+                            "drawdown" => serialize(performance.drawdown),
+                            "portfoliostats" => serialize(performance.portfoliostats))
 end

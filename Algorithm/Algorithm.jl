@@ -72,6 +72,7 @@ Algorithm(data::BSONObject) = Algorithm(data["name"],
                                         CashTracker(data["cashtracker"]),
                                         PerformanceTracker(data["performancetracker"]),
                                         PerformanceTracker(data["benchmarktracker"]),
+                                        TransactionTracker(data["transactiontracker"]),
                                         OrderTracker(data["ordertracker"]),
                                         VariableTracker(data["variabletracker"]),
                                         AlgorithmState(data["state"]))
@@ -234,3 +235,41 @@ function outputbackteststatistics(algorithm::Algorithm)
 end
 
 export outputbackteststatistics
+
+# Additional functions for (de)serialization
+
+function serialize(algorithm::Algorithm)
+  return Dict{String, Any}("object"   => "algorithm",
+                            "name"    => algorithm.name,
+                            "id"      => algorithm.algorithmid,
+                            "status"  => string(algorithm.status),
+                            "account" => serialize(algorithm.account),
+                            "universe" => serialize(algorithm.universe),
+                            "portfolio" => serialize(algorithm.portfolio),
+                            "tradeenv" => serialize(algorithm.tradeenv),
+                            "brokerage" => serialize(algorithm.brokerage),
+                            "accounttracker" => serialize(algorithm.accounttracker),
+                            "cashtracker" => serialize(algorithm.cashtracker),
+                            "performancetracker" => serialize(algorithm.performancetracker),
+                            "benchmarktracker" => serialize(algorithm.benchmarktracker),
+                            "transactiontracker" => serialize(algorithm.transactiontracker),
+                            "ordertracker" => serialize(algorithm.ordertracker),
+                            "variabletracker" => serialize(algorithm.variabletracker),
+                            "state" => serialize(algorithm.state))
+end
+
+function serializeData(algorithm::Algorithm; UID::String = "anonymous", backtestID::String = "backtest0")
+  serializeClient = MongoClient()
+  serializeCollection = MongoCollection(serializeClient, UID, backtestID)
+
+  delete(serializeCollection, Dict())
+  insert(serializeCollection, serialize(algorithm))
+end
+
+function deserializeData(;UID::String = "anonymous", backtestID::String = "backtest0")
+  deserializeClient = MongoClient()
+  deserializeCollection = MongoCollection(deserializeClient, UID, backtestID)
+  return Algorithm(first(find(deserializeCollection, Dict("object" => "algorithm"))))
+end
+
+Base.Date(s::String) = Date(map(x->parse(Int64, x), split(s, "-"))...)

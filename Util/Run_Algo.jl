@@ -15,7 +15,7 @@ import Logger: warn, info, error
 using DataFrames
 using TimeSeries
 
-function run_algo(forward_test::Bool = true)
+function run_algo(forward_test::Bool = false)
 
   benchmark = "JBFIND"
   setbenchmark(benchmark)

@@ -14,8 +14,10 @@ end
 
 Margin() = Margin(1.0, 1.0)
 
+Margin(data::BSONObject) = Margin(data["initialmargin"], data["maintenancemargin"])
+
 function getmaintenancemargin(position::Position, margin::Margin)
-	return  absholdingcost(position) * margin.maintenancemargin	
+	return  absholdingcost(position) * margin.maintenancemargin
 end
 
 
@@ -24,7 +26,7 @@ function totalmarginused(portfolio::Portfolio, margin::Margin)
   for (security, position) in enumerate(portfolio.positions)
     	totalmargin = getmaintenancemargin(position, margin)
 	end
-                   
+
     return totalmargin
 end
 
@@ -34,28 +36,28 @@ function marginremaininginaccount(account::Account, margin::Margin)
 end
 
 function getmarginremaining(account::Account, margin::Margin, order::Order)
-    
+
     position = account.portfolio[order.securitysymbol]
-   
+
     direction = order.quantity < 0 ? :sell : :buy
-    
+
     #Case2 : marginleft = 2 * current value of asset + cash if order direction is opposite to the position
     if islong(position)
-      
-        if direction == :buy 
+
+        if direction == :buy
           return marginremaininginaccount(account, margin)
-        
+
         elseif direction == :sell
-          return 
+          return
               #portion of margin to close the existing position
               # + portion of margin to open the new position
               getmaintenancemargin(position, margin) +
                 #absholdingsvalue(position) * margin.initialmargin  +
                 marginremaininginaccount(account, margin)
         end
-        
+
     elseif isshort(position)
-   
+
         if direction == :buy
             return
               #portion of margin to close the existing position
@@ -80,42 +82,44 @@ end
 
 
 function scanformargincall(portfolio::Portfolio, margin::Margin)
-		
+
 	totalmarginused = totalmarginused(portfolio, margin)
-   
+
 	#don't issue a margin call if we're not using margin
 	if totalmarginused <= 0.0
   	return Vector{Order}()
-  end  
+  end
 
 	#if leverage is less than 1.0, don't issue a margin call
 	avgholdingsleverage = totalabsoluteholdingscost(portfolio)/totalmarginused
 	if avgholdingsleverage <= 1.0
   	return Vector{Order}()
   end
-    
+
   marginremaining = getmarginremaining(portfolio, margin)
 	totalportfoliovalue = totalportfoliovalue(portfolio)
 	if marginremaining <= totalportfoliovalue*0.05
   	issuemargincallwarning  = true
   end
-    
+
 	if marginremaining  > 0.0
   	return Vector{Order}()
   end
-    
-	#Generate a list of margin call orders 
+
+	#Generate a list of margin call orders
 	margincallorders = Vector{Order}()
 	for (sec, pos) in enumerate(positions)
-  
+
 		margincallorder = generatemargincallorder(security, totalportfoliovalue, totalmarginused)
       	if !isempty(margincallorder) && margincallorder.quantity != 0
         	margincallorders.Add(margincallorder)
-        end             
+        end
 	end
 
 	return margincallorders
 end
 
-
-
+function serialize(margin::Margin)
+  return Dict{String, Any}("initialmargin"     => margin.initialmargin,
+                            "maintenancemargin" => margin.maintenancemargin)
+end

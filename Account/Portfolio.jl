@@ -35,8 +35,12 @@ end
 
 Portfolio() = Portfolio(Dict(), PortfolioMetrics())
 
-Portfolio(data::BSONObject) = Portfolio(Dict(map((id, pos) -> (SecuritySymbol(id), Position(pos)), data["positions"])),
-                                          PortfolioMetrics(data["metrics"]))
+Portfolio(data::BSONObject) = Portfolio(
+                                Dict(
+                                  [(SecuritySymbol(parse(Int64, id)), Position(pos)) for (id, pos) in data["positions"]]
+                                ),
+                                PortfolioMetrics(data["metrics"])
+                              )
 
 """
 Indexing function to get position based
@@ -224,4 +228,23 @@ function updateportfoliometrics!(portfolio::Portfolio)
     portfolio.metrics.longcount += position.quantity > 0 ? 1 : 0
   end
 
+end
+
+function serialize(metrics::PortfolioMetrics)
+  return Dict{String, Any}("netexposure"   => metrics.netexposure,
+                            "grossexposure" => metrics.grossexposure,
+                            "shortexposure" => metrics.shortexposure,
+                            "longexposure"  => metrics.longexposure,
+                            "shortcount"    => metrics.shortcount,
+                            "longcount"     => metrics.longcount)
+end
+
+function serialize(portfolio::Portfolio)
+  temp = Dict{String, Any}("metrics"   => serialize(portfolio.metrics),
+                            "positions" => Dict{String, Any}())
+  for (symbol, pos) in portfolio.positions
+    temp["positions"][string(symbol.id)] = serialize(pos)
+  end
+
+  return temp
 end

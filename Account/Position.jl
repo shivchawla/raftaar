@@ -28,7 +28,7 @@ Constructors
 """
 Position() = Position(SecuritySymbol())
 
-Position(data::BSONObject) = Position(SecuritySymbol(data["symbol"]["id"], data["symbol"]["ticker"]),
+Position(data::BSONObject) = Position(SecuritySymbol(data["securitysymbol"]["id"], data["securitysymbol"]["ticker"]),
                                       data["quantity"],
                                       data["averageprice"],
                                       data["totalfees"],
@@ -240,4 +240,16 @@ function updateposition_splits_dividends!(position::Position, adjustment::Adjust
         position.averageprice = position.averageprice * adjustment.adjustmentfactor
         position.quantity = Int(round(position.quantity * (1.0/adjustment.adjustmentfactor)))
     end
+end
+
+function serialize(position::Position)
+  return Dict{String, Any}("securitysymbol"   => Dict("id"      => position.securitysymbol.id,
+                                                      "ticker"  => position.securitysymbol.ticker),
+                          "quantity"          => position.quantity,
+                          "averageprice"      => position.averageprice,
+                          "totalfees"         => position.totalfees,
+                          "lastprice"         => position.lastprice,
+                          "lasttradepnl"      => position.lasttradepnl,
+                          "realizedpnl"       => position.realizedpnl,
+                          "totaltradedvolume" => position.totaltradedvolume)
 end

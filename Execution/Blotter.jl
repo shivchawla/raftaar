@@ -24,6 +24,15 @@ Empty blotter construction
 """
 Blotter() = Blotter(Dict(), OrderTracker())
 
+Blotter(data::BSONObject) = Blotter(
+															Dict([(SecuritySymbol(parse(Int64, id)), [Order(order) for order in vectorOrder]) for (id, vectorOrder) in data["openorders"]]),
+															OrderTracker(data["ordertracker"])
+														)
+
+OrderTracker(data::BSONObject) = Dict([(Date(date), [Order(order) for order in vectorOrder]) for (date, vectorOrder) in data])
+
+TransactionTracker(data::BSONObject) = Dict([(Date(date), [OrderFill(orderfill) for orderfill in vectorOrderFill]) for (date, vectorOrderFill) in data])
+
 """
 Function to add order to the blotter
 """
@@ -155,4 +164,30 @@ function addtransaction!(blotter::Blotter, fill::OrderFill)
         blotter.transactiontracker[dateoffill] = [fill]
     end
 
+end
+
+function serialize(blotter::Blotter)
+  temp = Dict{String, Any}()
+  for (symbol, vectorOrders) in blotter.openorders
+    temp[string(symbol.id)] = [serialize(order) for order in vectorOrders]
+  end
+  return Dict{String, Any}("openorders"     => temp,
+                            "ordertracker"  => "serialize(blotter.ordertracker)")
+end
+
+function serialize(transactiontracker::TransactionTracker)
+  temp = Dict{String, Any}()
+  for (date, orderfills) in transactiontracker
+    temp[string(date)] = [serialize(orderfill) for orderfill in orderfills]
+  end
+  return temp
+end
+
+function serialize(ordertracker::OrderTracker)
+  temp = Dict{String, Any}()
+  for (date, vectorOrders) in ordertracker
+		println(serialize(vectorOrders[1]), "\n\n\n")
+    temp[string(date)] = [serialize(order) for order in vectorOrders]
+  end
+  return temp
 end

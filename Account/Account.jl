@@ -87,3 +87,10 @@ function updateaccount_fills!(account::Account, portfolio::Portfolio, fills::Vec
 end
 
 #precompile(updateaccountforfills!,(Account, Portfolio, Vector{OrderFill}))
+
+function serialize(account::Account)
+  return Dict{String, Any}("seedcash" => account.seedcash,
+                            "cash"     => account.cash,
+                            "netvalue" => account.netvalue,
+                            "leverage" => account.leverage)
+end

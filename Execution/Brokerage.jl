@@ -7,7 +7,7 @@
 #include("../Account/Account.jl")
 
 """
-Types to support brokerge actions
+Types to support brokerage actions
 """
 type BacktestBrokerage
 	blotter::Blotter
@@ -23,20 +23,24 @@ Empty brokerage constructor
 """
 BacktestBrokerage() = BacktestBrokerage(Blotter(), Commission(), Margin(),
 							Slippage(), CancelPolicy(EOD), 0.05)
-      
+
+BacktestBrokerage(data::BSONObject) = BacktestBrokerage(Blotter(data["blotter"]), Commission(data["commission"]),
+												Margin(data["margin"]), Slippage(data["slippage"]),
+												eval(parse(data["cancelpolicy"])), data["participationrate"])
+
 """
 Function to set commission model
 """
 function setcommission!(brokerage::BacktestBrokerage, commission::Commission)
 	brokerage.commission = commission
-end 
+end
 
 """
 Function to set commission model
 """
 function setcommission!(brokerage::BacktestBrokerage, commission::Tuple{String, Float64})
 	brokerage.commission = Commission(eval(parse(commission[1])), commission[2])
-end 
+end
 
 """
 Function to set margin model
@@ -68,7 +72,7 @@ Function to set cancelpolicy model
 """
 function setcancelpolicy!(brokerage::BacktestBrokerage, cancelpolicy::String)
 	brokerage.cancelpolicy = CancelPolicy(eval(parse(cancelpolicy)))
-end 
+end
 
 """
 Function to set participationrate
@@ -84,24 +88,24 @@ function getmargin(brokerage::BacktestBrokerage, order::Order)
 end
 
 """
-Function to place order 
+Function to place order
 """
 function placeorder!(brokerage::BacktestBrokerage, order::Order)
-	
+
 	###################
 	#should do sanity checks if order can be placed....
 	#only then place the order
 	###################
 
-	
-	#assign an order id	
+
+	#assign an order id
 	order.id = generateorderid(order)
 	order.orderstatus = OrderStatus(New)
 	addorder!(brokerage.blotter, order)
-	order.orderstatus = OrderStatus(Submitted)	
+	order.orderstatus = OrderStatus(Submitted)
 
 	return order.id
-end	
+end
 
 #function updateorder(brokerage::BacktestBrokerage, order::Order, quantity::Int64)
 #	getorderstatus()
@@ -113,14 +117,14 @@ Function to cancel an order based on orderid
 function cancelorder(brokerage::BacktestBrokerage, orderid::Integer)
 	order = removeopenorder!(brokerage.blotter, orderid)
 	order.orderstatus = OrderStatus(Canceled)
-end	
+end
 
 """
 Function to cancel all orders for the symbol
 """
 function cancelallorders!(brokerage::BacktestBrokerage, symbol::SecuritySymbol)
 	blotter = brokerage.blotter
-	
+
 	ordersDict = removeallopenorders!(blotter, symbol)
 
 	for (symbol, orders) in ordersDict
@@ -176,10 +180,10 @@ function updatependingorders!(brokerage::BacktestBrokerage, universe::Universe, 
 			continue
 		#=else
 			#Step 3 check if account has sufficient capital to execute the order
-			if !checkforsufficientcapital(brokerage.margin, 
-											brokerage.commission, 
+			if !checkforsufficientcapital(brokerage.margin,
+											brokerage.commission,
 											account, order)
-				
+
 				removeopenorder!(blotter, order.id)
 				continue
 			end	=#
@@ -189,8 +193,8 @@ function updatependingorders!(brokerage::BacktestBrokerage, universe::Universe, 
 
 
 		# Get fill based on size or order and latest price
-		fill = getorderfill(order, brokerage.slippage, 
-							brokerage.commission, brokerage.participationrate, 
+		fill = getorderfill(order, brokerage.slippage,
+							brokerage.commission, brokerage.participationrate,
 							latesttradebar)
 
 		#Append fill with other fills
@@ -199,24 +203,24 @@ function updatependingorders!(brokerage::BacktestBrokerage, universe::Universe, 
 		#Also, update blotter with fill history
 		#addtransaction!(blotter, fill)
 
-		#Here create a signal to up .... 
+		#Here create a signal to up ....
 
 		fillquantity = fill.fillquantity
 		order.remainingquantity -= fillquantity
 		#update the status of the order based on the fill quantity
-		
+
 		if order.remainingquantity == 0
-			order.orderstatus = OrderStatus(Filled)	
+			order.orderstatus = OrderStatus(Filled)
 		elseif order.remainingquantity!=0 && fillquantity!=0
 			order.orderstatus = OrderStatus(PartiallyFilled)
 		end
-			
+
 		#remove order from pending orders if fill is complete
 		if order.orderstatus == OrderStatus(Filled)
 			removeopenorder!(brokerage.blotter, order.id)
  		end
-	
-	end	
+
+	end
 
 	return fills
 
@@ -233,7 +237,7 @@ function updatependingorders_splits!(brokerage::BacktestBrokerage, adjustments::
 
 			for order in pendingorders
 				order.quantity = Int(round(order.quantity * (1.0/adjustment.adjustmentfactor)))
-				order.price = order.price * adjustment.adjustmentfactor 
+				order.price = order.price * adjustment.adjustmentfactor
 			end
 
 		end
@@ -245,22 +249,22 @@ Check if sufficient cash/margin is available to complete the transaction
 Logic taken from LEAN
 """
 function checkforsufficientcapital(margin::Margin, commission::Commission, account::Account, order::Order)
-	
-	if order.quantity == 0 
+
+	if order.quantity == 0
 		return true
 	end
 
 	# When order only reduces or closes a security position, capital is always sufficient
-    if (account.portfolio[order.securitysymbol].quantity * order.quantity < 0 
-    		&& abs(account.portfolio[order.securitysymbol].quantity) >= abs(order.quantity)) 
+    if (account.portfolio[order.securitysymbol].quantity * order.quantity < 0
+    		&& abs(account.portfolio[order.securitysymbol].quantity) >= abs(order.quantity))
     	return true
 	end
 
 	freemargin = getmarginremaining(account, margin, order)
-	
+
 	#Pro-rate the initial margin required for order based on how much has already been filled
     initialmarginrequired = abs(order.remainingquantity)/abs(order.quantity) * getinitialmarginfororder(margin, order, commission)
-   
+
     if initialmarginrequired > freemargin
     	return false
 	end
@@ -286,9 +290,11 @@ Function to generate unique orderid
 """
 generateorderid(order::Order) = object_id(order)
 
-
-
-
-
-
-
+function serialize(brokerage::BacktestBrokerage)
+  return Dict{String, Any}("blotter"            => serialize(brokerage.blotter),
+                            "commission"        => serialize(brokerage.commission),
+                            "margin"            => serialize(brokerage.margin),
+                            "slippage"          => serialize(brokerage.slippage),
+                            "cancelpolicy"      => string(brokerage.cancelpolicy),
+                            "participationrate" => brokerage.participationrate)
+end

@@ -20,7 +20,7 @@ Empty Constructor
 """
 SecuritySymbol() = SecuritySymbol(0, "")
 
-SecuritySymbol(id::Int64) = getsecurity(id).symbol
+SecuritySymbol(id::Int64) = SecuritySymbol(id, "")
 
 """
 Definition of empty SecuritySymbol
@@ -95,4 +95,15 @@ Function to check whether security is active
 """
 function cantrade(security::Security, datetime::DateTime)
   return datetime >= security.startdate && datetime <= security.enddate
+end
+
+function serialize(security::Security)
+  return Dict{String, Any}("symbol"        => Dict("id"             => security.symbol.id,
+                                                    "ticker"        => security.symbol.ticker),
+                            "name"         => security.name,
+                            "exchange"     => security.exchange,
+                            "country"      => security.country,
+                            "securitytype" => security.securitytype,
+                            "startdate"    => security.startdate,
+                            "enddate"      => security.enddate)
 end
