@@ -14,6 +14,7 @@ using DataFrames
 using TimeSeries
 using Logger
 using WebSockets
+using Mongo
 
 import Logger: info, error
 
@@ -307,8 +308,12 @@ export updatedatastores
 """
 Function to save progress
 """
-function _serializeData()
-  Raftaar.serializeData(algorithm, UID = "user1", backtestID = "backtest1")
+function _serializeData(;UID::String = "anonymous", backtestID::String = "backtest0")
+  serializeClient = MongoClient()
+  serializeCollection = MongoCollection(serializeClient, UID, backtestID)
+
+  delete(serializeCollection, Dict())
+  insert(serializeCollection, Raftaar.serialize(algorithm))
 end
 
 export _serializeData
@@ -316,8 +321,19 @@ export _serializeData
 """
 Function to load previously saved progress
 """
-function _deserializeData()
-  global algorithm = Raftaar.deserializeData(UID = "user1", backtestID = "backtest1")
+function _deserializeData(;UID::String = "anonymous", backtestID::String = "backtest0")
+  deserializeClient = MongoClient()
+  deserializeCollection = MongoCollection(deserializeClient, UID, backtestID)
+
+  deserializedData = collect(find(deserializeCollection, Dict("object" => "algorithm")))
+
+  if length(deserializedData) == 0
+    return false
+  else
+    retrieveData = deserializedData[1]
+    global algorithm = Raftaar.Algorithm(retrieveData)
+    return true
+  end
 end
 
 export _deserializeData

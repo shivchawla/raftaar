@@ -5,8 +5,8 @@
 using Raftaar
 
 function initialize(state)
-	setstartdate(DateTime("01/01/2010","dd/mm/yyyy"))
-	setenddate(DateTime("31/12/2011","dd/mmm/yyyy"))
+	# setstartdate(DateTime("01/01/2010","dd/mm/yyyy"))
+	# setenddate(DateTime("31/01/2010","dd/mmm/yyyy"))
 	setcash(1000000.0)
 	setresolution("Day")
 	setcancelpolicy(CancelPolicy(EOD))

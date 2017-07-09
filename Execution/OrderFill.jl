@@ -24,7 +24,7 @@ OrderFill(order::Order, datetime::DateTime, orderfee::Float64, message = "") =
 
 OrderFill(order::Order, datetime::DateTime) = OrderFill(order, datetime, 0.0)
 
-OrderFill(data::BSONObject) = OrderFill(data["orderid"],
+OrderFill(data::BSONObject) = OrderFill(parse(UInt64, data["orderid"]),
 																				SecuritySymbol(data["securitysymbol"]["id"], data["securitysymbol"]["ticker"]),
 																				data["datetime"],
 																				data["orderfee"],
@@ -42,7 +42,7 @@ function isclosed(fill::OrderFill)
 end
 
 function serialize(orderfill::OrderFill)
-  return Dict{String, Any}("orderid" => orderfill.orderid,
+  return Dict{String, Any}("orderid" => string(orderfill.orderid),
                             "securitysymbol" => Dict("id"      => orderfill.securitysymbol.id,
                                                       "ticker" => orderfill.securitysymbol.ticker),
                             "datetime" => orderfill.datetime,

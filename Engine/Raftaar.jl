@@ -11,7 +11,7 @@ module Raftaar
 
 import Base: ==, getindex, setindex!, Date
 
-using LibBSON, Mongo
+using LibBSON
 
 include("../Enums/enums.jl")
 include("../DataTypes/Split.jl")

@@ -255,21 +255,9 @@ function serialize(algorithm::Algorithm)
                             "transactiontracker" => serialize(algorithm.transactiontracker),
                             "ordertracker" => serialize(algorithm.ordertracker),
                             "variabletracker" => serialize(algorithm.variabletracker),
-                            "state" => serialize(algorithm.state))
-end
-
-function serializeData(algorithm::Algorithm; UID::String = "anonymous", backtestID::String = "backtest0")
-  serializeClient = MongoClient()
-  serializeCollection = MongoCollection(serializeClient, UID, backtestID)
-
-  delete(serializeCollection, Dict())
-  insert(serializeCollection, serialize(algorithm))
-end
-
-function deserializeData(;UID::String = "anonymous", backtestID::String = "backtest0")
-  deserializeClient = MongoClient()
-  deserializeCollection = MongoCollection(deserializeClient, UID, backtestID)
-  return Algorithm(first(find(deserializeCollection, Dict("object" => "algorithm"))))
+                            "state" => serialize(algorithm.state),
+                            "startdate" => algorithm.tradeenv.startdate,
+                            "enddate" => algorithm.tradeenv.enddate)
 end
 
 Base.Date(s::String) = Date(map(x->parse(Int64, x), split(s, "-"))...)

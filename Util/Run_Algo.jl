@@ -15,30 +15,70 @@ import Logger: warn, info, error
 using DataFrames
 using TimeSeries
 
-function run_algo(forward_test::Bool = false)
+function run_algo(forward_test::Bool = false, start_date::Date = Date(2016,01,01), end_date::Date = Date(now()))
 
   benchmark = "JBFIND"
   setbenchmark(benchmark)
 
-  benchmark = API.getbenchmark()
+  step = Base.Dates.Day(2)
 
-  if(!forward_test)
+  wasDataFound = false
+
+  if forward_test
+    # we're doing a forward test
+    # loop over all the dates in the current date range
+    for current_date in start_date:step:end_date
+      # Let's check if we have already saved data or not
+
+      wasDataFound = _deserializeData(UID = "user1", backtestID = "test563248")
+
+      # _deserializeData() function returns true if some previously saved data was found and deserialized
+      # otherwise it returns false, which means a fresh start
+
+      if !wasDataFound
+        # Oh no, no data found
+        # let's call the initialize function
+        println("Starting fresh simulation...")
+        try
+          initialize(getstate())
+        catch err
+          handleexception(err)
+        end
+
+        setstartdate(current_date)
+        setenddate(current_date + step - Base.Dates.Day(1))
+      else
+        # Aww yeah, data found
+        # just set the start date from where you want to continue the forward testing
+        # and let the fun begin
+        println("Continuing where you left off previous simulation...")
+        setstartdate(current_date)
+        setenddate(current_date + step - Base.Dates.Day(1))
+      end
+
+      run_algo()
+
+      # Don't forget that we were running a forward test
+      # that is we need to serialize everything back into database
+      _serializeData(UID = "user1", backtestID = "test563248")
+    end
+  else
+    # this means we are doing a backtest
+    println("Running backtest...")
+    # nothing much to do here except for calling initialize
     try
       initialize(getstate())
     catch err
       handleexception(err)
     end
-  else
-    _deserializeData()
 
-    # Set the start date from where you want to continue the forward testing
-    setstartdate(DateTime("01/01/2010","dd/mm/yyyy"))
-  	setenddate(DateTime("31/12/2011","dd/mmm/yyyy"))
+    run_algo()
   end
+end
 
-
-  startdate = getstartdate()
-  enddate = getenddate()
+function run_algo()
+  benchmark = API.getbenchmark()
+  # Let's download new data now
 
   #alldata = history([benchmark], "Close", :Day, 100, enddate = "2016-01-01")
   global alldata = history_unadj([benchmark], "Close", :Day, startdate = DateTime(getstartdate()), enddate = DateTime(getenddate()))
@@ -91,8 +131,6 @@ function run_algo(forward_test::Bool = false)
   end
 
   _outputbackteststatistics()
-
-  _serializeData()
 
 end
 

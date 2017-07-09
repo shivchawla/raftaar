@@ -169,10 +169,10 @@ end
 function serialize(blotter::Blotter)
   temp = Dict{String, Any}()
   for (symbol, vectorOrders) in blotter.openorders
-    temp[string(symbol.id)] = [serialize(order) for order in vectorOrders]
+    temp[string(symbol.id)] = [serialize(eachOrder) for eachOrder in vectorOrders]
   end
   return Dict{String, Any}("openorders"     => temp,
-                            "ordertracker"  => "serialize(blotter.ordertracker)")
+														"ordertracker"	=> serialize(blotter.ordertracker))
 end
 
 function serialize(transactiontracker::TransactionTracker)
@@ -186,7 +186,6 @@ end
 function serialize(ordertracker::OrderTracker)
   temp = Dict{String, Any}()
   for (date, vectorOrders) in ordertracker
-		println(serialize(vectorOrders[1]), "\n\n\n")
     temp[string(date)] = [serialize(order) for order in vectorOrders]
   end
   return temp
