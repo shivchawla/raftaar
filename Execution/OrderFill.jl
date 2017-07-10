@@ -51,3 +51,11 @@ function serialize(orderfill::OrderFill)
                             "fillquantity" => orderfill.fillquantity,
                             "message" => orderfill.message)
 end
+
+==(of1::OrderFill, of2::OrderFill) = of1.orderid == of2.orderid &&
+																			of1.securitysymbol == of2.securitysymbol &&
+																			of1.datetime == of2.datetime &&
+																			of1.orderfee == of2.orderfee &&
+																			of1.fillprice == of2.fillprice &&
+																			of1.fillquantity == of2.fillquantity &&
+																			of1.message == of2.message

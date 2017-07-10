@@ -46,3 +46,5 @@ function serialize(commission::Commission)
   return Dict{String, Any}("model" => string(commission.model),
                             "value" => commission.value)
 end
+
+==(cm1::Commission, cm2::Commission) = cm1.model == cm2.model && cm1.value == cm2.value

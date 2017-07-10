@@ -298,3 +298,10 @@ function serialize(brokerage::BacktestBrokerage)
                             "cancelpolicy"      => string(brokerage.cancelpolicy),
                             "participationrate" => brokerage.participationrate)
 end
+
+==(bk1::BacktestBrokerage, bk2::BacktestBrokerage) = bk1.blotter == bk2.blotter &&
+																											bk1.commission == bk2.commission &&
+																											bk1.margin == bk2.margin &&
+																											bk1.slippage == bk2.slippage &&
+																											bk1.cancelpolicy == bk2.cancelpolicy &&
+																											bk1.participationrate == bk2.participationrate

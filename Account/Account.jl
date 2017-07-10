@@ -94,3 +94,8 @@ function serialize(account::Account)
                             "netvalue" => account.netvalue,
                             "leverage" => account.leverage)
 end
+
+==(acc1::Account, acc2::Account) = acc1.seedcash == acc2.seedcash &&
+                                    acc1.cash == acc2.cash &&
+                                    acc1.netvalue == acc2.netvalue &&
+                                    acc1.leverage == acc2.leverage

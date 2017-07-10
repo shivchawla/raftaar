@@ -190,3 +190,6 @@ function serialize(ordertracker::OrderTracker)
   end
   return temp
 end
+
+==(blt1::Blotter, blt2::Blotter) = blt1.openorders == blt2.openorders &&
+																		blt1.ordertracker == blt2.ordertracker

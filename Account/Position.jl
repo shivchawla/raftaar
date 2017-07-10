@@ -253,3 +253,12 @@ function serialize(position::Position)
                           "realizedpnl"       => position.realizedpnl,
                           "totaltradedvolume" => position.totaltradedvolume)
 end
+
+==(pos1::Position, pos2::Position) = pos1.securitysymbol == pos2.securitysymbol &&
+                                      pos1.quantity == pos2.quantity &&
+                                      pos1.averageprice == pos2.averageprice &&
+                                      pos1.totalfees == pos2.totalfees &&
+                                      pos1.lastprice == pos2.lastprice &&
+                                      pos1.lasttradepnl == pos2.lasttradepnl &&
+                                      pos1.realizedpnl == pos2.realizedpnl &&
+                                      pos1.totaltradedvolume == pos2.totaltradedvolume

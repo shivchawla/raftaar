@@ -21,3 +21,8 @@ function serialize(as::AlgorithmState)
                             "performance" => serialize(as.performance),
                             "params"      => as.params)
 end
+
+==(as1::AlgorithmState, as2::AlgorithmState) = as1.account == as2.account &&
+                                                as1.portfolio == as2.portfolio &&
+                                                as1.performance == as2.performance &&
+                                                as1.params == as2.params

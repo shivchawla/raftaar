@@ -30,7 +30,7 @@ function run_algo(forward_test::Bool = false, start_date::Date = Date(2016,01,01
     for current_date in start_date:step:end_date
       # Let's check if we have already saved data or not
 
-      wasDataFound = _deserializeData(UID = "user1", backtestID = "test563248")
+      wasDataFound = _deserializeData()
 
       # _deserializeData() function returns true if some previously saved data was found and deserialized
       # otherwise it returns false, which means a fresh start
@@ -44,23 +44,21 @@ function run_algo(forward_test::Bool = false, start_date::Date = Date(2016,01,01
         catch err
           handleexception(err)
         end
-
-        setstartdate(current_date)
-        setenddate(current_date + step - Base.Dates.Day(1))
       else
         # Aww yeah, data found
         # just set the start date from where you want to continue the forward testing
         # and let the fun begin
         println("Continuing where you left off previous simulation...")
-        setstartdate(current_date)
-        setenddate(current_date + step - Base.Dates.Day(1))
       end
+
+      setstartdate(current_date)
+      setenddate(current_date + step - Base.Dates.Day(1))
 
       run_algo()
 
       # Don't forget that we were running a forward test
       # that is we need to serialize everything back into database
-      _serializeData(UID = "user1", backtestID = "test563248")
+      _serializeData()
     end
   else
     # this means we are doing a backtest

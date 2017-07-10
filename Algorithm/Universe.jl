@@ -55,7 +55,9 @@ Empty constructor
 Universe() = Universe(Dict(), Dict(), Dict(), Dict())
 
 Universe(data::BSONObject) = Universe(
-                                        Dict(),
+                                        Dict(
+                                          [(str, [SecuritySymbol(symbol) for symbol in vectorSymbols]) for (str, vectorSymbols) in data["tickertosymbol"]]
+                                        ),
                                         Dict(
                                           [(SecuritySymbol(parse(Int64, id)), Security(security)) for (id, security) in data["securities"]]
                                         ),
@@ -389,9 +391,14 @@ function serialize(tradebars::Vector{TradeBar})
 end
 
 function serialize(universe::Universe)
-  temp = Dict{String, Any}("securities"  => Dict{String, Any}(),
-                            "tradebars"   => Dict{String, Any}(),
-                            "adjustments" => Dict{String, Any}())
+  t2s = Dict{String, Any}()
+  for (str, vectorSymbols) in universe.tickertosymbol
+    t2s[str] = [serialize(symbol) for symbol in vectorSymbols]
+  end
+  temp = Dict{String, Any}("tickertosymbol" => Dict{String, Any}(t2s),
+                            "securities"    => Dict{String, Any}(),
+                            "tradebars"     => Dict{String, Any}(),
+                            "adjustments"   => Dict{String, Any}())
   for (symbol, security) in universe.securities
     temp["securities"][string(symbol.id)] = serialize(security)
   end
@@ -404,3 +411,15 @@ function serialize(universe::Universe)
 
   return temp
 end
+
+==(tb1::TradeBar, tb2::TradeBar) = tb1.datetime == tb2.datetime &&
+                                    tb1.open == tb2.open &&
+                                    tb1.high == tb2.high &&
+                                    tb1.low == tb2.low &&
+                                    tb1.close == tb2.close &&
+                                    tb1.volume == tb2.volume
+
+==(univ1::Universe, univ2::Universe) = univ1.tickertosymbol == univ2.tickertosymbol &&
+                                        univ1.securities == univ2.securities &&
+                                        univ1.tradebars == univ2.tradebars &&
+                                        univ1.adjustments == univ2.adjustments

@@ -231,7 +231,7 @@ function updateportfoliometrics!(portfolio::Portfolio)
 end
 
 function serialize(metrics::PortfolioMetrics)
-  return Dict{String, Any}("netexposure"   => metrics.netexposure,
+  return Dict{String, Any}("netexposure"    => metrics.netexposure,
                             "grossexposure" => metrics.grossexposure,
                             "shortexposure" => metrics.shortexposure,
                             "longexposure"  => metrics.longexposure,
@@ -248,3 +248,14 @@ function serialize(portfolio::Portfolio)
 
   return temp
 end
+
+
+==(pm1::PortfolioMetrics, pm2::PortfolioMetrics) = pm1.netexposure == pm2.netexposure &&
+                                                    pm1.grossexposure == pm2.grossexposure &&
+                                                    pm1.shortexposure == pm2.shortexposure &&
+                                                    pm1.longexposure == pm2.longexposure &&
+                                                    pm1.shortcount == pm2.shortcount &&
+                                                    pm1.longcount == pm2.longcount
+
+==(pf1::Portfolio, pf2::Portfolio) = pf1.positions == pf2.positions &&
+                                      pf1.metrics == pf2.metrics

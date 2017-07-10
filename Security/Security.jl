@@ -22,11 +22,15 @@ SecuritySymbol() = SecuritySymbol(0, "")
 
 SecuritySymbol(id::Int64) = SecuritySymbol(id, "")
 
+SecuritySymbol(data::BSONObject) = SecuritySymbol(data["id"], data["ticker"])
+
 """
 Definition of empty SecuritySymbol
 """
 empty(symbol::SecuritySymbol) = (symbol.id==0 && symbol.ticker=="")
-==(symbol_one::SecuritySymbol, symbol_two::SecuritySymbol) = symbol_one.id == symbol_two.id && symbol_one.ticker == symbol_two.ticker
+# Let's check only the symbol ids (and not tickers) because the ids are unique.
+# ==(symbol_one::SecuritySymbol, symbol_two::SecuritySymbol) = symbol_one.id == symbol_two.id && symbol_one.ticker == symbol_two.ticker
+==(symbol_one::SecuritySymbol, symbol_two::SecuritySymbol) = symbol_one.id == symbol_two.id
 Base.hash(symbol::SecuritySymbol, h::UInt) = hash(symbol.id, h)
 
 
@@ -97,6 +101,10 @@ function cantrade(security::Security, datetime::DateTime)
   return datetime >= security.startdate && datetime <= security.enddate
 end
 
+function serialize(symbol::SecuritySymbol)
+  return Dict{String,Any}("id" => symbol.id, "ticker" => symbol.ticker)
+end
+
 function serialize(security::Security)
   return Dict{String, Any}("symbol"        => Dict("id"             => security.symbol.id,
                                                     "ticker"        => security.symbol.ticker),
@@ -107,3 +115,11 @@ function serialize(security::Security)
                             "startdate"    => security.startdate,
                             "enddate"      => security.enddate)
 end
+
+==(sr1::Security, sr2::Security) = sr1.symbol == sr2.symbol &&
+                                    sr1.name == sr2.name &&
+                                    sr1.exchange == sr2.exchange &&
+                                    sr1.country == sr2.country &&
+                                    sr1.securitytype == sr2.securitytype &&
+                                    sr1.startdate == sr2.startdate &&
+                                    sr1.enddate == sr2.enddate

@@ -125,3 +125,15 @@ function serialize(order::Order)
                             "stopReached" => order.stopReached,
                             "tag" => order.tag)
 end
+
+==(odr1::Order, odr2::Order) = odr1.id == odr2.id &&
+                                odr1.securitysymbol == odr2.securitysymbol &&
+                                odr1.quantity == odr2.quantity &&
+                                odr1.remainingquantity == odr2.remainingquantity &&
+                                odr1.price == odr2.price &&
+                                odr1.ordertype == odr2.ordertype &&
+                                odr1.datetime == odr2.datetime &&
+                                odr1.orderstatus == odr2.orderstatus &&
+                                odr1.stopprice == odr2.stopprice &&
+                                odr1.stopReached == odr2.stopReached &&
+                                odr1.tag == odr2.tag

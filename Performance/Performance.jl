@@ -355,3 +355,41 @@ function serialize(performance::Performance)
                             "drawdown" => serialize(performance.drawdown),
                             "portfoliostats" => serialize(performance.portfoliostats))
 end
+
+==(dw1::Drawdown, dw2::Drawdown) = dw1.currentdrawdown == dw2.currentdrawdown &&
+                                    dw1.maxdrawdown == dw2.maxdrawdown
+
+==(dv1::Deviation, dv2::Deviation) = dv1.annualstandarddeviation == dv2.annualstandarddeviation &&
+                                      dv1.annualvariance == dv2.annualvariance &&
+                                      dv1.annualsemideviation == dv2.annualsemideviation &&
+                                      dv1.annualsemivariance == dv2.annualsemivariance &&
+                                      dv1.squareddailyreturn == dv2.squareddailyreturn &&
+                                      dv1.sumsquareddailyreturn == dv2.sumsquareddailyreturn &&
+                                      dv1.sumdailyreturn == dv2.sumdailyreturn
+
+==(rt1::Ratios, rt2::Ratios) = rt1.sharperatio == rt2.sharperatio &&
+                                rt1.informationratio == rt2.informationratio &&
+                                rt1.calmarratio == rt2.calmarratio &&
+                                rt1.sortinoratio == rt2.sortinoratio &&
+                                rt1.treynorratio == rt2.treynorratio &&
+                                rt1.beta == rt2.beta &&
+                                rt1.alpha == rt2.alpha &&
+                                rt1.stability == rt2.stability
+
+==(rs1::Returns, rs2::Returns) = rs1.dailyreturn == rs2.dailyreturn &&
+                                  rs1.dailyreturn_benchmark == rs2.dailyreturn_benchmark &&
+                                  rs1.averagedailyreturn == rs2.averagedailyreturn &&
+                                  rs1.annualreturn == rs2.annualreturn &&
+                                  rs1.totalreturn == rs2.totalreturn &&
+                                  rs1.peaktotalreturn == rs2.peaktotalreturn
+
+==(ps1::PortfolioStats, ps2::PortfolioStats) = ps1.netvalue == ps2.netvalue &&
+                                                ps1.leverage == ps2.leverage &&
+                                                ps1.concentration == ps2.concentration
+
+==(pf1::Performance, pf2::Performance) = pf1.period == pf2.period &&
+                                          pf1.returns == pf2.returns &&
+                                          pf1.deviation == pf2.deviation &&
+                                          pf1.ratios == pf2.ratios &&
+                                          pf1.drawdown == pf2.drawdown &&
+                                          pf1.portfoliostats == pf2.portfoliostats
