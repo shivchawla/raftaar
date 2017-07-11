@@ -17,6 +17,12 @@ type PortfolioMetrics
 end
 
 PortfolioMetrics() = PortfolioMetrics(0.0, 0.0, 0.0, 0.0, 0, 0)
+==(pm1::PortfolioMetrics, pm2::PortfolioMetrics) = (pm1.netexposure == pm2.netexposure &&
+                                                   pm1.grossexposure == pm2.grossexposure &&
+                                                   pm1.shortexposure == pm2.shortexposure &&
+                                                   pm1.longexposure == pm2.longexposure &&
+                                                   pm1.shortcount == pm2.shortcount &&
+                                                   pm1.longcount == pm2.longcount)
 
 PortfolioMetrics(data::BSONObject) = PortfolioMetrics(data["netexposure"],
                                                       data["grossexposure"],
@@ -34,6 +40,7 @@ type Portfolio
 end
 
 Portfolio() = Portfolio(Dict(), PortfolioMetrics())
+==(p1::Portfolio, p2::Portfolio) = (p1.positions == p2.positions && p1.metrics == p2.metrics)
 
 Portfolio(data::BSONObject) = Portfolio(
                                 Dict(
@@ -229,6 +236,10 @@ function updateportfoliometrics!(portfolio::Portfolio)
   end
 
 end
+
+"""
+Serialize the portfolio to dictionary object
+"""
 
 function serialize(metrics::PortfolioMetrics)
   return Dict{String, Any}("netexposure"    => metrics.netexposure,

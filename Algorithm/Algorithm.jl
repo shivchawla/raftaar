@@ -275,4 +275,4 @@ end
                                           algo1.variabletracker == algo2.variabletracker &&
                                           algo1.state == algo2.state
 
-Base.Date(s::String) = Date(map(x->parse(Int64, x), split(s, "-"))...)
+Base.Date(s::String) = Date(map(x->parse(Int64, x), split(s, "-")))

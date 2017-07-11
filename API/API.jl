@@ -308,12 +308,12 @@ export updatedatastores
 """
 Function to save progress
 """
-function _serializeData(;UID::String = "anonymous", testID::String = "test0")
+function _serializeData(;UID::String = "anonymous", backtestID::String = "backtest0")
   serializeClient = MongoClient()
-  serializeCollection = MongoCollection(serializeClient, UID, testID)
+  serializeCollection = MongoCollection(serializeClient, UID, backtestID)
 
   delete(serializeCollection, Dict())
-  insert(serializeCollection, Raftaar.serialize(algorithm))
+  insert(serializeCollection, serialize(algorithm))
 end
 
 export _serializeData
@@ -321,17 +321,16 @@ export _serializeData
 """
 Function to load previously saved progress
 """
-function _deserializeData(;UID::String = "anonymous", testID::String = "test0")
+function _deserializeData(;UID::String = "anonymous", backtestID::String = "backtest0")
   deserializeClient = MongoClient()
-  deserializeCollection = MongoCollection(deserializeClient, UID, testID)
+  deserializeCollection = MongoCollection(deserializeClient, UID, backtestID)
 
-  deserializedData = collect(find(deserializeCollection, Dict("object" => "algorithm")))
+  data = find(deserializeCollection, Dict("object" => "algorithm"))
 
-  if length(deserializedData) == 0
+  if length(collect(data)) == 0
     return false
   else
-    retrieveData = deserializedData[1]
-    global algorithm = Raftaar.Algorithm(retrieveData)
+    global algorithm = Algorithm(first(data))
     return true
   end
 end

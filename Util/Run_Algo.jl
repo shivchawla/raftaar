@@ -19,7 +19,6 @@ function run_algo(forward_test::Bool = false, start_date::Date = Date(2016,01,01
 
   benchmark = "JBFIND"
   setbenchmark(benchmark)
-
   step = Base.Dates.Day(2)
 
   wasDataFound = false
@@ -64,6 +63,7 @@ function run_algo(forward_test::Bool = false, start_date::Date = Date(2016,01,01
     # this means we are doing a backtest
     println("Running backtest...")
     # nothing much to do here except for calling initialize
+
     try
       initialize(getstate())
     catch err
@@ -71,6 +71,7 @@ function run_algo(forward_test::Bool = false, start_date::Date = Date(2016,01,01
     end
 
     run_algo()
+
   end
 end
 

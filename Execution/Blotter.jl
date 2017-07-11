@@ -24,9 +24,8 @@ Empty blotter construction
 """
 Blotter() = Blotter(Dict(), OrderTracker())
 
-Blotter(data::BSONObject) = Blotter(
-															Dict([(SecuritySymbol(parse(Int64, id)), [Order(order) for order in vectorOrder]) for (id, vectorOrder) in data["openorders"]]),
-															OrderTracker(data["ordertracker"])
+Blotter(data::BSONObject) = Blotter(Dict([(SecuritySymbol(parse(Int64, id)), [Order(order) for order in vectorOrder]) for (id, vectorOrder) in data["openorders"]]),
+											OrderTracker(data["ordertracker"])
 														)
 
 OrderTracker(data::BSONObject) = Dict([(Date(date), [Order(order) for order in vectorOrder]) for (date, vectorOrder) in data])
@@ -172,7 +171,7 @@ function serialize(blotter::Blotter)
     temp[string(symbol.id)] = [serialize(eachOrder) for eachOrder in vectorOrders]
   end
   return Dict{String, Any}("openorders"     => temp,
-														"ordertracker"	=> serialize(blotter.ordertracker))
+							"ordertracker"	=> serialize(blotter.ordertracker))
 end
 
 function serialize(transactiontracker::TransactionTracker)
