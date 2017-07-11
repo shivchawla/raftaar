@@ -96,15 +96,12 @@ function cantrade(security::Security, datetime::DateTime)
   return datetime >= security.startdate && datetime <= security.enddate
 end
 
-<<<<<<< HEAD
 """
 Serialize the security to dictionary object
 """
-=======
 function serialize(symbol::SecuritySymbol)
   return Dict{String,Any}("id" => symbol.id, "ticker" => symbol.ticker)
 end
->>>>>>> c17828ae1858883d2a79b78cb2e64d560d13bad3
 
 function serialize(security::Security)
   return Dict{String, Any}("symbol"        => Dict("id"             => security.symbol.id,

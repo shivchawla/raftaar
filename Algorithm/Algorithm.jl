@@ -258,6 +258,8 @@ function serialize(algorithm::Algorithm)
                             "state" => serialize(algorithm.state))
 end
 
+export serialize
+
 ==(algo1::Algorithm, algo2::Algorithm) = algo1.name == algo2.name &&
                                           algo1.algorithmid == algo2.algorithmid &&
                                           algo1.status == algo2.status &&
@@ -275,4 +277,4 @@ end
                                           algo1.variabletracker == algo2.variabletracker &&
                                           algo1.state == algo2.state
 
-Base.Date(s::String) = Date(map(x->parse(Int64, x), split(s, "-")))
+Base.Date(s::String) = Date(map(x->parse(Int64, x), split(s, "-"))...)

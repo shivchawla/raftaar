@@ -313,7 +313,7 @@ function _serializeData(;UID::String = "anonymous", backtestID::String = "backte
   serializeCollection = MongoCollection(serializeClient, UID, backtestID)
 
   delete(serializeCollection, Dict())
-  insert(serializeCollection, serialize(algorithm))
+  insert(serializeCollection, Raftaar.serialize(algorithm))
 end
 
 export _serializeData
@@ -325,12 +325,12 @@ function _deserializeData(;UID::String = "anonymous", backtestID::String = "back
   deserializeClient = MongoClient()
   deserializeCollection = MongoCollection(deserializeClient, UID, backtestID)
 
-  data = find(deserializeCollection, Dict("object" => "algorithm"))
+  data = collect(find(deserializeCollection, Dict("object" => "algorithm")))
 
-  if length(collect(data)) == 0
+  if length(data) == 0
     return false
   else
-    global algorithm = Algorithm(first(data))
+    global algorithm = Raftaar.Algorithm(first(data))
     return true
   end
 end
