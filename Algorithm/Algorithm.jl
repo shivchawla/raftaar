@@ -25,7 +25,6 @@ type Algorithm
 	algorithmid::String
 	status::AlgorithmStatus
 	account::Account
-    portfolio::Portfolio
 	universe::Universe
 	tradeenv::TradingEnvironment
 	brokerage::BacktestBrokerage
@@ -44,7 +43,7 @@ Algorithm empty constructor
 """
 Algorithm() = Algorithm("","", AlgorithmStatus(Initializing),
                                             Account(),
-                                            Portfolio(),
+                                            #Portfolio(),
                                             Universe(),
                                             TradingEnvironment(),
                                             BacktestBrokerage(),
@@ -64,7 +63,7 @@ Algorithm(data::BSONObject) = Algorithm(data["name"],
                                         data["id"],
                                         eval(parse(data["status"])),
                                         Account(data["account"]),
-                                        Portfolio(data["portfolio"]),
+                                        #Portfolio(data["portfolio"]),
                                         Universe(data["universe"]),
                                         TradingEnvironment(data["tradeenv"]),
                                         BacktestBrokerage(data["brokerage"]),
@@ -86,7 +85,7 @@ function resetAlgo(algorithm::Algorithm)
     algorithm.name = ""
     algorithm.status = AlgorithmStatus(Initializing)
     algorithm.account = Account()
-    algorithm.portfolio = Portfolio()
+    #algorithm.portfolio = Portfolio()
     algorithm.universe = Universe()
     algorithm.tradeenv = TradingEnvironment()
     algorithm.brokerage = BacktestBrokerage()
@@ -177,7 +176,7 @@ Function to set initial cash in the algorithm
 """
 function setcash!(algorithm::Algorithm, cash::Float64)
     updatecashtracker!(algorithm, cash)
-    setcash!(algorithm.account, algorithm.portfolio, cash)
+    setcash!(algorithm.account, cash)
 end
 
 """
@@ -185,7 +184,7 @@ Function to add more cash to the algorithm
 """
 function addcash!(algorithm::Algorithm, cash::Float64)
     updatecashtracker!(algorithm, cash)
-    addcash!(algorithm.account, algorithm.portfolio, cash)
+    addcash!(algorithm.account, cash)
 end
 
 """
@@ -209,7 +208,7 @@ end
 
 function updatestate(algorithm::Algorithm)
     algorithm.state.account = deepcopy(algorithm.account)
-    algorithm.state.portfolio = deepcopy(algorithm.portfolio)
+    #algorithm.state.portfolio = deepcopy(algorithm.portfolio)
     algorithm.state.performance = deepcopy(getlatestperformance(algorithm.performancetracker))
 end
 export updatestate
@@ -245,7 +244,7 @@ function serialize(algorithm::Algorithm)
                             "status"  => string(algorithm.status),
                             "account" => serialize(algorithm.account),
                             "universe" => serialize(algorithm.universe),
-                            "portfolio" => serialize(algorithm.portfolio),
+                            #"portfolio" => serialize(algorithm.portfolio),
                             "tradeenv" => serialize(algorithm.tradeenv),
                             "brokerage" => serialize(algorithm.brokerage),
                             "accounttracker" => serialize(algorithm.accounttracker),
@@ -257,5 +256,24 @@ function serialize(algorithm::Algorithm)
                             "variabletracker" => serialize(algorithm.variabletracker),
                             "state" => serialize(algorithm.state))
 end
+
+export serialize
+
+==(algo1::Algorithm, algo2::Algorithm) = algo1.name == algo2.name &&
+                                          algo1.algorithmid == algo2.algorithmid &&
+                                          algo1.status == algo2.status &&
+                                          algo1.account == algo2.account &&
+                                          #algo1.portfolio == algo2.portfolio &&
+                                          algo1.universe == algo2.universe &&
+                                          algo1.tradeenv == algo2.tradeenv &&
+                                          algo1.brokerage == algo2.brokerage &&
+                                          algo1.accounttracker == algo2.accounttracker &&
+                                          algo1.cashtracker == algo2.cashtracker &&
+                                          algo1.performancetracker == algo2.performancetracker &&
+                                          algo1.benchmarktracker == algo2.benchmarktracker &&
+                                          algo1.transactiontracker == algo2.transactiontracker &&
+                                          algo1.ordertracker == algo2.ordertracker &&
+                                          algo1.variabletracker == algo2.variabletracker &&
+                                          algo1.state == algo2.state
 
 Base.Date(s::String) = Date(map(x->parse(Int64, x), split(s, "-"))...)

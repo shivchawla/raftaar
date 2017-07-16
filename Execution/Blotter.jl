@@ -12,22 +12,18 @@ Type to encapsulate the open orders, all orders and transactions
 """
 typealias OrderTracker Dict{Date, Vector{Order}}
 typealias TransactionTracker Dict{Date, Vector{OrderFill}}
+typealias Blotter Dict{SecuritySymbol, Vector{Order}}
 
-type Blotter
-	openorders::Dict{SecuritySymbol, Vector{Order}}
-	ordertracker::OrderTracker
+#type Blotter
+#	openorders::Dict{SecuritySymbol, Vector{Order}}
+	#ordertracker::OrderTracker
 	#transactiontracker::TransactionTracker
-end
+#end
 
 """
 Empty blotter construction
 """
-Blotter() = Blotter(Dict(), OrderTracker())
-
-Blotter(data::BSONObject) = Blotter(
-															Dict([(SecuritySymbol(parse(Int64, id)), [Order(order) for order in vectorOrder]) for (id, vectorOrder) in data["openorders"]]),
-															OrderTracker(data["ordertracker"])
-														)
+Blotter(data::BSONObject) = Dict([(SecuritySymbol(parse(Int64, id)), [Order(order) for order in vectorOrder]) for (id, vectorOrder) in data])
 
 OrderTracker(data::BSONObject) = Dict([(Date(date), [Order(order) for order in vectorOrder]) for (date, vectorOrder) in data])
 
@@ -38,20 +34,20 @@ Function to add order to the blotter
 """
 function addorder!(blotter::Blotter, order::Order)
 
-    if !haskey(blotter.openorders, order.securitysymbol)
-        blotter.openorders[order.securitysymbol] = Vector{Order}()
+    if !haskey(blotter, order.securitysymbol)
+        blotter[order.securitysymbol] = Vector{Order}()
     end
 
-    push!(blotter.openorders[order.securitysymbol], order)
+    push!(blotter[order.securitysymbol], order)
 
-    ordertracker = blotter.ordertracker
+    #=ordertracker = blotter.ordertracker
 
     dateoforder = Date(order.datetime)
     if !haskey(ordertracker, dateoforder)
         ordertracker[dateoforder] = [order]
     end
 
-    push!(ordertracker[dateoforder], order)
+    push!(ordertracker[dateoforder], order)=#
 
 end
 
@@ -67,8 +63,8 @@ Function to get all the open orders
 """
 function getopenorders(blotter::Blotter)
     openorders = Vector{Order}()
-    for (symbol, oos) in blotter.openorders
-        append!(openorders, oos)
+    for (symbol, openorders_security) in blotter
+        append!(openorders, openorders_security)
     end
 
     return openorders
@@ -78,21 +74,14 @@ end
 Function to get all the open orders
 """
 function getopenorders(blotter::Blotter, symbol::SecuritySymbol)
-		#=
-    if haskey(blotter.openorders, symbol)
-        return blotter.openorders[symbol]
-    else
-        Vector{Order}()
-    end
-		=#
-		return get(blotter.openorders, symbol, Vector{Order}())
+	return get(blotter, symbol, Vector{Order}())
 end
 
 """
 Function to remove single order from the blotter
 """
 function removeopenorder!(blotter::Blotter, orderid::Integer)
-    for (sec, orders) in blotter.openorders
+    for (sec, orders) in blotter
         ind = find(order->(order.id == orderid), orders)
         if isempty(ind)
             continue
@@ -107,7 +96,7 @@ end
 Function to remove all open orders for a security from the blotter
 """
 function removeallopenorders!(blotter::Blotter, symbol::SecuritySymbol)
-    openorders = delete!(blotter.openorders, symbol)
+    openorders = delete!(blotter, symbol)
 end
 
 """
@@ -128,14 +117,14 @@ function getorderfill(order::Order, slippage::Slippage, commission::Commission, 
         return fill
     end
 
-    fill.orderfee = getcommission(order, commission)
+    
 
     slippage = getslippage(order, slippage, lastprice)
     # find the execution price based on slippage model
     if order.quantity  < 0
-        fill.fillprice = lastprice - slippage
+        fill.fillprice = round(lastprice - slippage, 2)
     else
-        fill.fillprice = lastprice + slippage
+        fill.fillprice = round(lastprice + slippage, 2)
     end
 
     #find the quantity that can be executed...assume 5% of the total volume
@@ -146,6 +135,8 @@ function getorderfill(order::Order, slippage::Slippage, commission::Commission, 
     else
         fill.fillquantity = sign(order.remainingquantity) * availablequantity
     end
+
+    fill.orderfee = getcommission(fill, commission)
 
     return fill
 end
@@ -168,11 +159,10 @@ end
 
 function serialize(blotter::Blotter)
   temp = Dict{String, Any}()
-  for (symbol, vectorOrders) in blotter.openorders
-    temp[string(symbol.id)] = [serialize(order) for order in vectorOrders]
+  for (symbol, vectorOrders) in blotter
+    temp[string(symbol.id)] = [serialize(eachOrder) for eachOrder in vectorOrders]
   end
-  return Dict{String, Any}("openorders"     => temp,
-                            "ordertracker"  => serialize(blotter.ordertracker))
+  return temp
 end
 
 function serialize(transactiontracker::TransactionTracker)

@@ -49,6 +49,22 @@ Position(symbol::SecuritySymbol, quantity::Int64) = Position(symbol, quantity, 0
 
 empty(position::Position) = empty(position.securitysymbol) && position.quantity == 0 && position.averageprice==0.0
 
+
+"""
+Serialize the position object
+"""
+function serialize(pos::Position)
+  return Dict{String, Any}("securitysymbol" => serialize(pos.securitysymbol),
+                              "quantity" => pos.quantity,
+                              "averageprice" => pos.averageprice,
+                              "totalfees" => pos.totalfees,
+                              "lastprice" => pos.lastprice,
+                              "lasttradepnl" => pos.lasttradepnl,
+                              "realizedpnl" => pos.realizedpnl,
+                              "totaltradedvolume" => pos.totaltradedvolume)
+end
+
+
 """
 Holding cost of position based on average price
 """
@@ -95,7 +111,7 @@ end
 Unrealized profit % of the position
 """
 function unrealizedprofitpercent(position::Position)
-  absholdingcost(position) == 0.0 ? 0.0 : 100.0 * unrealizedpnl(position)/absholdingcost(position)
+  absholdingcost(position) == round(0.0 ? 0.0 : 100.0 * unrealizedpnl(position)/absholdingcost(position), 2)
 end
 
 """
@@ -103,14 +119,14 @@ Unrealized profit in position (value)
 """
 function unrealizedpnl(position::Position)
   orderFee = getfees(MarketOrder(position.Security, -position.quantity))
-  return position.quantity * (position.lastprice -position.avgprice)  - orderFee
+  return round(position.quantity * (position.lastprice -position.avgprice)  - orderFee, 2)
 end
 
 """
 Total pnl in the position (value)
 """
 function totalpnl(position::Position)
-  return position.realizedpnl + unrealizedpnl(position)
+  return round(position.realizedpnl + unrealizedpnl(position), 2)
 end
 
 """
@@ -119,7 +135,7 @@ Function to update position for latest price
 function updateposition_price!(position::Position, tradebar::TradeBar)
   if(tradebar.close > 0.0000000001 && !isnan(tradebar.close))
     position.lastprice = tradebar.close
-    position.lasttradepnl = position.quantity * (position.lastprice - position.averageprice)
+    position.lasttradepnl = round(position.quantity * (position.lastprice - position.averageprice),2)
   end
 end
 
@@ -130,6 +146,7 @@ function updateposition_fill!(position::Position, fill::OrderFill)
 
   #apply sales value to holdings
   position.totaltradedvolume += fill.fillprice*abs(fill.fillquantity)
+  position.totaltradedvolume = round(position.totaltradedvolume, 2)
 
   #update total fees paid
   position.totalfees += fill.orderfee
@@ -143,7 +160,7 @@ function updateposition_fill!(position::Position, fill::OrderFill)
   #calculate cash generated
   cashgenerated = -(fill.fillquantity*fill.fillprice) - fill.orderfee
 
-  return cashgenerated
+  return round(cashgenerated, 2)
 
 end
 
@@ -174,8 +191,9 @@ function updatetradeprofit!(position::Position, fill::OrderFill)
 
     lasttradepnl_wofee = (closedsalevalue - closedcost)
     #*conversionFactor
-    position.lasttradepnl = lasttradepnl_wofee - fill.orderfee
+    position.lasttradepnl = round(lasttradepnl_wofee - fill.orderfee,2)
     position.realizedpnl += position.lasttradepnl
+    position.realizedpnl = round(position.realizedpnl, 2)
   end
 
 end
@@ -230,6 +248,10 @@ function updateaverageprice!(position::Position, fill::OrderFill)
     end
 
   end
+
+  position.averageprice = round(position.averageprice, 2)
+  position.lastprice = round(position.lastprice, 2)
+
 end
 
 """
@@ -237,7 +259,7 @@ Function to update position for corporate adjustment (not cash dividend)
 """
 function updateposition_splits_dividends!(position::Position, adjustment::Adjustment)
     if(adjustment.adjustmenttype != "17.0")
-        position.averageprice = position.averageprice * adjustment.adjustmentfactor
+        position.averageprice = round(position.averageprice * adjustment.adjustmentfactor,2)
         position.quantity = Int(round(position.quantity * (1.0/adjustment.adjustmentfactor)))
     end
 end
@@ -257,3 +279,12 @@ function serialize(position::Position)
                           "realizedpnl"       => position.realizedpnl,
                           "totaltradedvolume" => position.totaltradedvolume)
 end
+
+==(pos1::Position, pos2::Position) = pos1.securitysymbol == pos2.securitysymbol &&
+                                      pos1.quantity == pos2.quantity &&
+                                      pos1.averageprice == pos2.averageprice &&
+                                      pos1.totalfees == pos2.totalfees &&
+                                      pos1.lastprice == pos2.lastprice &&
+                                      pos1.lasttradepnl == pos2.lasttradepnl &&
+                                      pos1.realizedpnl == pos2.realizedpnl &&
+                                      pos1.totaltradedvolume == pos2.totaltradedvolume

@@ -14,11 +14,10 @@ function getargparsesettings()
             arg_type = String
         "--file"
             help = "file containing strategy code"
-            arg_type = String 
+            arg_type = String
         "--capital"
             help = "Starting Capital of the backtest"
             arg_type = Float64
-            required = true
         "--startdate", "-s"
             help = "Start date of the backtest"
             arg_type = Date
@@ -26,7 +25,7 @@ function getargparsesettings()
         "--enddate", "-e"
             help = "End date of the backtest"
             arg_type = Date
-            default = Date(now())    
+            default = Date(now())
         "--universe","-u"
             help = "Static universe for the backtest"
             arg_type = String
@@ -44,7 +43,7 @@ function getargparsesettings()
         "--cancelpolicy"
             help = "Cancel Policy of the the backtest"
             arg_type = String
-            default = "EOD"    
+            default = "EOD"
         "--resolution"
             help = "Resolution frequency of the backtest"
             arg_type = String
@@ -57,10 +56,18 @@ function getargparsesettings()
             help = "Slippage Structure of the backtest"
             arg_type = String
             default = "Variable, 0.05"
+        "--forward"
+            help = "Enable forward testing"
+            arg_type = Bool
+            default = false
+        "--serializedData"
+            help = "Serialized data for forward testing"
+            arg_type = String
+            default = ""
     end
 
     return s
-end  
+end
 
 function parse_commandline()
     s = getargparsesettings()
@@ -71,4 +78,3 @@ function parse_arguments(args)
     s = getargparsesettings()
     return parse_args(args, s)
 end
-

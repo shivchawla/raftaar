@@ -1,8 +1,8 @@
 {
   "mongo_database":"aimsquant",
-  "mongo_user":"raftaar_prod",
-"mongo_pass":"pwd_raftaar_prod",
-"mongo_host":"35.154.134.30",
+  "mongo_user":"",
+"mongo_pass":"",
+"mongo_host":"localhost",
 "mongo_port":27017
 }
 

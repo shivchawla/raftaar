@@ -43,7 +43,7 @@ function outputbackteststatistics_partial(accttrkr::AccountTracker,
     outputdict = Dict{String, Any}(
                     "outputtype" => "backtest",
                     "detail" => false,
-                    "summary" => serialize(lastperformance),
+                    "summary" => convert(Dict, lastperformance),
                     "equity" => equity,
                     "variables" => vartrkr,
                     "totalreturn" =>
@@ -61,8 +61,7 @@ function outputbackteststatistics_partial(accttrkr::AccountTracker,
                         ),
                     "analytics" =>
                         Dict{String, Any}(
-                            "rolling" => serialize(lastperformance)
-
+                            "rolling" => convert(Dict, lastperformance)
                         ),
                     "logs" => Logger.getlogbook()
                     )
@@ -126,6 +125,10 @@ function outputbackteststatistics_full(accttrkr::AccountTracker,
                                                     "yearly" => yearlyanalytics)
 
 
+    outputdict["account"] = serialize(accttrkr)
+
+    outputdict["transactions"] = serialize(trsctrkr)
+
     Logger.print(JSON.json(outputdict))
 end
 
@@ -136,7 +139,6 @@ function getaggregatereturns(pft::PerformanceTracker, symbol::Symbol = :All)
     yearlyreturns = OrderedDict{String, Float64}()
     monthlyreturns = OrderedDict{String, Float64}()
     weeklyreturns = OrderedDict{String, Float64}()
-
 
     i = 1
     yret = 1.0
@@ -226,8 +228,8 @@ function getaggregatereturns(pft::PerformanceTracker, symbol::Symbol = :All)
 
 end
 
-function serialize(performance::Performance)
-    return Dict{String, Any}(  "annualreturn" => round(100.0 * performance.returns.annualreturn, 2),
+function convert(::Type{Dict}, performance::Performance)
+    Dict{String, Any}(  "annualreturn" => round(100.0 * performance.returns.annualreturn, 2),
                         "totalreturn" => round(100.0 * (performance.returns.totalreturn - 1.0), 2),
                         "annualstandarddeviation" => round(100.0 * performance.deviation.annualstandarddeviation, 2),
                         #"annualvariance" => round(100.0 * 100.0 * performance.annualvariance,2),
@@ -274,7 +276,7 @@ function getmonthlyanalytics(pft::PerformanceTracker)
             mstr = string(Dates.year(fdate)) * string(fmonth)
         end
 
-        monthlyanalytics[mstr] =  serialize(getperformanceforperiod(pft, fdate, ldate))
+        monthlyanalytics[mstr] =  convert(Dict, getperformanceforperiod(pft, fdate, ldate))
     end
 
     return monthlyanalytics
@@ -308,7 +310,7 @@ function getyearlyanalytics(pft::PerformanceTracker)
 
         ystr = string(Dates.year(fdate))
 
-        yearlyanalytics[ystr] =  serialize(getperformanceforperiod(pft, fdate, ldate))
+        yearlyanalytics[ystr] =  convert(Dict, getperformanceforperiod(pft, fdate, ldate))
     end
 
     return yearlyanalytics

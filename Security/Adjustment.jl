@@ -13,3 +13,7 @@ function serialize(adj::Adjustment)
                             "adjustmenttype"    => adj.adjustmenttype,
                             "adjustmentfactor"  => adj.adjustmentfactor)
 end
+
+==(adj1::Adjustment, adj2::Adjustment) = adj1.close == adj2.close &&
+                                          adj1.adjustmenttype == adj2.adjustmenttype &&
+                                          adj1.adjustmentfactor == adj2.adjustmentfactor

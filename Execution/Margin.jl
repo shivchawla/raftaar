@@ -123,3 +123,5 @@ function serialize(margin::Margin)
   return Dict{String, Any}("initialmargin"     => margin.initialmargin,
                             "maintenancemargin" => margin.maintenancemargin)
 end
+
+==(mg1::Margin, mg2::Margin) = mg1.initialmargin == mg2.initialmargin && mg1.maintenancemargin == mg2.maintenancemargin

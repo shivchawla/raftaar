@@ -15,45 +15,79 @@ import Logger: warn, info, error
 using DataFrames
 using TimeSeries
 
-function run_algo_forward(start_date::Date; end_date::Date = Date(now()))
+function run_algo(forward_test::Bool = false)
 
   benchmark = "JBFIND"
   setbenchmark(benchmark)
 
-  benchmark = API.getbenchmark()
+  if forward_test
+    # we're doing a forward test
+    # Let's check if we have already saved data or not
 
-  # _deserializeData() function returns true if some previously saved data was found and deserialized
-  # otherwise it returns false, which means a fresh start
-  wasDataFound = _deserializeData(UID = "user1", backtestID = "backtest1")
-  if(!wasDataFound)
-    # Oh no, no data found
-    # let's call the initialize function
+    if !wasDataFound()
+      # Oh no, no data found
+      # let's call the initialize function
+      try
+        initialize(getstate())
+      catch err
+        handleexception(err)
+      end
+    else
+      # Aww yeah, data found
+      # just set the start date from where you want to continue the forward testing
+      # and let the fun begin
+
+      # Start simulation for the "next" day where simulation ended
+      setstartdate(getenddate() + Base.Dates.Day(1))
+      setenddate(getenddate() + Base.Dates.Day(1))
+    end
+
+    if _run_algo_internal()
+      # Don't forget that we were running a forward test
+      # that is we need to serialize everything back into database
+      _serializeData()
+
+    end
+  else
+    # this means we are doing a backtest
+    # nothing much to do here except for calling initialize
+
     try
       initialize(getstate())
     catch err
       handleexception(err)
     end
-  else
-    # Aww yeah, data found
-    # just set the start date from where you want to continue the forward testing
-    # and let the fun begin
-    setstartdate(start_date)
-  	setenddate(end_date)
+
+    _run_algo_internal()
+
   end
+end
+
+function _run_algo_internal()
+  benchmark = API.getbenchmark()
 
   # Let's download new data now
 
   #alldata = history([benchmark], "Close", :Day, 100, enddate = "2016-01-01")
-  global alldata = history_unadj([benchmark], "Close", :Day, startdate = DateTime(getstartdate()), enddate = DateTime(getenddate()))
+  alldata = history_unadj([benchmark], "Close", :Day, startdate = DateTime(getstartdate()), enddate = DateTime(getenddate()))
+
+  if alldata == nothing
+      return false
+  end
 
   cp = history_unadj(getuniverse(), "Close", :Day, startdate = DateTime(getstartdate()), enddate = DateTime(getenddate()))
 
-  allsecurities_includingbenchmark = push!([d.symbol for d in getuniverse()], API.getbenchmark())
-  adjustedprices = history(allsecurities_includingbenchmark, "Close", :Day, startdate = DateTime(getstartdate()), enddate = DateTime(getenddate()))
+  if cp == nothing
+      return false
+  end
 
   vol = history_unadj(getuniverse(), "Volume", :Day, startdate = DateTime(getstartdate()), enddate = DateTime(getenddate()))
-  #Join benchmark data with close prices
 
+  if vol == nothing
+      return false
+  end
+
+  #Join benchmark data with close prices
   cp = !isempty(cp) && !isempty(alldata) ? merge(cp, alldata, :outer) : cp
   labels = Dict{String,Float64}()
 
@@ -73,6 +107,10 @@ function run_algo_forward(start_date::Date; end_date::Date = Date(now()))
 
     labels[string(cp.timestamp[i])] = val
   end
+
+  # Global data stores
+  allsecurities_includingbenchmark = push!([d.symbol for d in getuniverse()], API.getbenchmark())
+  adjustedprices = history(allsecurities_includingbenchmark, "Close", :Day, startdate = DateTime(getstartdate()), enddate = DateTime(getenddate()))
 
   #Set benchmark value and Output labels from graphs
   setbenchmarkvalues(labels)
@@ -95,80 +133,7 @@ function run_algo_forward(start_date::Date; end_date::Date = Date(now()))
 
   _outputbackteststatistics()
 
-  # All tests ran successfully
-  # Now let's serialize everything bakc into the database
-  _serializeData(UID = "user1", backtestID = "backtest1")
-
-end
-
-function run_algo()
-
-  benchmark = "JBFIND"
-  setbenchmark(benchmark)
-
-  benchmark = API.getbenchmark()
-
-  try
-    initialize(getstate())
-  catch err
-    handleexception(err)
-  end
-
-
-  startdate = getstartdate()
-  enddate = getenddate()
-
-  #alldata = history([benchmark], "Close", :Day, 100, enddate = "2016-01-01")
-  global alldata = history_unadj([benchmark], "Close", :Day, startdate = DateTime(getstartdate()), enddate = DateTime(getenddate()))
-
-  cp = history_unadj(getuniverse(), "Close", :Day, startdate = DateTime(getstartdate()), enddate = DateTime(getenddate()))
-
-  allsecurities_includingbenchmark = push!([d.symbol for d in getuniverse()], API.getbenchmark())
-  adjustedprices = history(allsecurities_includingbenchmark, "Close", :Day, startdate = DateTime(getstartdate()), enddate = DateTime(getenddate()))
-
-  vol = history_unadj(getuniverse(), "Volume", :Day, startdate = DateTime(getstartdate()), enddate = DateTime(getenddate()))
-  #Join benchmark data with close prices
-
-  cp = !isempty(cp) && !isempty(alldata) ? merge(cp, alldata, :outer) : cp
-  labels = Dict{String,Float64}()
-
-  bvals = values(cp[benchmark.ticker])
-
-  for i = 1:length(cp)
-    val = bvals[i]
-
-    j = i-1
-
-    while isnan(val) && j > 0
-      val = bvals[j]
-      j = j - 1
-    end
-
-    val = isnan(val) ? 0.0 : val
-
-    labels[string(cp.timestamp[i])] = val
-  end
-
-  #Set benchmark value and Output labels from graphs
-  setbenchmarkvalues(labels)
-
-  adjustments = getadjustments(getuniverse(), DateTime(getstartdate()), DateTime(getenddate()))
-
-  #continue with backtest if there are any rows in price data.
-  if !isempty(cp)
-    outputlabels(labels)
-  else
-    error("No price data found. Aborting Backtest!!!")
-    return
-  end
-
-  i = 1
-  for date in sort(collect(keys(labels)))
-      mainfnc(Date(date), i, cp, vol, adjustments, dynamic = false)
-      i = i + 1
-  end
-
-  _outputbackteststatistics()
+  return true
 
 end
 
@@ -194,10 +159,6 @@ function mainfnc(date::Date, counter::Int, close, volume, adjustments; dynamic::
       names = push!([d.symbol.ticker for d in getuniverse()], API.getbenchmark().ticker)
       currentvolume = TimeArray([date], 10000000.*ones(1, length(names)), names)
     end
-
-
-    #nrows_close = length(close)
-    #currentprices = nrows_close > counter ? close[:][counter] : DataFrame()
 
     currentprices = nothing
     try
@@ -250,7 +211,6 @@ function mainfnc(date::Date, counter::Int, close, volume, adjustments; dynamic::
     ondata(currentprices, getstate())
   catch err
     handleexception(err)
-
   end
 
   _outputdailyperformance()

@@ -23,9 +23,9 @@ Function to get commission for the order
 """
 function getcommission(order::Order, commission::Commission)
   if commission.model == CommissionModel(PerShare)
-    return abs(order.quantity) * commission.value
+    return round(abs(order.quantity) * commission.value, 2)
   elseif commission.model == CommissionModel(PerTrade)
-    return commission.value
+    return round(commission.value, 2)
   end
 
   return 0.0
@@ -35,8 +35,8 @@ end
 Function to get commission for the fill
 """
 function getcommission(fill::OrderFill, commission::Commission)
-    if commission.model == CommissionModel(PerValue)
-        return abs(fill.fillquantity* fill.fillprice) * commission.value
+    if commission.model == CommissionModel(PerTrade)
+        return round(abs(fill.fillquantity* fill.fillprice) * commission.value, 2)
     end
 
     return 0.0
@@ -46,3 +46,5 @@ function serialize(commission::Commission)
   return Dict{String, Any}("model" => string(commission.model),
                             "value" => commission.value)
 end
+
+==(cm1::Commission, cm2::Commission) = cm1.model == cm2.model && cm1.value == cm2.value

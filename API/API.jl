@@ -14,7 +14,8 @@ using DataFrames
 using TimeSeries
 using Logger
 using WebSockets
-using Mongo
+using JSON
+using LibBSON
 
 import Logger: info, error
 
@@ -23,8 +24,8 @@ import Raftaar: getuniverse, getopenorders
 
 algorithm = Raftaar.Algorithm()
 
-function setlogmode(style::Symbol = :text, print::Symbol = :console, save::Bool = false, client::WebSocket = WebSocket(0, TCPSock()))
-    Logger.configure(style_mode = style, print_mode = print, save_mode = save, client = client)
+function setlogmode(style::Symbol = :text, print::Symbol = :console, save::Bool = false)
+    Logger.configure(style_mode = style, print_mode = print, save_mode = save)
 end
 export setlogmode
 
@@ -125,7 +126,7 @@ end
 export _updatestate
 
 function _updatependingorders_price()
-   updateaccount_fills!(algorithm.account, algorithm.portfolio, updatependingorders!(algorithm.brokerage, algorithm.universe, algorithm.account))
+   updateaccount_fills!(algorithm.account, updatependingorders!(algorithm.brokerage, algorithm.universe, algorithm.account, algorithm.transactiontracker))
    updateorders_cancelpolicy!(algorithm.brokerage)
 end
 
@@ -137,7 +138,7 @@ end
 export _updatependingorders_splits
 
 function _updateaccount_price()
-    updateaccount_price!(algorithm.account, algorithm.portfolio, algorithm.universe.tradebars, DateTime(algorithm.tradeenv.currentdate))
+    updateaccount_price!(algorithm.account, algorithm.universe.tradebars, DateTime(algorithm.tradeenv.currentdate))
 end
 
 export _updateaccount_price
@@ -150,7 +151,7 @@ end
 export _updatedatastores
 
 function _updateaccount_splits_dividends()
-    updateaccount_splits_dividends!(algorithm.account, algorithm.portfolio, algorithm.universe.adjustments)
+    updateaccount_splits_dividends!(algorithm.account, algorithm.universe.adjustments)
 end
 export _updateaccount_splits_dividends
 
@@ -308,12 +309,16 @@ export updatedatastores
 """
 Function to save progress
 """
-function _serializeData(;UID::String = "anonymous", backtestID::String = "backtest0")
+function _serializeData() # ;UID::String = "anonymous", backtestID::String = "backtest0")
+  #=
   serializeClient = MongoClient()
   serializeCollection = MongoCollection(serializeClient, UID, backtestID)
 
   delete(serializeCollection, Dict())
-  insert(serializeCollection, serialize(algorithm))
+  insert(serializeCollection, Raftaar.serialize(algorithm))
+  =#
+  s = JSON.json(Dict("outputtype" => "serializedData", "algorithm" => Raftaar.serialize(algorithm)))
+  println(string(s))
 end
 
 export _serializeData
@@ -321,21 +326,33 @@ export _serializeData
 """
 Function to load previously saved progress
 """
-function _deserializeData(;UID::String = "anonymous", backtestID::String = "backtest0")
+dataAvailable = false
+function _deserializeData(s::String) # ;UID::String = "anonymous", backtestID::String = "backtest0")
+  #=
   deserializeClient = MongoClient()
   deserializeCollection = MongoCollection(deserializeClient, UID, backtestID)
 
-  data = find(deserializeCollection, Dict("object" => "algorithm"))
+  data = collect(find(deserializeCollection, Dict("object" => "algorithm")))
 
-  if length(collect(data)) == 0
+  if length(data) == 0
     return false
   else
-    global algorithm = Algorithm(first(data))
+    global algorithm = Raftaar.Algorithm(first(data))
     return true
   end
+  =#
+  temp = LibBSON.BSONObject(JSON.parse(s))
+  global algorithm = Raftaar.Algorithm(temp)
+  global dataAvailable = true
 end
 
 export _deserializeData
+
+function wasDataFound()
+  return dataAvailable
+end
+
+export wasDataFound
 
 function reset()
     Raftaar.resetAlgo(algorithm)

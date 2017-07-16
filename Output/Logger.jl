@@ -33,12 +33,12 @@ const params = Dict{String, Any}("style" => :text,
 """
 Function to configure mode of the logger and change the datetime
 """
-function configure(;style_mode::Symbol = :text, print_mode::Symbol = :console, save_mode::Bool = false, save_limit::Int = 30, client = WebSocket(0,TCPSock()))
+function configure(;style_mode::Symbol = :text, print_mode::Symbol = :console, save_mode::Bool = false, save_limit::Int = 30)#, client = WebSocket(0,TCPSock()))
     params["style"] = style_mode
     params["print"] = print_mode
     params["save"] = save_mode
     params["limit"] = save_limit
-    params["client"] = client
+    #params["client"] = client
     
     if(save_mode)
         logbook.savelimit = save_limit

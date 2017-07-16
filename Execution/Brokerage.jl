@@ -140,7 +140,7 @@ Function to cancel all orders
 function cancelallorders!(brokerage::BacktestBrokerage)
 	blotter = brokerage.blotter
 
-	for symbol in keys(brokerage.blotter.openorders)
+	for symbol in keys(brokerage.blotter)
 		cancelallorders!(brokerage, symbol)
 	end
 end
@@ -164,7 +164,7 @@ export getopenorders
 """
 Function to update pending orders
 """
-function updatependingorders!(brokerage::BacktestBrokerage, universe::Universe, account::Account)
+function updatependingorders!(brokerage::BacktestBrokerage, universe::Universe, account::Account, trnsctrkr::TransactionTracker)
 
 	blotter = brokerage.blotter
 	#Step 1: Get all pending orders
@@ -198,7 +198,10 @@ function updatependingorders!(brokerage::BacktestBrokerage, universe::Universe, 
 							latesttradebar)
 
 		#Append fill with other fills
-		push!(fills, fill)
+		#check if fill has any quantity
+		if(abs(fill.fillquantity) > 0)
+			push!(fills, fill)
+		end
 
 		#Also, update blotter with fill history
 		#addtransaction!(blotter, fill)
@@ -220,6 +223,15 @@ function updatependingorders!(brokerage::BacktestBrokerage, universe::Universe, 
 			removeopenorder!(brokerage.blotter, order.id)
  		end
 
+	end
+
+	#update transaction tracker
+	for orderfill in fills
+		if haskey(trnsctrkr, Date(orderfill.datetime))
+			push!(trnsctrkr[Date(orderfill.datetime)], orderfill)
+		else
+			trnsctrkr[Date(orderfill.datetime)] = [orderfill]
+		end
 	end
 
 	return fills
@@ -298,3 +310,10 @@ function serialize(brokerage::BacktestBrokerage)
                             "cancelpolicy"      => string(brokerage.cancelpolicy),
                             "participationrate" => brokerage.participationrate)
 end
+
+==(bk1::BacktestBrokerage, bk2::BacktestBrokerage) = bk1.blotter == bk2.blotter &&
+																											bk1.commission == bk2.commission &&
+																											bk1.margin == bk2.margin &&
+																											bk1.slippage == bk2.slippage &&
+																											bk1.cancelpolicy == bk2.cancelpolicy &&
+																											bk1.participationrate == bk2.participationrate

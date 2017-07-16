@@ -148,7 +148,7 @@ export liquidate
 
 function liquidateportfolio()
     checkforparent([:ondata, :beforeclose])
-    for pos in getallpositions(algorithm.portfolio)
+    for pos in getallpositions(algorithm.portfoli)
         liquidate(pos)
     end
 end

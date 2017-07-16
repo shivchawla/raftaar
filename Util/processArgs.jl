@@ -3,7 +3,6 @@
 # Email: shiv.chawla@aimsquant.com
 # Organization: AIMSQUANT PVT. LTD.
 
-# function processargs(parsed_args::Dict{AbstractString,Any})
 function processargs(parsed_args::Dict{String,Any})
   fname = ""
   #Include the strategy code
@@ -95,6 +94,10 @@ function processargs(parsed_args::Dict{String,Any})
 
     setslippage((String(ss[1]), parse(ss[2])/100.0))
 
+  end
+
+  if (parsed_args["serializedData"] != "")
+    _deserializeData(parsed_args["serializedData"])
   end
 
   return fname

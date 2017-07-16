@@ -23,13 +23,12 @@ if (parsed_args["code"] == nothing && parsed_args["file"] == nothing)
   exit(0)
 end
 
-# connection = JSON.parsefile("../../raftaar/Util/connection.json")
 connection = JSON.parsefile(Base.source_dir()*"/connection.json")
-# const client = MongoClient(connection["mongo_host"], connection["mongo_user"], connection["mongo_pass"], connection["mongo_database"])
+
 const client = MongoClient()
+
 info("Configuring datastore connections", datetime=now())
 
-# YRead.configure(client, database = connection["mongo_database"])
 YRead.configure(client, database = "aimsquant")
 YRead.configure(priority = 2)
 try
@@ -41,18 +40,18 @@ end
 
 #fname = "/users/shivkumarchawla/raftaar/Examples/momentumStrategy.jl"
 
-setlogmode(:text, :console, true)
+# setlogmode(:text, :console, true)
 
-try
+# try
     info("Building user algorithm", datetime=now())
 
     include(fname)
 
     info("Starting Backtest", datetime=now())
 
-    run_algo()
+    run_algo(parsed_args["forward"])
 
     info("Ending Backtest", datetime=now())
-catch err
-    handleexception(err)
-end
+# catch err
+#     handleexception(err)
+# end

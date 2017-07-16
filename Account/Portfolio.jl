@@ -42,6 +42,7 @@ end
 Portfolio() = Portfolio(Dict(), PortfolioMetrics())
 ==(p1::Portfolio, p2::Portfolio) = (p1.positions == p2.positions && p1.metrics == p2.metrics)
 
+
 Portfolio(data::BSONObject) = Portfolio(
                                 Dict(
                                   [(SecuritySymbol(parse(Int64, id)), Position(pos)) for (id, pos) in data["positions"]]
@@ -59,6 +60,37 @@ getindex(portfolio::Portfolio, security::Security) = get(portfolio.positions, se
 setindex!(portfolio::Portfolio, position::Position, securitysymbol::SecuritySymbol) =
                       setindex!(portfolio.positions, position, securitysymbol)
 
+
+"""
+Serialize the portfolio metrics to dictionary
+"""
+function serialize(metrics::PortfolioMetrics)
+  return Dict{String, Float64}("netexposure" => metrics.netexposure,
+                            "grossexposure" => metrics.grossexposure,
+                            "shortexposure" => metrics.shortexposure,
+                            "longexposure" => metrics.longexposure,
+                            "shortcount" => metrics.shortcount,
+                            "longcount" => metrics.longcount)
+end
+
+
+"""
+Serialize the Portfolio object to Dictionary
+"""
+function serialize(port::Portfolio)
+    output = Dict{String, Any}()
+
+    output["positions"] = Vector{Dict{String, Any}}()
+    for (sym, pos) in port.positions
+      push!(output["positions"], serialize(pos))
+    end
+
+    output["metrics"] = serialize(port.metrics)
+
+    return output
+end
+
+
 """
 function to get all positions in a portfolio
 """
@@ -66,11 +98,13 @@ function getallpositions(portfolio::Portfolio)
   values(portfolio.positions)
 end
 
+function getposition(portfolio::Portfolio, security::Security)
+  return getposition(portfolio, security.symbol)
+end
 
 function getposition(portfolio::Portfolio, ss::SecuritySymbol)
   return portfolio[ss]
 end
-export getposition
 
 """
 function to update/set position with average price and quantity
@@ -132,12 +166,6 @@ end=#
 function to get absolute of holding cost
 """
 function totalabsoluteholdingscost(portfolio::Portfolio)
-  #=
-  tahc = 0
-  for (sec, pos) in enumerate(portfolio.positions)
-    tahc += absholdingcost(pos)
-  end
-  =#
   tahc = sum(map(x -> absholdingcost(x), values(portfolio.positions)))
   return tahc
 end
@@ -242,7 +270,7 @@ Serialize the portfolio to dictionary object
 """
 
 function serialize(metrics::PortfolioMetrics)
-  return Dict{String, Any}("netexposure"   => metrics.netexposure,
+  return Dict{String, Any}("netexposure"    => metrics.netexposure,
                             "grossexposure" => metrics.grossexposure,
                             "shortexposure" => metrics.shortexposure,
                             "longexposure"  => metrics.longexposure,
@@ -259,3 +287,5 @@ function serialize(portfolio::Portfolio)
 
   return temp
 end
+
+

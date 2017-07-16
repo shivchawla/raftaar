@@ -17,17 +17,17 @@ export addcash
 
 function getposition(ticker::String)
     
-    getposition(algorithm.state.portfolio, ticker)
+    getposition(algorithm.state.account, ticker)
 end
 export getposition
 
 function getposition(symbol::SecuritySymbol)
-    getposition(algorithm.state.portfolio, symbol)
+    getposition(algorithm.state.account, symbol)
 end
 export getposition
 
 function getposition(security::Security)
-    getposition(algorithm.state.portfolio, security)
+    getposition(algorithm.state.account, security)
 end
 export getposition
 

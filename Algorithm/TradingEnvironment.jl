@@ -36,9 +36,9 @@ TradingEnvironment() = TradingEnvironment(
                           SecuritySymbol(), Resolution(Resolution_Day), Rebalance(Rebalance_Daily), InvestmentPlan(IP_AllIn), true,
                           SecurityType(Equity), "IN", Dict{Date, Float64}())
 
-TradingEnvironment(data::BSONObject) = TradingEnvironment(data["startdate"],
-                                                          data["enddate"],
-                                                          data["currentdate"],
+TradingEnvironment(data::BSONObject) = TradingEnvironment(Date(data["startdate"]),
+                                                          Date(data["enddate"]),
+                                                          Date(data["currentdate"]),
                                                           data["livemode"],
                                                           SecuritySymbol(data["benchmark"]["id"], data["benchmark"]["ticker"]),
                                                           eval(parse(data["resolution"])),
@@ -275,3 +275,16 @@ function serialize(tradeenv::TradingEnvironment)
                             "defaultmarket"       => tradeenv.defaultmarket,
                             "benchmarkvalues"     => tradeenv.benchmarkvalues)
 end
+
+==(te1::TradingEnvironment, te2::TradingEnvironment) =   te1.startdate == te2.startdate &&
+                                                          te1.enddate == te2.enddate &&
+                                                          te1.currentdate == te2.currentdate &&
+                                                          te1.livemode == te2.livemode &&
+                                                          te1.benchmark == te2.benchmark &&
+                                                          te1.resolution == te2.resolution &&
+                                                          te1.rebalance == te2.rebalance &&
+                                                          te1.investmentplan == te2.investmentplan &&
+                                                          te1.fullrun == te2.fullrun &&
+                                                          te1.defaultsecuritytype == te2.defaultsecuritytype &&
+                                                          te1.defaultmarket == te2.defaultmarket &&
+                                                          te1.benchmarkvalues == te2.benchmarkvalues

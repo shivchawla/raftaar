@@ -10,7 +10,7 @@ const _tickertosecurity = Dict{String, Security}()
 const _seciddtosecurity = Dict{Int64, Security}()
 
 
-function to{T,N,D}(ta::TimeArray{T,N,D}, d::D, ct::Int = 0)
+function getsubset{T,N,D}(ta::TimeArray{T,N,D}, d::D, ct::Int = 0)
     last = searchsortedlast(ta.timestamp, d)
     first = ct > 0 ? ((last - ct + 1 > 0) ? last - ct + 1 : 1) : 1
     length(ta) == 0 ? ta : 
@@ -133,7 +133,7 @@ function fromglobalstore(ticker::String, key::String)
     return nothing
 end
 
-function fromglobalstore(tickers::Vector{String}, key::String)
+function fromglobalstores(tickers::Vector{String}, key::String)
     if haskey(_globaldatastores, key)
         ta = _globaldatastores[key]
         columnnames = colnames(ta)
@@ -317,7 +317,7 @@ function findinglobalstores(secids::Vector{Int64},
     #println("Here - Secids")  
 
     tickers = vec([getsecurity(secid).symbol.ticker for secid in secids])
-    output_ta = to(fromglobalstore(tickers, datatype), Date(enddate), horizon)
+    output_ta = getsubset(fromglobalstores(tickers, datatype), Date(enddate), horizon)
     
     return length(output_ta) < horizon ? nothing : output_ta
       
@@ -333,7 +333,6 @@ function history(securities::Vector{Security},
     for i = 1:length(ids)
         ids[i] = securities[i].symbol.id    
     end
-    
     history(ids, datatype, frequency, horizon, enddate = enddate)
 
 end
@@ -365,7 +364,6 @@ function history(secids::Array{Int,1},
         info("""Only ":Day" frequency supported in history()""")
         exit()
     end
-
     checkforparent([:ondata, :_init])
 
     if enddate == DateTime()
@@ -379,13 +377,11 @@ function history(secids::Array{Int,1},
 
 
     ta = findinglobalstores(secids, datatype, frequency, horizon, enddate) 
-
     if ta!=nothing
         println("Reading from DATA STORES")
         return ta
     end
 
-    println("Reading from DATABASE")
     ta = YRead.history(secids, datatype, frequency,
             horizon, enddate)
 
@@ -428,12 +424,8 @@ function history(tickers::Array{String,1},
     ta = findinglobalstores(tickers, datatype, frequency, horizon, enddate)
     
     if (ta!=nothing)
-        println("Reading from DATA STORES")
         return ta
     end
-    
-
-    println("Reading from DATABASE")
 
     ta = YRead.history(tickers, datatype, frequency,
             horizon, enddate, 
@@ -650,12 +642,12 @@ function history_unadj(secids::Vector{Int},
                     securitytype::String="EQ",
                     exchange::String="NSE",
                     country::String="IN") 
-    
+
     SIZE = 50
     secids = length(secids) > SIZE ? secids[1:50] : secids
 
     ta = findinglobalstores(secids, "Unadj_"*datatype, frequency, startdate, enddate)
-    
+
     if(ta!=nothing)
         return ta
     end

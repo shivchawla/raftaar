@@ -6,6 +6,7 @@
 using DataFrames
 using GLM
 using JSON
+using TimeSeries
 
 type Drawdown
     currentdrawdown::Float64
@@ -151,7 +152,11 @@ end
 Function to compute performance based on vector of returns
 """
 function calculateperformance(algorithmreturns::Vector{Float64}, benchmarkreturns::Vector{Float64})
-
+   
+    # replace NaN with zeros
+    algorithmreturns[isnan(algorithmreturns)] = 0.0
+    benchmarkreturns[isnan(benchmarkreturns)] = 0.0
+    
     ps = Performance()
 
     ps.returns = aggregatereturns(algorithmreturns)
@@ -161,11 +166,14 @@ function calculateperformance(algorithmreturns::Vector{Float64}, benchmarkreturn
     ps.ratios = calculateratios(ps.returns, ps.deviation, ps.drawdown)
 
     df = DataFrame(X = benchmarkreturns, Y = algorithmreturns)
-    OLS = lm(Y ~ X, df)
-    coefficients = coef(OLS)
-    ps.ratios.beta = coefficients[2]
-    ps.ratios.alpha = coefficients[1]
-    ps.ratios.stability = r2(OLS)
+    
+    if(size(df, 1) > 2)
+        OLS = lm(Y ~ X, df)
+        coefficients = coef(OLS)
+        ps.ratios.beta = coefficients[2]
+        ps.ratios.alpha = coefficients[1]
+        ps.ratios.stability = r2(OLS)
+    end
 
     trkerr = sqrt(252) * std(algorithmreturns - benchmarkreturns)
     excessret = calculateannualreturns(algorithmreturns - benchmarkreturns)
@@ -177,32 +185,189 @@ function calculateperformance(algorithmreturns::Vector{Float64}, benchmarkreturn
     return ps
 end
 
+"""
+Function to compute performance for all periods like 1/2/5/10/ytd/mtd based on vector of returns
+"""
+function calculateperformance_allperiods(algorithmreturns::Vector{Float64}, benchmarkreturns::Vector{Float64}, dates::Vector{Date}) 
+
+    performances = Dict{String, Performance}()
+    
+    algo_ret_ta = TimeArray(dates[:], (algorithmreturns')', ["algorithm"])
+    benchmark_ret_ta = TimeArray(dates[:], (benchmarkreturns')', ["benchmark"])
+
+    returns = merge(algo_ret_ta, benchmark_ret_ta, :outer)
+
+    # Last 1 year data
+    sd = dates[end] - Dates.Year(1) + Dates.Day(1)
+    past_returns = from(returns, sd)
+    if(size(past_returns.values,1) > 0)
+        performances["1y"] = calculateperformance(past_returns["algorithm"].values, past_returns["benchmark"].values)
+    end
+
+    # Last 2 year data
+    sd = dates[end] - Dates.Year(2) + Dates.Day(1)
+    past_returns = from(returns, sd)
+    
+    if(size(past_returns.values,1) > 0)
+        performances["2y"] = calculateperformance(past_returns["algorithm"].values, past_returns["benchmark"].values)
+    end    
+
+    # Last 5 year data
+    sd = dates[end] - Dates.Year(5) + Dates.Day(1)
+    past_returns = from(returns, sd)
+    if(size(past_returns.values,1) > 0)
+        performances["5y"] = calculateperformance(past_returns["algorithm"].values, past_returns["benchmark"].values)
+    end
+
+    # Last 10 year data
+    sd = dates[end] - Dates.Year(10) + Dates.Day(1)
+    past_returns = from(returns, sd)
+    
+    if(size(past_returns.values,1) > 0)
+        performances["10y"] = calculateperformance(past_returns["algorithm"].values, past_returns["benchmark"].values)
+    end
+       
+    # YTD 
+    past_returns = when(returns, year, Dates.year(dates[end]))
+    if(size(past_returns.values,1) > 0)
+        performances["ytd"] = calculateperformance(past_returns["algorithm"].values, past_returns["benchmark"].values)
+    end    
+
+    # MTD   
+    sd = Date(Dates.year(dates[end]), Dates.month(dates[end]), 1)
+    past_returns = from(returns, sd)
+    if(size(past_returns.values,1) > 0)
+        performances["mtd"] = calculateperformance(past_returns["algorithm"].values, past_returns["benchmark"].values)
+    end
+
+    return performances
+end
+
+
+"""
+Function to compute performance for all periods like 1/2/5/10/ytd/mtd based on vector of returns
+"""
+
+function calculateperformance_rollingperiods(returns::TimeArray) 
+
+    performances = Dict{String, Performance}()
+
+    dates = returns.timestamp    
+
+    # Last 1 year data
+    sd = dates[end] - Dates.Year(1) + Dates.Day(1)
+    past_returns = from(returns, sd)
+    if(size(past_returns.values,1) > 0)
+        algo_returns = past_returns["algorithm"].values
+        benchmark_returns = past_returns["benchmark"].values
+        performances["1y"] = calculateperformance(algo_returns, benchmark_returns)
+    end
+
+    # Last 2 year data
+    sd = dates[end] - Dates.Year(2) + Dates.Day(1)
+    past_returns = from(returns, sd)
+    
+    if(size(past_returns.values,1) > 0)
+        algo_returns = past_returns["algorithm"].values
+        benchmark_returns = past_returns["benchmark"].values
+        performances["2y"] = calculateperformance(algo_returns, benchmark_returns)
+    end    
+
+    # Last 5 year data
+    sd = dates[end] - Dates.Year(5) + Dates.Day(1)
+    past_returns = from(returns, sd)
+    if(size(past_returns.values,1) > 0)
+        algo_returns = past_returns["algorithm"].values
+        benchmark_returns = past_returns["benchmark"].values
+        performances["5y"] = calculateperformance(algo_returns, benchmark_returns)
+    end
+
+    # Last 10 year data
+    sd = dates[end] - Dates.Year(10) + Dates.Day(1)
+    past_returns = from(returns, sd)
+    
+    if(size(past_returns.values,1) > 0)
+        algo_returns = past_returns["algorithm"].values
+        benchmark_returns = past_returns["benchmark"].values
+        performances["10y"] = calculateperformance(algo_returns, benchmark_returns)
+    end
+       
+    # YTD 
+    past_returns = when(returns, year, Dates.year(dates[end]))
+    if(size(past_returns.values,1) > 0)
+        algo_returns = past_returns["algorithm"].values
+        benchmark_returns = past_returns["benchmark"].values
+        performances["ytd"] = calculateperformance(algo_returns, benchmark_returns)
+    end    
+
+    # MTD   
+    sd = Date(Dates.year(dates[end]), Dates.month(dates[end]), 1)
+    past_returns = from(returns, sd)
+    if(size(past_returns.values,1) > 0)
+        algo_returns = past_returns["algorithm"].values
+        benchmark_returns = past_returns["benchmark"].values
+        performances["mtd"] = calculateperformance(algo_returns, benchmark_returns)
+    end
+
+    return performances
+end
+
+"""
+Function to compute performance for all static periods 2015/2014/etc
+"""
+function calculateperformance_staticperiods(returns::TimeArray) 
+
+    performance = Dict{String, Any}()
+
+    dates = returns.timestamp    
+
+    performance["yearly"] = Dict{String, Performance}()
+    performance["monthly"] = Dict{String, Performance}()
+    for y = 2007:Dates.year(dates[end])
+        past_returns = when(returns, year, y)
+        if(size(past_returns.values,1) > 0)
+            algo_returns = past_returns["algorithm"].values
+            benchmark_returns = past_returns["benchmark"].values
+            performance["yearly"][string(y)] = calculateperformance(algo_returns, benchmark_returns)
+        end
+
+        for m = 1:12
+            past_monthly_returns = when(past_returns, month, m)
+            if(size(past_monthly_returns.values,1) > 0)
+                algo_returns = past_monthly_returns["algorithm"].values
+                benchmark_returns = past_monthly_returns["benchmark"].values
+                performance["monthly"][string(y)*"_"string(m)] = calculateperformance(algo_returns, benchmark_returns)
+            end
+        end
+    end
+
+    return performance
+end
+
 function toJSON(performance::Performance)
     JSON.json(performance.returns)
 end
-
-#println(precompile(calculateperformance,(Vector{Float64}, Vector{Float64})))
 
 """
 Function to compute annual returns
 """
 function calculateannualreturns(returns::Vector{Float64})
-    (calculatetotalreturn(returns)/sum(length(returns))) * 252.0
+    round((calculatetotalreturn(returns)/sum(length(returns))) * 252.0, 2)
 end
 
 """
 Function to compute total return
 """
 function calculatetotalreturn(returns::Vector{Float64})
-    (cumprod(1.0 + returns))[end]
+    round((cumprod(1.0 + returns))[end], 2)
 end
 
 function aggregatereturns(rets::Vector{Float64})
     returns = Returns()
     totalreturn = calculatetotalreturn(rets)
-    returns.averagedailyreturn = (totalreturn - 1)/length(rets)
+    returns.averagedailyreturn = round((totalreturn - 1)/length(rets), 2)
     returns.totalreturn = totalreturn
-    returns.annualreturn = returns.averagedailyreturn*252
+    returns.annualreturn = round(returns.averagedailyreturn*252, 2)
     return returns
 end
 
@@ -355,3 +520,41 @@ function serialize(performance::Performance)
                             "drawdown" => serialize(performance.drawdown),
                             "portfoliostats" => serialize(performance.portfoliostats))
 end
+
+==(dw1::Drawdown, dw2::Drawdown) = dw1.currentdrawdown == dw2.currentdrawdown &&
+                                    dw1.maxdrawdown == dw2.maxdrawdown
+
+==(dv1::Deviation, dv2::Deviation) = dv1.annualstandarddeviation == dv2.annualstandarddeviation &&
+                                      dv1.annualvariance == dv2.annualvariance &&
+                                      dv1.annualsemideviation == dv2.annualsemideviation &&
+                                      dv1.annualsemivariance == dv2.annualsemivariance &&
+                                      dv1.squareddailyreturn == dv2.squareddailyreturn &&
+                                      dv1.sumsquareddailyreturn == dv2.sumsquareddailyreturn &&
+                                      dv1.sumdailyreturn == dv2.sumdailyreturn
+
+==(rt1::Ratios, rt2::Ratios) = rt1.sharperatio == rt2.sharperatio &&
+                                rt1.informationratio == rt2.informationratio &&
+                                rt1.calmarratio == rt2.calmarratio &&
+                                rt1.sortinoratio == rt2.sortinoratio &&
+                                rt1.treynorratio == rt2.treynorratio &&
+                                rt1.beta == rt2.beta &&
+                                rt1.alpha == rt2.alpha &&
+                                rt1.stability == rt2.stability
+
+==(rs1::Returns, rs2::Returns) = rs1.dailyreturn == rs2.dailyreturn &&
+                                  rs1.dailyreturn_benchmark == rs2.dailyreturn_benchmark &&
+                                  rs1.averagedailyreturn == rs2.averagedailyreturn &&
+                                  rs1.annualreturn == rs2.annualreturn &&
+                                  rs1.totalreturn == rs2.totalreturn &&
+                                  rs1.peaktotalreturn == rs2.peaktotalreturn
+
+==(ps1::PortfolioStats, ps2::PortfolioStats) = ps1.netvalue == ps2.netvalue &&
+                                                ps1.leverage == ps2.leverage &&
+                                                ps1.concentration == ps2.concentration
+
+==(pf1::Performance, pf2::Performance) = pf1.period == pf2.period &&
+                                          pf1.returns == pf2.returns &&
+                                          pf1.deviation == pf2.deviation &&
+                                          pf1.ratios == pf2.ratios &&
+                                          pf1.drawdown == pf2.drawdown &&
+                                          pf1.portfoliostats == pf2.portfoliostats

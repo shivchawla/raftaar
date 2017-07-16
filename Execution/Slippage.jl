@@ -36,7 +36,7 @@ end
 Function to get slippage for constant slippage model
 """
 function getslippageforvariableslippagemodel(value::Float64, latestprice::Float64)
-	return latestprice * value
+	return round(latestprice * value, 2)
 end
 
 
@@ -49,3 +49,5 @@ function serialize(slippage::Slippage)
   return Dict{String, Any}("model" => string(slippage.model),
                             "value" => slippage.value)
 end
+
+==(spg1::Slippage, spg2::Slippage) = spg1.value == spg2.value && spg1.model == spg2.model

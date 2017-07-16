@@ -11,12 +11,12 @@ function initialize(state)
 	# NIFTY 50 stock universe as of 25/01/2017
 	# This universe has Survivorship bias
 	universe = ["ACC","ADANIPORTS","AMBUJACEM",
-	"ASIANPAINT","AUROPHARMA","AXISBANK","BAJAJ-AUTO",
+	"ASIANPAINT","AUROPHARMA","AXISBANK","BAJAJ_AUTO",
 	"BANKBARODA","BHEL","BPCL",	"BHARTIARTL","INFRATEL",
 	"BOSCHLTD","CIPLA","COALINDIA","DRREDDY","EICHERMOT",
 	"GAIL","GRASIM","HCLTECH","HDFCBANK","HEROMOTOCO","HINDALCO",
 	"HINDUNILVR","HDFC","ITC","ICICIBANK","IDEA",
-	"INDUSINDBK","INFY","KOTAKBANK","LT","LUPIN","M&M",
+	"INDUSINDBK","INFY","KOTAKBANK","LT","LUPIN","M_M",
 	"MARUTI","NTPC","ONGC","POWERGRID","RELIANCE","SBIN",
 	"SUNPHARMA","TCS","TATAMTRDVR","TATAMOTORS","TATAPOWER",
 	"TATASTEEL","TECHM","ULTRACEMCO","WIPRO","YESBANK","ZEEL"]
@@ -38,13 +38,10 @@ end
 # every DAY/WEEK/MONTH (depends on rebalance frequency)
 # Default rebalance Frequency: Daily
 function ondata(data, state)
-	
 	# Get Universe
 	universe = getuniverse()
-	
 	# Fetch prices for last 22 days
 	prices = dropnan(history(universe, "Close", :Day, 22), :any)
-	
 	# Logic to calculate returns over last month
 	# Output: TimeArray
 	# http://timeseriesjl.readthedocs.io/en/latest/
@@ -60,17 +57,16 @@ function ondata(data, state)
 	info(string(sortedrets))
 	
 	# Get 5 names with lowest retursn
-	topnames = sortedrets[:,1]
+	topnames = sortedrets[1:5]
 
 	#Liquidate from portfolio if not in bottom 5 anymore
-	for (stock, positions) in state.portfolio.positions
+	for (stock, positions) in state.account.portfolio.positions
 		if (stock.ticker in topnames)
 			continue
 		else	
 			setholdingpct(stock, 0.0)
 		end
 	end
-	
 	info("$(length(topnames))")
 	# Create momemtum portfolio
 	for (i,stock) in enumerate(topnames)
@@ -82,5 +78,6 @@ function ondata(data, state)
 	
 	# Output information to console
 	info("Portofolio value = $(state.account.netvalue)")
+
 end
         
