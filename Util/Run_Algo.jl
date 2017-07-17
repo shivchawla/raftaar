@@ -10,10 +10,11 @@
 #alldata = history(["CNX_BANK","CNX_100","CNX_ENERGY"], "Close", :Day, 500, enddate = "2016-01-01")
 #alldata = history(["CNX_ENERGY"], "Close", :A, 200, enddate = "2016-01-01")
 
-import Logger: warn, info, error
+# import Logger: warn, info, error
 
 using DataFrames
 using TimeSeries
+using Logger
 
 function run_algo(forward_test::Bool = false)
 

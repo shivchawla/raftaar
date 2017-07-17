@@ -45,7 +45,7 @@ wsh = WebSocketHandler() do req, client
     connections[client.id] = client
 
     try
-        # setlogmode(:log, :socket, true, client)
+        setlogmode(:json, :socket, true, client)
 
         while !busy
 
@@ -53,10 +53,6 @@ wsh = WebSocketHandler() do req, client
             msg = read(client)
             argsString = decodeMessage(msg)
             args = [String(ss) for ss in split(argsString,"??##")]
-
-            # Start capturing all available output on the screen
-
-            rdstdout, wrstdout = redirect_stdout()
 
             # Parse arguments from the connection message.
 
@@ -74,9 +70,7 @@ wsh = WebSocketHandler() do req, client
 
             info("Ending Backtest", datetime = now())
 
-            # API.reset()
-
-            write(client, join(map(x -> Char(x), readavailable(rdstdout)), ""))
+            API.reset()
 
             global busy = false
             break

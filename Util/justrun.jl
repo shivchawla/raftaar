@@ -8,6 +8,8 @@ include("../Util/parseArgs.jl")
 include("../Util/processArgs.jl")
 include("../Util/Run_Algo.jl")
 
+setlogmode(:json, :console, true)
+
 parsed_args = ""
 fname = ""
 try
@@ -40,9 +42,7 @@ end
 
 #fname = "/users/shivkumarchawla/raftaar/Examples/momentumStrategy.jl"
 
-# setlogmode(:text, :console, true)
-
-# try
+try
     info("Building user algorithm", datetime=now())
 
     include(fname)
@@ -52,6 +52,6 @@ end
     run_algo(parsed_args["forward"])
 
     info("Ending Backtest", datetime=now())
-# catch err
-#     handleexception(err)
-# end
+catch err
+    handleexception(err)
+end

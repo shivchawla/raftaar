@@ -24,12 +24,16 @@ import Raftaar: getuniverse, getopenorders
 
 algorithm = Raftaar.Algorithm()
 
-function setlogmode(style::Symbol = :text, print::Symbol = :console, save::Bool = false)
+function setlogmode(style::Symbol, print::Symbol, save::Bool)
     Logger.configure(style_mode = style, print_mode = print, save_mode = save)
+end
+
+function setlogmode(style::Symbol, print::Symbol, save::Bool, client::WebSocket)
+    Logger.configure(client, style_mode = style, print_mode = print, save_mode = save)
 end
 export setlogmode
 
-info(message::String; datetime::DateTime = DateTime()) =
+#=info(message::String; datetime::DateTime = DateTime()) =
                     Logger.info(message, :json, datetime = datetime)
 export info
 
@@ -41,7 +45,7 @@ export warn
 error(message::String; datetime::DateTime = DateTime()) =
                     Logger.error(message, :json, datetime = datetime)
 
-export error
+export error=#
 
 include("TradingEnvAPI.jl")
 include("HistoryAPI.jl")
@@ -318,7 +322,7 @@ function _serializeData() # ;UID::String = "anonymous", backtestID::String = "ba
   insert(serializeCollection, Raftaar.serialize(algorithm))
   =#
   s = JSON.json(Dict("outputtype" => "serializedData", "algorithm" => Raftaar.serialize(algorithm)))
-  println(string(s))
+  Logger.print(string(s))
 end
 
 export _serializeData
