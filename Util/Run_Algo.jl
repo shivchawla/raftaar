@@ -33,22 +33,30 @@ function run_algo(forward_test::Bool = false)
       catch err
         handleexception(err)
       end
+
+      if _run_algo_internal()
+          _serializeData()
+      end
     else
       # Aww yeah, data found
       # just set the start date from where you want to continue the forward testing
       # and let the fun begin
 
       # Start simulation for the "next" day where simulation ended
-      setstartdate(getenddate() + Base.Dates.Day(1))
-      setenddate(getenddate() + Base.Dates.Day(1))
+      # start_date = getenddate() + Base.Dates.Day(1)
+      # end_date = getenddate() + Base.Dates.Day(1)
+
+      _run_algo_internal(getrunstartdate(), getrunenddate())
+      setenddate(end_date)
+      _serializeData()
     end
 
-    if _run_algo_internal()
+    #=if _run_algo_internal(start_date, end_date)
       # Don't forget that we were running a forward test
       # that is we need to serialize everything back into database
       _serializeData()
 
-    end
+    end=#
   else
     # this means we are doing a backtest
     # nothing much to do here except for calling initialize
@@ -64,25 +72,28 @@ function run_algo(forward_test::Bool = false)
   end
 end
 
-function _run_algo_internal()
+function _run_algo_internal(start_date::Date = getstartdate(), end_date::Date = getenddate())
+  # The parameters start_date and end_date here represent the datesfor which I want to run the simulation
+  # In case of backtest, they're by default set to the ones provided as external parameters or from initialize function
+  # In case of forward test, they are just one single day
   benchmark = API.getbenchmark()
 
   # Let's download new data now
 
   #alldata = history([benchmark], "Close", :Day, 100, enddate = "2016-01-01")
-  alldata = history_unadj([benchmark], "Close", :Day, startdate = DateTime(getstartdate()), enddate = DateTime(getenddate()))
+  alldata = history_unadj([benchmark], "Close", :Day, startdate = DateTime(start_date), enddate = DateTime(end_date))
 
   if alldata == nothing
       return false
   end
 
-  cp = history_unadj(getuniverse(), "Close", :Day, startdate = DateTime(getstartdate()), enddate = DateTime(getenddate()))
+  cp = history_unadj(getuniverse(), "Close", :Day, startdate = DateTime(start_date), enddate = DateTime(end_date))
 
   if cp == nothing
       return false
   end
 
-  vol = history_unadj(getuniverse(), "Volume", :Day, startdate = DateTime(getstartdate()), enddate = DateTime(getenddate()))
+  vol = history_unadj(getuniverse(), "Volume", :Day, startdate = DateTime(start_date), enddate = DateTime(end_date))
 
   if vol == nothing
       return false
@@ -111,12 +122,12 @@ function _run_algo_internal()
 
   # Global data stores
   allsecurities_includingbenchmark = push!([d.symbol for d in getuniverse()], API.getbenchmark())
-  adjustedprices = history(allsecurities_includingbenchmark, "Close", :Day, startdate = DateTime(getstartdate()), enddate = DateTime(getenddate()))
+  adjustedprices = history(allsecurities_includingbenchmark, "Close", :Day, startdate = DateTime(start_date), enddate = DateTime(end_date))
 
   #Set benchmark value and Output labels from graphs
   setbenchmarkvalues(labels)
 
-  adjustments = getadjustments(getuniverse(), DateTime(getstartdate()), DateTime(getenddate()))
+  adjustments = getadjustments(getuniverse(), DateTime(start_date), DateTime(end_date))
 
   #continue with backtest if there are any rows in price data.
   if !isempty(cp)

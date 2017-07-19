@@ -313,15 +313,9 @@ export updatedatastores
 """
 Function to save progress
 """
-function _serializeData() # ;UID::String = "anonymous", backtestID::String = "backtest0")
-  #=
-  serializeClient = MongoClient()
-  serializeCollection = MongoCollection(serializeClient, UID, backtestID)
-
-  delete(serializeCollection, Dict())
-  insert(serializeCollection, Raftaar.serialize(algorithm))
-  =#
-  s = JSON.json(Dict("outputtype" => "serializedData", "algorithm" => Raftaar.serialize(algorithm)))
+function _serializeData()
+  s = JSON.json(Dict("outputtype" => "serializedData",
+                     "algorithm" => Raftaar.serialize(algorithm)))
   Logger.print(string(s))
 end
 
@@ -331,20 +325,7 @@ export _serializeData
 Function to load previously saved progress
 """
 dataAvailable = false
-function _deserializeData(s::String) # ;UID::String = "anonymous", backtestID::String = "backtest0")
-  #=
-  deserializeClient = MongoClient()
-  deserializeCollection = MongoCollection(deserializeClient, UID, backtestID)
-
-  data = collect(find(deserializeCollection, Dict("object" => "algorithm")))
-
-  if length(data) == 0
-    return false
-  else
-    global algorithm = Raftaar.Algorithm(first(data))
-    return true
-  end
-  =#
+function _deserializeData(s::String)
   temp = LibBSON.BSONObject(JSON.parse(s))
   global algorithm = Raftaar.Algorithm(temp)
   global dataAvailable = true
@@ -352,6 +333,9 @@ end
 
 export _deserializeData
 
+"""
+Indicator for serialized data
+"""
 function wasDataFound()
   return dataAvailable
 end

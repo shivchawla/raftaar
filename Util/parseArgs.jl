@@ -18,14 +18,15 @@ function getargparsesettings()
         "--capital"
             help = "Starting Capital of the backtest"
             arg_type = Float64
+            default = 1000000.0
         "--startdate", "-s"
             help = "Start date of the backtest"
             arg_type = Date
-            default = Date("2016-01-01")
+            # default = Date("2016-01-01")
         "--enddate", "-e"
             help = "End date of the backtest"
             arg_type = Date
-            default = Date(now())
+            # default = Date(now())
         "--universe","-u"
             help = "Static universe for the backtest"
             arg_type = String

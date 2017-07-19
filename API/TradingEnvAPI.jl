@@ -1,6 +1,6 @@
 """
 Functions to expose trading environment API
-""" 
+"""
 function setresolution(resolution::Resolution)
     checkforparent(:initialize)
     setresolution!(algorithm.tradeenv, resolution)
@@ -11,40 +11,85 @@ function setresolution(resolution::String)
     setresolution!(algorithm.tradeenv, resolution)
 end
 
-function setstartdate(date::Date)  
+runStartDate = Date(now())
+runEndDate = Date(now())
+wasRunStartDateFound = false
+wasRunEndDateFound = false
+
+function setstartdate(date::Date; forward_with_serialize_data = false)
     checkforparent([:initialize,:_init])
-    setstartdate!(algorithm.tradeenv, date)
+    if forward_with_serialize_data
+        global runStartDate = date
+        global wasRunStartDateFound = true
+    else
+        setstartdate!(algorithm.tradeenv, date)
+    end
 end
 
-function setstartdate(dt::DateTime)  
+function setstartdate(dt::DateTime; forward_with_serialize_data = false)
     checkforparent([:initialize,:_init])
-    setstartdate!(algorithm.tradeenv, Date(dt))
+    if forward_with_serialize_data
+        global runStartDate = Date(dt)
+        global wasRunStartDateFound = true
+    else
+        setstartdate!(algorithm.tradeenv, Date(dt))
+    end
 end
 
-function setstartdate(date::String; format="yyyy-mm-dd")  
+function setstartdate(date::String; format="yyyy-mm-dd", forward_with_serialize_data = false)
     checkforparent([:initialize,:_init])
-    setstartdate!(algorithm.tradeenv, Date(date, format))
+    if forward_with_serialize_data
+        global runStartDate = Date(date, format)
+        global wasRunStartDateFound = true
+    else
+        setstartdate!(algorithm.tradeenv, Date(date, format))
+    end
 end
 export setstartdate
 
-function setenddate(date::Date)
+function setenddate(date::Date; forward_with_serialize_data = false)
     checkforparent([:initialize,:_init])
-    setenddate!(algorithm.tradeenv, date)
+    if forward_with_serialize_data
+        global runEndDate = date
+        global wasRunEndDateFound = true
+    else
+        setenddate!(algorithm.tradeenv, date)
+    end
 end
 
-function setenddate(dt::DateTime)
+function setenddate(dt::DateTime; forward_with_serialize_data = false)
     checkforparent([:initialize,:_init])
-    setenddate!(algorithm.tradeenv, Date(dt))
+    if forward_with_serialize_data
+        global runEndDate = Date(dt)
+        global wasRunEndDateFound = true
+    else
+        setenddate!(algorithm.tradeenv, Date(dt))
+    end
 end
 
-function setenddate(date::String; format="yyyy-mm-dd")
+function setenddate(date::String; format="yyyy-mm-dd", forward_with_serialize_data = false)
     checkforparent([:initialize,:_init])
-    setenddate!(algorithm.tradeenv, Date(date, format))
+    if forward_with_serialize_data
+        global runEndDate = Date(date, format)
+        global wasRunEndDateFound = true
+    else
+        setenddate!(algorithm.tradeenv, Date(date, format))
+    end
 end
 export setenddate
 
+function getrunstartdate()
+    return wasRunStartDateFound ? runStartDate : (getenddate() + Base.Dates.Day(1))
+end
+export getrunstartdate
+
+function getrunenddate()
+    return wasRunEndDateFound ? runEndDate : (getenddate() + Base.Dates.Day(1))
+end
+export getrunenddate
+
 function setcurrentdate(date::Date)
-    setcurrentdate!(algorithm.tradeenv, date) 
+    setcurrentdate!(algorithm.tradeenv, date)
     Logger.updateclock(DateTime(date))
 end
 export setcurrentdatetime
@@ -68,7 +113,7 @@ end
 export setrebalance, setinvestmentplan
 
 function setbenchmarkvalues(prices::Dict{String, Float64})
-    setbenchmarkvalues!(algorithm.tradeenv, prices)  
+    setbenchmarkvalues!(algorithm.tradeenv, prices)
 end
 export setbenchmarkvalues
 
@@ -102,7 +147,6 @@ end
 export getinvestmentplan
 
 function getrebalancefrequency()
-  algorithm.tradeenv.rebalance 
+  algorithm.tradeenv.rebalance
 end
 export getrebalancefrequency
-

@@ -24,11 +24,19 @@ function processargs(parsed_args::Dict{String,Any})
   end
 
   if (parsed_args["startdate"] != nothing)
-    setstartdate(parsed_args["startdate"])
+    if (parsed_args["serializedData"] == "")
+        setstartdate(parsed_args["startdate"])
+    else
+        setstartdate(parsed_args["startdate"], forward_with_serialize_data = true)
+    end
   end
 
   if (parsed_args["enddate"] != nothing)
-    setenddate(parsed_args["enddate"])
+    if (parsed_args["serializedData"] == "")
+      setenddate(parsed_args["enddate"])
+    else
+      setenddate(parsed_args["enddate"], forward_with_serialize_data = true)
+    end
   end
 
   if (parsed_args["universe"] != nothing)
