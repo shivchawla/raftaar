@@ -46,7 +46,15 @@ function run_algo(forward_test::Bool = false)
       # start_date = getenddate() + Base.Dates.Day(1)
       # end_date = getenddate() + Base.Dates.Day(1)
 
-      _run_algo_internal(getrunstartdate(), getrunenddate())
+      # The following dates are the dates for which the simuation will run
+      start_date = getrunstartdate()
+      end_date = getrunenddate()
+      _run_algo_internal(start_date, end_date)
+
+      # Even if the simuation returned nothing (in case of missing security data)
+      # we would like to reflect the end date for which the simuation ran
+      # and then pass the previously serialized data itself
+      # because this code region means, we already had some deserialized data to begin with
       setenddate(end_date)
       _serializeData()
     end
