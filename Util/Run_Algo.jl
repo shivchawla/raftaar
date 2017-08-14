@@ -18,7 +18,7 @@ using Logger
 
 function run_algo(forward_test::Bool = false)
 
-  benchmark = "JBFIND"
+  benchmark = "CNX_NIFTY"
   setbenchmark(benchmark)
 
   if forward_test
@@ -34,7 +34,7 @@ function run_algo(forward_test::Bool = false)
         handleexception(err)
       end
 
-      if _run_algo_internal()
+      if _run_algo_internal(forward = forward_test)
           _serializeData()
       end
     else
@@ -47,15 +47,16 @@ function run_algo(forward_test::Bool = false)
       # end_date = getenddate() + Base.Dates.Day(1)
 
       # The following dates are the dates for which the simuation will run
-      start_date = getrunstartdate()
-      end_date = getrunenddate()
-      _run_algo_internal(start_date, end_date)
+      #start_date = getrunstartdate()
+      #end_date = getrunenddate()
+      _run_algo_internal(forward = forward_test)
 
       # Even if the simuation returned nothing (in case of missing security data)
       # we would like to reflect the end date for which the simuation ran
       # and then pass the previously serialized data itself
       # because this code region means, we already had some deserialized data to begin with
-      setenddate(end_date)
+      
+      #setenddate(end_date)
       _serializeData()
     end
 
@@ -80,7 +81,8 @@ function run_algo(forward_test::Bool = false)
   end
 end
 
-function _run_algo_internal(start_date::Date = getstartdate(), end_date::Date = getenddate())
+function _run_algo_internal(start_date::Date = getstartdate(), end_date::Date = getenddate(); forward = false)
+  
   # The parameters start_date and end_date here represent the datesfor which I want to run the simulation
   # In case of backtest, they're by default set to the ones provided as external parameters or from initialize function
   # In case of forward test, they are just one single day
@@ -134,7 +136,6 @@ function _run_algo_internal(start_date::Date = getstartdate(), end_date::Date = 
 
   #Set benchmark value and Output labels from graphs
   setbenchmarkvalues(labels)
-
   adjustments = getadjustments(getuniverse(), DateTime(start_date), DateTime(end_date))
 
   #continue with backtest if there are any rows in price data.
@@ -147,18 +148,22 @@ function _run_algo_internal(start_date::Date = getstartdate(), end_date::Date = 
 
   i = 1
   for date in sort(collect(keys(labels)))
-      mainfnc(Date(date), i, cp, vol, adjustments, dynamic = false)
+      mainfnc(Date(date), i, cp, vol, adjustments, forward, dynamic = false)
       i = i + 1
   end
 
-  _outputbackteststatistics()
+  if !forward
+    _outputbackteststatistics()
+  end
+
+  _updatelogtracker()
 
   return true
 
 end
 
-function mainfnc(date::Date, counter::Int, close, volume, adjustments; dynamic::Bool = true)
-
+function mainfnc(date::Date, counter::Int, close, volume, adjustments, forward; dynamic::Bool = true)
+  
   setcurrentdate(date)
   if dynamic
     #DYNAMIC doesn't work
@@ -203,11 +208,9 @@ function mainfnc(date::Date, counter::Int, close, volume, adjustments; dynamic::
   end
 
   _updateaccount_splits_dividends()
-
   _updatependingorders_splits()
 
   #Internal function to execute pending orders using todays's close
-
   _updatependingorders_price()
   _updateaccount_price()
 
@@ -233,7 +236,9 @@ function mainfnc(date::Date, counter::Int, close, volume, adjustments; dynamic::
     handleexception(err)
   end
 
-  _outputdailyperformance()
+  if !forward
+    _outputdailyperformance()
+  end
 
   #this is called every data stamp, user can
   # user defines this functions where he sets universe,

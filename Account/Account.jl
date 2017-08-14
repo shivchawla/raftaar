@@ -19,7 +19,7 @@ end
 
 Account() = Account(0.0, 0.0, 0.0, 0.0, Portfolio())
 
-Account(data::BSONObject) = Account(data["seedcash"], data["cash"], data["netvalue"], data["leverage"], Portfolio(data["portfolio"]))
+Account(data::Dict{String, Any}) = Account(data["seedcash"], data["cash"], data["netvalue"], data["leverage"], Portfolio(data["portfolio"]))
 
 """
 function to reset the cash position of the account

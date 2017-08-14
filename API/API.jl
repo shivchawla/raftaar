@@ -17,8 +17,6 @@ using WebSockets
 using JSON
 using LibBSON
 
-import Logger: info, error
-
 #Import list of functions to be overloaded
 import Raftaar: getuniverse, getopenorders
 
@@ -187,6 +185,12 @@ end
 
 export _outputbackteststatistics
 
+function _updatelogtracker()
+    updatelogtracker(algorithm)
+end
+
+export _updatelogtracker
+
 function _outputdailyperformance()
     outputperformance(algorithm.tradeenv, algorithm.performancetracker, algorithm.benchmarktracker, algorithm.variabletracker, getcurrentdate())
 end
@@ -326,7 +330,8 @@ Function to load previously saved progress
 """
 dataAvailable = false
 function _deserializeData(s::String)
-  temp = LibBSON.BSONObject(JSON.parse(s))
+
+  temp = JSON.parse(s)
   global algorithm = Raftaar.Algorithm(temp)
   global dataAvailable = true
 end

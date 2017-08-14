@@ -44,10 +44,10 @@ wsh = WebSocketHandler() do req, client
     global connections
     connections[client.id] = client
 
-    try
+    #try
         setlogmode(:json, :socket, true, client)
 
-        while !busy
+        #while !busy
 
             global busy = true
             msg = read(client)
@@ -56,29 +56,29 @@ wsh = WebSocketHandler() do req, client
 
             # Parse arguments from the connection message.
 
-            info("Parsing arguments from settings panel", datetime = now())
+            info_static("Parsing arguments from settings panel")
             parsed_args = parse_arguments(args)
 
-            info("Processing parsed arguments from settings panel", datetime = now())
+            info_static("Processing parsed arguments from settings panel")
             fname = processargs(parsed_args)
 
-            info("Building user algorithm", datetime = now())
+            info_static("Building user algorithm")
             include(fname)
 
-            info("Starting Backtest", datetime = now())
+            info_static("Starting Backtest")
             run_algo(parsed_args["forward"])
 
-            info("Ending Backtest", datetime = now())
+            info_static("Ending Backtest")
 
             API.reset()
 
-            global busy = false
-            break
+            #global busy = false
+            #break
 
-        end
-    catch err
-        handleexception(err)
-    end
+        #end
+    #catch err
+     #   handleexception(err)
+    #end
 
     close(client)
 

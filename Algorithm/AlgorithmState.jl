@@ -7,7 +7,7 @@ end
 
 AlgorithmState() = AlgorithmState(Account(), Performance(), Dict{String,Any}())
 
-AlgorithmState(data::BSONObject) = AlgorithmState(Account(data["account"]),
+AlgorithmState(data::Dict{String, Any}) = AlgorithmState(Account(data["account"]),
                                                   #Portfolio(data["portfolio"]),
                                                   Performance(data["performance"]),
                                                   Dict(data["params"]))

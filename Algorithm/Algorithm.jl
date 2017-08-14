@@ -16,6 +16,16 @@
     Initializing = 11  #The algorithm is initializing
 =#
 
+typealias LogTracker Dict{String, Dict{String, Vector{String}}}
+
+function LogTracker(data::Dict{String, Any}) 
+    return data
+end
+
+function serialize(logtracker::LogTracker)
+    return logtracker
+end
+
 """
 Algorithm type
 Encapsulates various entities that characterise an Algorithm
@@ -35,6 +45,7 @@ type Algorithm
     transactiontracker::TransactionTracker
     ordertracker::OrderTracker
     variabletracker::VariableTracker
+    logtracker::LogTracker
     state::AlgorithmState
 end
 
@@ -54,12 +65,13 @@ Algorithm() = Algorithm("","", AlgorithmStatus(Initializing),
                                             TransactionTracker(),
                                             OrderTracker(),
                                             VariableTracker(),
+                                            LogTracker(),
                                             AlgorithmState())
 
 """
 Algorithm deserialize constructor
 """
-Algorithm(data::BSONObject) = Algorithm(data["name"],
+Algorithm(data::Dict{String,Any}) = Algorithm(data["name"],
                                         data["id"],
                                         eval(parse(data["status"])),
                                         Account(data["account"]),
@@ -74,6 +86,7 @@ Algorithm(data::BSONObject) = Algorithm(data["name"],
                                         TransactionTracker(data["transactiontracker"]),
                                         OrderTracker(data["ordertracker"]),
                                         VariableTracker(data["variabletracker"]),
+                                        LogTracker(data["logtracker"]),
                                         AlgorithmState(data["state"]))
 
 """
@@ -97,6 +110,7 @@ function resetAlgo(algorithm::Algorithm)
     algorithm.ordertracker = OrderTracker()
     algorithm.variabletracker = VariableTracker()
     algorithm.state = AlgorithmState()
+    algorithm.logtracker = LogTracker()
     #return
 end
 
@@ -235,6 +249,25 @@ end
 
 export outputbackteststatistics
 
+function updatelogtracker(algorithm::Algorithm)
+    for (date, dict) in Logger.getlogbook()
+        if !haskey(algorithm.logtracker, date)
+            algorithm.logtracker[date] = Dict{String, Vector{String}}()
+        end
+        for(et, logs) in dict
+            if !haskey(algorithm.logtracker[date], et)
+                algorithm.logtracker[date][et] = logs
+            else
+                push!(algorithm.logtracker[date][et], logs)
+            end
+        end
+    end
+
+    #algorithm.logtracker = Logger.getlogbook()
+end
+
+export updatelogtracker
+
 # Additional functions for (de)serialization
 
 function serialize(algorithm::Algorithm)
@@ -254,6 +287,7 @@ function serialize(algorithm::Algorithm)
                             "transactiontracker" => serialize(algorithm.transactiontracker),
                             "ordertracker" => serialize(algorithm.ordertracker),
                             "variabletracker" => serialize(algorithm.variabletracker),
+                            "logtracker" => serialize(algorithm.logtracker),
                             "state" => serialize(algorithm.state))
 end
 
@@ -274,6 +308,7 @@ export serialize
                                           algo1.transactiontracker == algo2.transactiontracker &&
                                           algo1.ordertracker == algo2.ordertracker &&
                                           algo1.variabletracker == algo2.variabletracker &&
+                                          algo1.logtracker == algo2.logtracker &&
                                           algo1.state == algo2.state
 
 Base.Date(s::String) = Date(map(x->parse(Int64, x), split(s, "-"))...)

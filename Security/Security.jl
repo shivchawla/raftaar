@@ -4,6 +4,7 @@
 # Organization: AIMSQUANT PVT. LTD.
 
 import Base: ==
+import Base.convert
 
 """
 Combination of stock ticker and integer id
@@ -20,7 +21,19 @@ SecuritySymbol() = SecuritySymbol(0, "")
 
 SecuritySymbol(id::Int64) = SecuritySymbol(id, "")
 
-SecuritySymbol(data::BSONObject) = SecuritySymbol(data["id"], data["ticker"])
+function SecuritySymbol(s::String) 
+    ss = JSON.parse(s)
+
+    if(typeof(ss) == String) 
+        return SecuritySymbol(0, s)
+    else
+        return SecuritySymbol(ss)
+    end  
+end
+
+SecuritySymbol(data::Dict{String, Any}) = SecuritySymbol(data["id"], data["ticker"])
+
+tostring(ss::SecuritySymbol) = JSON.json(serialize(ss))
 
 """
 Definition of empty SecuritySymbol
@@ -59,6 +72,8 @@ Security(id::Int64, ticker::String, name::String; exchange::String="NSE", countr
 
 ==(sec_one::Security, sec_two::Security) = sec_one.symbol == sec_two.symbol
 
+
+
 """
 Serialize the security to dictionary object
 """
@@ -86,7 +101,7 @@ end
                                     sr1.enddate == sr2.enddate
 
 
-Security(data::BSONObject) = Security(SecuritySymbol(data["symbol"]["id"], data["symbol"]["ticker"]),
+Security(data::Dict{String, Any}) = Security(SecuritySymbol(data["symbol"]["id"], data["symbol"]["ticker"]),
                                       data["name"], data["exchange"], data["country"], data["securitytype"], DateTime(data["startdate"]), DateTime(data["enddate"]))
 
 

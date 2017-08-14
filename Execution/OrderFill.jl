@@ -28,7 +28,7 @@ OrderFill(order::Order, datetime::DateTime) = OrderFill(order, datetime, 0.0)
 OrderFill(securitysymbol::SecuritySymbol, fillprice::Float64, fillquantity::Int, fee::Float64 = 0.0) =
     OrderFill(convert(UInt64, now()), securitysymbol, DateTime(), fee, fillprice, fillquantity, "")
 
-OrderFill(data::BSONObject) = OrderFill(parse(UInt64, data["orderid"]),
+OrderFill(data::Dict{String, Any}) = OrderFill(parse(UInt64, data["orderid"]),
 										SecuritySymbol(data["securitysymbol"]["id"], data["securitysymbol"]["ticker"]),
 										DateTime(data["datetime"]),
 										data["orderfee"],

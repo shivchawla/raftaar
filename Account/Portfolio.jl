@@ -24,7 +24,7 @@ PortfolioMetrics() = PortfolioMetrics(0.0, 0.0, 0.0, 0.0, 0, 0)
                                                    pm1.shortcount == pm2.shortcount &&
                                                    pm1.longcount == pm2.longcount)
 
-PortfolioMetrics(data::BSONObject) = PortfolioMetrics(data["netexposure"],
+PortfolioMetrics(data::Dict{String, Any}) = PortfolioMetrics(data["netexposure"],
                                                       data["grossexposure"],
                                                       data["shortexposure"],
                                                       data["longexposure"],
@@ -43,9 +43,9 @@ Portfolio() = Portfolio(Dict(), PortfolioMetrics())
 ==(p1::Portfolio, p2::Portfolio) = (p1.positions == p2.positions && p1.metrics == p2.metrics)
 
 
-Portfolio(data::BSONObject) = Portfolio(
+Portfolio(data::Dict{String, Any}) = Portfolio(
                                 Dict(
-                                  [(SecuritySymbol(parse(Int64, id)), Position(pos)) for (id, pos) in data["positions"]]
+                                  [(SecuritySymbol(sym), Position(pos)) for (sym, pos) in data["positions"]]
                                 ),
                                 PortfolioMetrics(data["metrics"])
                               )
@@ -59,36 +59,6 @@ getindex(portfolio::Portfolio, symbol::SecuritySymbol) = get(portfolio.positions
 getindex(portfolio::Portfolio, security::Security) = get(portfolio.positions, security.symbol, Position(security.symbol))
 setindex!(portfolio::Portfolio, position::Position, securitysymbol::SecuritySymbol) =
                       setindex!(portfolio.positions, position, securitysymbol)
-
-
-"""
-Serialize the portfolio metrics to dictionary
-"""
-function serialize(metrics::PortfolioMetrics)
-  return Dict{String, Float64}("netexposure" => metrics.netexposure,
-                            "grossexposure" => metrics.grossexposure,
-                            "shortexposure" => metrics.shortexposure,
-                            "longexposure" => metrics.longexposure,
-                            "shortcount" => metrics.shortcount,
-                            "longcount" => metrics.longcount)
-end
-
-
-"""
-Serialize the Portfolio object to Dictionary
-"""
-function serialize(port::Portfolio)
-    output = Dict{String, Any}()
-
-    output["positions"] = Vector{Dict{String, Any}}()
-    for (sym, pos) in port.positions
-      push!(output["positions"], serialize(pos))
-    end
-
-    output["metrics"] = serialize(port.metrics)
-
-    return output
-end
 
 
 """
@@ -282,7 +252,7 @@ function serialize(portfolio::Portfolio)
   temp = Dict{String, Any}("metrics"   => serialize(portfolio.metrics),
                             "positions" => Dict{String, Any}())
   for (symbol, pos) in portfolio.positions
-    temp["positions"][string(symbol.id)] = serialize(pos)
+    temp["positions"][tostring(symbol)] = serialize(pos)
   end
 
   return temp

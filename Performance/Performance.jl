@@ -15,7 +15,7 @@ end
 
 Drawdown() = Drawdown(0.0,0.0)
 
-Drawdown(data::BSONObject) = Drawdown(data["currentdrawdown"], data["maxdrawdown"])
+Drawdown(data::Dict{String, Any}) = Drawdown(data["currentdrawdown"], data["maxdrawdown"])
 
 type Deviation
     annualstandarddeviation::Float64
@@ -29,7 +29,7 @@ end
 
 Deviation() = Deviation(0.0,0.0,0.0,0.0,0.0,0.0,0.0)
 
-Deviation(data::BSONObject) = Deviation(data["annualstandarddeviation"],
+Deviation(data::Dict{String, Any}) = Deviation(data["annualstandarddeviation"],
                                         data["annualvariance"],
                                         data["annualsemideviation"],
                                         data["annualsemivariance"],
@@ -50,7 +50,7 @@ end
 
 Ratios() = Ratios(0.0,0.0,0.0,0.0,0.0,1.0,0.0,1.0)
 
-Ratios(data::BSONObject) = Ratios(data["sharperatio"],
+Ratios(data::Dict{String, Any}) = Ratios(data["sharperatio"],
                                   data["informationratio"],
                                   data["calmarratio"],
                                   data["sortinoratio"],
@@ -70,7 +70,7 @@ end
 
 Returns() = Returns(0.0,0.0,0.0,0.0,1.0,1.0)
 
-Returns(data::BSONObject) = Returns(data["dailyreturn"],
+Returns(data::Dict{String, Any}) = Returns(data["dailyreturn"],
                                     data["dailyreturn_benchmark"],
                                     data["averagedailyreturn"],
                                     data["annualreturn"],
@@ -87,7 +87,7 @@ end
 
 PortfolioStats() = PortfolioStats(0.0,0.0,0.0)
 
-PortfolioStats(data::BSONObject) = PortfolioStats(data["netvalue"], data["leverage"], data["concentration"])
+PortfolioStats(data::Dict{String, Any}) = PortfolioStats(data["netvalue"], data["leverage"], data["concentration"])
 
 type Performance
     period::Int
@@ -102,7 +102,7 @@ end
 
 Performance() = Performance(0, Returns(), Deviation(), Ratios(), Drawdown(), PortfolioStats())
 
-Performance(data::BSONObject) = Performance(data["period"],
+Performance(data::Dict{String, Any}) = Performance(data["period"],
                                             Returns(data["returns"]),
                                             Deviation(data["deviation"]),
                                             Ratios(data["ratios"]),
@@ -114,10 +114,10 @@ typealias CashTracker Dict{Date, Float64}
 typealias PerformanceTracker Dict{Date, Performance}
 typealias VariableTracker Dict{Date, Dict{String, Float64}}
 
-AccountTracker(data::BSONObject) = Dict([(Date(date), Account(acc)) for (date, acc) in data])
-CashTracker(data::BSONObject) = Dict([(Date(date), val) for (date, val) in data])
-PerformanceTracker(data::BSONObject) = Dict([(Date(date), Performance(perf)) for (date, perf) in data])
-VariableTracker(data::BSONObject) = Dict([(Date(date), Dict(dt)) for (date, dt) in data])
+AccountTracker(data::Dict{String, Any}) = Dict([(Date(date), Account(acc)) for (date, acc) in data])
+CashTracker(data::Dict{String, Any}) = Dict([(Date(date), val) for (date, val) in data])
+PerformanceTracker(data::Dict{String, Any}) = Dict([(Date(date), Performance(perf)) for (date, perf) in data])
+VariableTracker(data::Dict{String, Any}) = Dict([(Date(date), Dict(dt)) for (date, dt) in data])
 
 
 """

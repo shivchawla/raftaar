@@ -24,7 +24,7 @@ Empty brokerage constructor
 BacktestBrokerage() = BacktestBrokerage(Blotter(), Commission(), Margin(),
 							Slippage(), CancelPolicy(EOD), 0.05)
 
-BacktestBrokerage(data::BSONObject) = BacktestBrokerage(Blotter(data["blotter"]), Commission(data["commission"]),
+BacktestBrokerage(data::Dict{String, Any}) = BacktestBrokerage(Blotter(data["blotter"]), Commission(data["commission"]),
 												Margin(data["margin"]), Slippage(data["slippage"]),
 												eval(parse(data["cancelpolicy"])), data["participationrate"])
 

@@ -13,7 +13,7 @@ setlogmode(:json, :console, true)
 parsed_args = ""
 fname = ""
 try
-    info("Parsing arguments from settings panel", datetime=now())
+    info_static("Parsing arguments from settings panel")
     parsed_args = parse_commandline()
 catch err
     handleexception(err)
@@ -29,12 +29,12 @@ connection = JSON.parsefile(Base.source_dir()*"/connection.json")
 
 const client = MongoClient()
 
-info("Configuring datastore connections", datetime=now())
+info_static("Configuring datastore connections")
 
 YRead.configure(client, database = "aimsquant")
 YRead.configure(priority = 2)
 try
-    info("Processing parsed arguments from settings panel", datetime = now())
+    info_static("Processing parsed arguments from settings panel")
     fname = processargs(parsed_args)
 catch err
     handleexception(err)
@@ -43,15 +43,15 @@ end
 #fname = "/users/shivkumarchawla/raftaar/Examples/momentumStrategy.jl"
 
 try
-    info("Building user algorithm", datetime=now())
+    info_static("Building user algorithm")
 
     include(fname)
 
-    info("Starting Backtest", datetime=now())
+    info_static("Starting Backtest")
 
     run_algo(parsed_args["forward"])
 
-    info("Ending Backtest", datetime=now())
+    info_static("Ending Backtest")
 catch err
     handleexception(err)
 end

@@ -27,23 +27,11 @@ function setstartdate(date::Date; forward_with_serialize_data = false)
 end
 
 function setstartdate(dt::DateTime; forward_with_serialize_data = false)
-    checkforparent([:initialize,:_init])
-    if forward_with_serialize_data
-        global runStartDate = Date(dt)
-        global wasRunStartDateFound = true
-    else
-        setstartdate!(algorithm.tradeenv, Date(dt))
-    end
+    setstartdate(Date(dt), forward_with_serialize_data = forward_with_serialize_data)
 end
 
 function setstartdate(date::String; format="yyyy-mm-dd", forward_with_serialize_data = false)
-    checkforparent([:initialize,:_init])
-    if forward_with_serialize_data
-        global runStartDate = Date(date, format)
-        global wasRunStartDateFound = true
-    else
-        setstartdate!(algorithm.tradeenv, Date(date, format))
-    end
+    setstartdate(Date(date, format), forward_with_serialize_data = forward_with_serialize_data)
 end
 export setstartdate
 
@@ -58,23 +46,11 @@ function setenddate(date::Date; forward_with_serialize_data = false)
 end
 
 function setenddate(dt::DateTime; forward_with_serialize_data = false)
-    checkforparent([:initialize,:_init])
-    if forward_with_serialize_data
-        global runEndDate = Date(dt)
-        global wasRunEndDateFound = true
-    else
-        setenddate!(algorithm.tradeenv, Date(dt))
-    end
+  setenddate(Date(dt), forward_with_serialize_data = forward_with_serialize_data)
 end
 
 function setenddate(date::String; format="yyyy-mm-dd", forward_with_serialize_data = false)
-    checkforparent([:initialize,:_init])
-    if forward_with_serialize_data
-        global runEndDate = Date(date, format)
-        global wasRunEndDateFound = true
-    else
-        setenddate!(algorithm.tradeenv, Date(date, format))
-    end
+    setenddate(Date(date, format), forward_with_serialize_data = forward_with_serialize_data)
 end
 export setenddate
 

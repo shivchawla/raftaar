@@ -47,7 +47,7 @@ Order(symbol::SecuritySymbol, quantity::Int64, price::Float64) =
                                     OrderType(Limit), DateTime(),
                                     OrderStatus(New), 0, false,"")
 
-Order(data::BSONObject) = Order(parse(UInt64, data["id"]),
+Order(data::Dict{String, Any}) = Order(parse(UInt64, data["id"]),
                                 SecuritySymbol(data["securitysymbol"]["id"], data["securitysymbol"]["ticker"]),
                                 data["quantity"],
                                 data["remainingquantity"],

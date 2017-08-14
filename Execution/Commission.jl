@@ -16,7 +16,7 @@ Empty Constructor
 """
 Commission() = Commission(CommissionModel(PerTrade), 1.0)
 
-Commission(data::BSONObject) = Commission(eval(parse(data["model"])), data["value"])
+Commission(data::Dict{String, Any}) = Commission(eval(parse(data["model"])), data["value"])
 
 """
 Function to get commission for the order

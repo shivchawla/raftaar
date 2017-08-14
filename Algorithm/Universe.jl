@@ -31,7 +31,7 @@ TradeBar(datetime::DateTime, open::Float64, high::Float64, low::Float64, close::
 
 TradeBar() = TradeBar(DateTime(), 0.0, 0.0, 0.0, 0.0, 0)
 
-TradeBar(data::BSONObject) = TradeBar(DateTime(data["datetime"]),
+TradeBar(data::Dict{String, Any}) = TradeBar(DateTime(data["datetime"]),
                                       data["open"],
                                       data["high"],
                                       data["low"],
@@ -54,18 +54,18 @@ Empty constructor
 """
 Universe() = Universe(Dict(), Dict(), Dict(), Dict())
 
-Universe(data::BSONObject) = Universe(
+Universe(data::Dict{String, Any}) = Universe(
                                         Dict(
                                           [(str, [SecuritySymbol(symbol) for symbol in vectorSymbols]) for (str, vectorSymbols) in data["tickertosymbol"]]
                                         ),
                                         Dict(
-                                          [(SecuritySymbol(parse(Int64, id)), Security(security)) for (id, security) in data["securities"]]
+                                          [(SecuritySymbol(sym), Security(security)) for (sym, security) in data["securities"]]
                                         ),
                                         Dict(
-                                          [(SecuritySymbol(parse(Int64, id)), [TradeBar(tradebar) for tradebar in vectorTradebar]) for (id, vectorTradebar) in data["tradebars"]]
+                                          [(SecuritySymbol(sym), [TradeBar(tradebar) for tradebar in vectorTradebar]) for (sym, vectorTradebar) in data["tradebars"]]
                                         ),
                                         Dict(
-                                          [(SecuritySymbol(parse(Int64, id)), Adjustment(adj)) for (id, adj) in data["adjustments"]]
+                                          [(SecuritySymbol(sym), Adjustment(adj)) for (sym, adj) in data["adjustments"]]
                                         )
                                       )
 
@@ -400,13 +400,13 @@ function serialize(universe::Universe)
                             "tradebars"     => Dict{String, Any}(),
                             "adjustments"   => Dict{String, Any}())
   for (symbol, security) in universe.securities
-    temp["securities"][string(symbol.id)] = serialize(security)
+    temp["securities"][tostring(symbol)] = serialize(security)
   end
   for (symbol, vec) in universe.tradebars
-    temp["tradebars"][string(symbol.id)] = serialize(vec)
+    temp["tradebars"][tostring(symbol)] = serialize(vec)
   end
   for (symbol, adj) in universe.adjustments
-    temp["adjustments"][string(symbol.id)] = serialize(adj)
+    temp["adjustments"][tostring(symbol)] = serialize(adj)
   end
 
   return temp

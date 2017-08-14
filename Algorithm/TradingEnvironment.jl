@@ -36,7 +36,7 @@ TradingEnvironment() = TradingEnvironment(
                           SecuritySymbol(), Resolution(Resolution_Day), Rebalance(Rebalance_Daily), InvestmentPlan(IP_AllIn), true,
                           SecurityType(Equity), "IN", Dict{Date, Float64}())
 
-TradingEnvironment(data::BSONObject) = TradingEnvironment(Date(data["startdate"]),
+TradingEnvironment(data::Dict{String, Any}) = TradingEnvironment(Date(data["startdate"]),
                                                           Date(data["enddate"]),
                                                           Date(data["currentdate"]),
                                                           data["livemode"],

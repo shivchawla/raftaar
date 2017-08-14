@@ -19,7 +19,7 @@ Empty Constructor
 """
 Slippage() = Slippage(SlippageModel(Variable), 0.001)
 
-Slippage(data::BSONObject) = Slippage(eval(parse(data["model"])), data["value"])
+Slippage(data::Dict{String, Any}) = Slippage(eval(parse(data["model"])), data["value"])
 
 """
 Function to get slippage for the order based on latest price and slippage model

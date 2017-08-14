@@ -14,7 +14,7 @@ end
 
 Margin() = Margin(1.0, 1.0)
 
-Margin(data::BSONObject) = Margin(data["initialmargin"], data["maintenancemargin"])
+Margin(data::Dict{String, Any}) = Margin(data["initialmargin"], data["maintenancemargin"])
 
 function getmaintenancemargin(position::Position, margin::Margin)
 	return  absholdingcost(position) * margin.maintenancemargin

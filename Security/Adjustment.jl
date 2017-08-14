@@ -6,7 +6,7 @@ end
 
 Adjustment() = Adjustment(0.0, "", 0.0)
 
-Adjustment(data::BSONObject) = Adjustment(data["close"], data["adjustmenttype"], data["adjustmentfactor"])
+Adjustment(data::Dict{String, Any}) = Adjustment(data["close"], data["adjustmenttype"], data["adjustmentfactor"])
 
 function serialize(adj::Adjustment)
   return Dict{String, Any}("close"              => adj.close,

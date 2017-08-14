@@ -23,11 +23,11 @@ typealias Blotter Dict{SecuritySymbol, Vector{Order}}
 """
 Empty blotter construction
 """
-Blotter(data::BSONObject) = Dict([(SecuritySymbol(parse(Int64, id)), [Order(order) for order in vectorOrder]) for (id, vectorOrder) in data])
+Blotter(data::Dict{String, Any}) = Dict([(SecuritySymbol(sym), [Order(order) for order in vectorOrder]) for (sym, vectorOrder) in data])
 
-OrderTracker(data::BSONObject) = Dict([(Date(date), [Order(order) for order in vectorOrder]) for (date, vectorOrder) in data])
+OrderTracker(data::Dict{String, Any}) = Dict([(Date(date), [Order(order) for order in vectorOrder]) for (date, vectorOrder) in data])
 
-TransactionTracker(data::BSONObject) = Dict([(Date(date), [OrderFill(orderfill) for orderfill in vectorOrderFill]) for (date, vectorOrderFill) in data])
+TransactionTracker(data::Dict{String, Any}) = Dict([(Date(date), [OrderFill(orderfill) for orderfill in vectorOrderFill]) for (date, vectorOrderFill) in data])
 
 """
 Function to add order to the blotter
@@ -160,7 +160,7 @@ end
 function serialize(blotter::Blotter)
   temp = Dict{String, Any}()
   for (symbol, vectorOrders) in blotter
-    temp[string(symbol.id)] = [serialize(eachOrder) for eachOrder in vectorOrders]
+    temp[tostring(symbol)] = [serialize(eachOrder) for eachOrder in vectorOrders]
   end
   return temp
 end

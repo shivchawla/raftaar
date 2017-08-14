@@ -28,7 +28,7 @@ Constructors
 """
 Position() = Position(SecuritySymbol())
 
-Position(data::BSONObject) = Position(SecuritySymbol(data["securitysymbol"]["id"], data["securitysymbol"]["ticker"]),
+Position(data::Dict{String, Any}) = Position(SecuritySymbol(data["securitysymbol"]["id"], data["securitysymbol"]["ticker"]),
                                       data["quantity"],
                                       data["averageprice"],
                                       data["totalfees"],
