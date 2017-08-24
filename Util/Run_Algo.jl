@@ -21,6 +21,8 @@ function run_algo(forward_test::Bool = false)
   benchmark = "CNX_NIFTY"
   setbenchmark(benchmark)
 
+  setcurrentdate(getstartdate())
+
   if forward_test
     # we're doing a forward test
     # Let's check if we have already saved data or not
@@ -32,6 +34,7 @@ function run_algo(forward_test::Bool = false)
         initialize(getstate())
       catch err
         handleexception(err)
+        return
       end
 
       if _run_algo_internal(forward = forward_test)
@@ -74,6 +77,7 @@ function run_algo(forward_test::Bool = false)
       initialize(getstate())
     catch err
       handleexception(err)
+      return
     end
 
     _run_algo_internal()
@@ -83,6 +87,8 @@ end
 
 function _run_algo_internal(start_date::Date = getstartdate(), end_date::Date = getenddate(); forward = false)
   
+  setcurrentdate(getstartdate())
+
   # The parameters start_date and end_date here represent the datesfor which I want to run the simulation
   # In case of backtest, they're by default set to the ones provided as external parameters or from initialize function
   # In case of forward test, they are just one single day
@@ -147,19 +153,24 @@ function _run_algo_internal(start_date::Date = getstartdate(), end_date::Date = 
   end
 
   i = 1
-  for date in sort(collect(keys(labels)))
-      mainfnc(Date(date), i, cp, vol, adjustments, forward, dynamic = false)
-      i = i + 1
-  end
 
-  if !forward
-    _outputbackteststatistics()
+  success = true
+  for date in sort(collect(keys(labels)))
+      success = mainfnc(Date(date), i, cp, vol, adjustments, forward, dynamic = false)
+      
+      if(!success)
+          break
+      end
+      i = i + 1
   end
 
   _updatelogtracker()
 
+  if !forward
+    _outputbackteststatistics()
+  end
+  
   return true
-
 end
 
 function mainfnc(date::Date, counter::Int, close, volume, adjustments, forward; dynamic::Bool = true)
@@ -234,11 +245,14 @@ function mainfnc(date::Date, counter::Int, close, volume, adjustments, forward; 
     ondata(currentprices, getstate())
   catch err
     handleexception(err)
+    return false
   end
 
   if !forward
     _outputdailyperformance()
   end
+
+  return true
 
   #this is called every data stamp, user can
   # user defines this functions where he sets universe,

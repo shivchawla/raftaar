@@ -29,32 +29,39 @@ const params = Dict{String, Any}("style" => :text,
                                 "print" => :console,
                                 "save" => false,
                                 "limit" => 30,
-                                "counter" => 0)
+                                "counter" => 0,
+                                "display" => true)
 
 """
 Function to configure mode of the logger and change the datetime
 """
-function configure(;style_mode::Symbol = :text, print_mode::Symbol = :console, save_mode::Bool = true, save_limit::Int = 30)
+function configure(;style_mode::Symbol = :text, print_mode::Symbol = :console, save_mode::Bool = true, save_limit::Int = 30, display::Bool = true)
     params["style"] = style_mode
     params["print"] = print_mode
     params["save"] = save_mode
     params["limit"] = save_limit
+    params["display"] = display
 
     if(save_mode)
         logbook.savelimit = save_limit
     end
 end
 
-function configure(client::WebSocket; style_mode::Symbol = :text, print_mode::Symbol = :socket, save_mode::Bool = true, save_limit::Int = 30)
+function configure(client::WebSocket; style_mode::Symbol = :text, print_mode::Symbol = :socket, save_mode::Bool = true, save_limit::Int = 30, display::Bool = true)
     params["style"] = style_mode
     params["print"] = print_mode
     params["save"] = save_mode
     params["limit"] = save_limit
     params["client"] = client
+    params["display"] = display
 
     if(save_mode)
         logbook.savelimit = save_limit
     end
+end
+
+function update_display(display::Bool)
+    params["display"] = display
 end
 
 function updateclock(algo_clock::DateTime)
@@ -117,6 +124,11 @@ function error(msg::String, mmode::Symbol; datetime::DateTime = now())
 end
 
 function _log(msg::String, msgtype::MessageType, pmode::Symbol, mmode::Symbol, datetime::DateTime)
+    
+    if(!params["display"])
+        return
+    end
+
     #mode = params["mode"]
     if haskey(params, "datetime") && datetime!=DateTime()
         datetime = params["datetime"]
