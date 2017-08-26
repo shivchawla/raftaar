@@ -53,24 +53,34 @@ wsh = WebSocketHandler() do req, client
     info_static("Parsing arguments from settings panel")
     parsed_args = parse_arguments(args)
 
+    parseError = false
     info_static("Processing parsed arguments from settings panel")
-    fname = processargs(parsed_args)
-
-    info_static("Building user algorithm")
-    #catch compile time errors in the user file
-    compileError = false
     try
-        include(fname)
+        fname = processargs(parsed_args)
     catch err
-        compileError = true
+        info_static("Error parsing arguments from settings pnael")
+        parseError = true
         handleexception(err)
     end
+        
+    if !parseError
+        info_static("Building user algorithm")
+        
+        #catch compile time errors in the user file
+        compileError = false
+        try
+            include(fname)
+        catch err
+            compileError = true
+            handleexception(err)
+        end
 
-    if !compileError
-        info_static("Starting Backtest")
-        run_algo(parsed_args["forward"])
-        API.reset()
-        info_static("Ending Backtest")
+        if !compileError
+            info_static("Starting Backtest")
+            run_algo(parsed_args["forward"])
+            API.reset()
+            info_static("Ending Backtest")
+        end
     end
 
     close(client)
