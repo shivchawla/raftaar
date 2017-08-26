@@ -33,7 +33,6 @@ YRead.configure(priority = 2)
 
 #global Dict to store open connections in
 global connections = Dict{Int,WebSocket}()
-fname = ""
 
 function decodeMessage(msg)
     String(copy(msg))
@@ -55,10 +54,11 @@ wsh = WebSocketHandler() do req, client
 
     parseError = false
     info_static("Processing parsed arguments from settings panel")
+    fname = ""
     try
         fname = processargs(parsed_args)
     catch err
-        info_static("Error parsing arguments from settings pnael")
+        info_static("Error parsing arguments from settings panel")
         parseError = true
         handleexception(err)
     end
