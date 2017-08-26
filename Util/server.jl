@@ -19,16 +19,19 @@ include("../Util/processArgs.jl")
 include("../Util/Run_Algo.jl")
 
 #Setup database connections
-#=
 connection = JSON.parsefile("../raftaar/Util/connection.json")
-println(connection)
-const client = MongoClient(connection["mongo_host"], connection["mongo_user"], connection["mongo_pass"])
-info("Configuring datastore connections", datetime=now())
-=#
+mongo_user = connection["mongo_user"]
+mongo_pass = connection["mongo_pass"]
+mongo_host = connection["mongo_host"]
+mongo_port = connection["mongo_port"]
+   
+usr_pwd_less = mongo_user=="" && mongo_pass==""
 
-const client = MongoClient();
-# YRead.configure(client, database = connection["mongo_database"])
-YRead.configure(client, database = "aimsquant")
+info_static("Configuring datastore connections")
+const client = usr_pwd_less ? MongoClient(mongo_host, mongo_port) :
+                        MongoClient(mongo_host, mongo_user, mongo_pass, mongo_port)
+
+YRead.configure(client, database = connection["mongo_database"])
 YRead.configure(priority = 2)
 
 #global Dict to store open connections in
@@ -38,6 +41,7 @@ function decodeMessage(msg)
     String(copy(msg))
 end
 
+global fname = ""
 wsh = WebSocketHandler() do req, client
     global connections
     connections[client.id] = client
@@ -54,9 +58,9 @@ wsh = WebSocketHandler() do req, client
 
     parseError = false
     info_static("Processing parsed arguments from settings panel")
-    fname = ""
+
     try
-        fname = processargs(parsed_args)
+        global fname = processargs(parsed_args)
     catch err
         info_static("Error parsing arguments from settings panel")
         parseError = true
