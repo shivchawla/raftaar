@@ -33,7 +33,6 @@ YRead.configure(priority = 2)
 
 #global Dict to store open connections in
 global connections = Dict{Int,WebSocket}()
-busy = false
 fname = ""
 
 function decodeMessage(msg)
@@ -44,41 +43,35 @@ wsh = WebSocketHandler() do req, client
     global connections
     connections[client.id] = client
 
-    #try
-        setlogmode(:json, :socket, true, client)
+    setlogmode(:json, :socket, true, client)
 
-        #while !busy
+    msg = read(client)
+    argsString = decodeMessage(msg)
+    args = [String(ss) for ss in split(argsString,"??##")]
 
-            global busy = true
-            msg = read(client)
-            argsString = decodeMessage(msg)
-            args = [String(ss) for ss in split(argsString,"??##")]
+    # Parse arguments from the connection message.
+    info_static("Parsing arguments from settings panel")
+    parsed_args = parse_arguments(args)
 
-            # Parse arguments from the connection message.
+    info_static("Processing parsed arguments from settings panel")
+    fname = processargs(parsed_args)
 
-            info_static("Parsing arguments from settings panel")
-            parsed_args = parse_arguments(args)
+    info_static("Building user algorithm")
+    #catch compile time errors in the user file
+    compileError = false
+    try
+        include(fname)
+    catch err
+        compileError = true
+        handleexception(err)
+    end
 
-            info_static("Processing parsed arguments from settings panel")
-            fname = processargs(parsed_args)
-
-            info_static("Building user algorithm")
-            include(fname)
-
-            info_static("Starting Backtest")
-            run_algo(parsed_args["forward"])
-
-            info_static("Ending Backtest")
-
-            API.reset()
-
-            #global busy = false
-            #break
-
-        #end
-    #catch err
-     #   handleexception(err)
-    #end
+    if !compileError
+        info_static("Starting Backtest")
+        run_algo(parsed_args["forward"])
+        API.reset()
+        info_static("Ending Backtest")
+    end
 
     close(client)
 

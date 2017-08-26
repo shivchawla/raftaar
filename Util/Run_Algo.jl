@@ -104,16 +104,16 @@ function _run_algo_internal(start_date::Date = getstartdate(), end_date::Date = 
   end
 
   cp = history_unadj(getuniverse(), "Close", :Day, startdate = DateTime(start_date), enddate = DateTime(end_date))
-
   if cp == nothing
       return false
   end
 
   vol = history_unadj(getuniverse(), "Volume", :Day, startdate = DateTime(start_date), enddate = DateTime(end_date))
-
+  Logger.warn("No volume data available for any stock in the universe")
+  #=println(vol) #HERE IS THE PROBLEM
   if vol == nothing
       return false
-  end
+  end=#
 
   #Join benchmark data with close prices
   cp = !isempty(cp) && !isempty(alldata) ? merge(cp, alldata, :outer) : cp
@@ -192,6 +192,8 @@ function mainfnc(date::Date, counter::Int, close, volume, adjustments, forward; 
     end
 
     if (currentvolume == nothing)
+      Logger.warn("Volume data is missing")
+      Logger.warn("Assuming default volume of 10mn")
       names = push!([d.symbol.ticker for d in getuniverse()], API.getbenchmark().ticker)
       currentvolume = TimeArray([date], 10000000.*ones(1, length(names)), names)
     end
@@ -202,6 +204,7 @@ function mainfnc(date::Date, counter::Int, close, volume, adjustments, forward; 
     end
 
     if (currentprices == nothing)
+      Logger.warn("Price Data is missing")
       names = push!([d.symbol.ticker for d in getuniverse()], API.getbenchmark().ticker)
       currentprices = TimeArray([date], zeros(1, length(names)), names)
     end

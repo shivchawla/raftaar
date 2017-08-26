@@ -7,8 +7,6 @@ function handleexception(err::Any)
 
     msg = errormessage(err)
     
-    #println(msg)
-
     st = catch_stacktrace()
     errorlist = Vector{String}()
 
@@ -36,8 +34,6 @@ function handleexception(err::Any)
 
     API.error(msg)
 
-    #exit(1)
-
 end
 
 function errormessage(err::Any)
@@ -63,8 +59,9 @@ function errormessage(err::Any)
             
             str = str*")" 
         end
-
         return "MethodError: no method matching " *str
+    elseif isa(err, LoadError)
+        return "LoadError: "*string(err.error)*" at line "*string(err.line - 3)
     else
         return string(err)
     end 
