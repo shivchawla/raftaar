@@ -10,9 +10,9 @@ import Base.convert
 """
 Type to encapsulate the open orders, all orders and transactions
 """
-typealias OrderTracker Dict{Date, Vector{Order}}
-typealias TransactionTracker Dict{Date, Vector{OrderFill}}
-typealias Blotter Dict{SecuritySymbol, Vector{Order}}
+const OrderTracker = Dict{Date, Vector{Order}}
+const TransactionTracker = Dict{Date, Vector{OrderFill}}
+const Blotter = Dict{SecuritySymbol, Vector{Order}}
 
 #type Blotter
 #	openorders::Dict{SecuritySymbol, Vector{Order}}

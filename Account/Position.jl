@@ -51,18 +51,28 @@ empty(position::Position) = empty(position.securitysymbol) && position.quantity 
 
 
 """
-Serialize the position object
+Serialize the position to dictionary object
 """
-function serialize(pos::Position)
-  return Dict{String, Any}("securitysymbol" => serialize(pos.securitysymbol),
-                              "quantity" => pos.quantity,
-                              "averageprice" => pos.averageprice,
-                              "totalfees" => pos.totalfees,
-                              "lastprice" => pos.lastprice,
-                              "lasttradepnl" => pos.lasttradepnl,
-                              "realizedpnl" => pos.realizedpnl,
-                              "totaltradedvolume" => pos.totaltradedvolume)
+function serialize(position::Position)
+  return Dict{String, Any}("securitysymbol"   => serialize(position.securitysymbol),
+                          "quantity"          => position.quantity,
+                          "averageprice"      => position.averageprice,
+                          "totalfees"         => position.totalfees,
+                          "lastprice"         => position.lastprice,
+                          "lasttradepnl"      => position.lasttradepnl,
+                          "realizedpnl"       => position.realizedpnl,
+                          "totaltradedvolume" => position.totaltradedvolume)
 end
+
+==(pos1::Position, pos2::Position) = pos1.securitysymbol == pos2.securitysymbol &&
+                                      pos1.quantity == pos2.quantity &&
+                                      pos1.averageprice == pos2.averageprice &&
+                                      pos1.totalfees == pos2.totalfees &&
+                                      pos1.lastprice == pos2.lastprice &&
+                                      pos1.lasttradepnl == pos2.lasttradepnl &&
+                                      pos1.realizedpnl == pos2.realizedpnl &&
+                                      pos1.totaltradedvolume == pos2.totaltradedvolume
+
 
 
 """
@@ -264,27 +274,3 @@ function updateposition_splits_dividends!(position::Position, adjustment::Adjust
     end
 end
 
-"""
-Serialize the position to dictionary object
-"""
-
-function serialize(position::Position)
-  return Dict{String, Any}("securitysymbol"   => Dict("id"      => position.securitysymbol.id,
-                                                      "ticker"  => position.securitysymbol.ticker),
-                          "quantity"          => position.quantity,
-                          "averageprice"      => position.averageprice,
-                          "totalfees"         => position.totalfees,
-                          "lastprice"         => position.lastprice,
-                          "lasttradepnl"      => position.lasttradepnl,
-                          "realizedpnl"       => position.realizedpnl,
-                          "totaltradedvolume" => position.totaltradedvolume)
-end
-
-==(pos1::Position, pos2::Position) = pos1.securitysymbol == pos2.securitysymbol &&
-                                      pos1.quantity == pos2.quantity &&
-                                      pos1.averageprice == pos2.averageprice &&
-                                      pos1.totalfees == pos2.totalfees &&
-                                      pos1.lastprice == pos2.lastprice &&
-                                      pos1.lasttradepnl == pos2.lasttradepnl &&
-                                      pos1.realizedpnl == pos2.realizedpnl &&
-                                      pos1.totaltradedvolume == pos2.totaltradedvolume

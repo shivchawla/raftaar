@@ -45,7 +45,7 @@ function ondata(data, state)
 	# Logic to calculate returns over last month
 	# Output: TimeArray
 	# http://timeseriesjl.readthedocs.io/en/latest/
-	logpricesdiff = diff(log(prices))
+	logpricesdiff = diff(log.(prices))
 	
 	returnsTA = basecall(logpricesdiff, cumsum)[end]
 

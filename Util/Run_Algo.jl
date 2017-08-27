@@ -109,11 +109,11 @@ function _run_algo_internal(start_date::Date = getstartdate(), end_date::Date = 
   end
 
   vol = history_unadj(getuniverse(), "Volume", :Day, startdate = DateTime(start_date), enddate = DateTime(end_date))
-  Logger.warn("No volume data available for any stock in the universe")
-  #=println(vol) #HERE IS THE PROBLEM
+  
+  #println(vol) #HERE IS THE PROBLEM
   if vol == nothing
-      return false
-  end=#
+      Logger.warn("No volume data available for any stock in the universe")
+  end
 
   #Join benchmark data with close prices
   cp = !isempty(cp) && !isempty(alldata) ? merge(cp, alldata, :outer) : cp

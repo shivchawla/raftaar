@@ -177,7 +177,7 @@ function updateperformanceratios(performancetracker::PerformanceTracker)
     end
 
     df = DataFrame(X = benchmarkreturns[s_idx:end], Y = algorithmreturns[s_idx:end])
-    OLS = lm(Y ~ X, df)
+    OLS = fit(LinearModel, @formula(Y ~ X), df)
     coefficients = coef(OLS)
     latestperformance.ratios.beta = coefficients[2]
     latestperformance.ratios.alpha = coefficients[1]

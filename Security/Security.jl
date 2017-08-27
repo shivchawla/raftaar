@@ -70,7 +70,7 @@ Security(ticker::String; securitytype::String = "EQ", exchange::String="NSE", co
 Security(id::Int64, ticker::String, name::String; exchange::String="NSE", country::String = "IN", securitytype::String = "EQ") =
           Security(SecuritySymbol(id, ticker), name, exchange, country, securitytype, DateTime(), DateTime())
 
-==(sec_one::Security, sec_two::Security) = sec_one.symbol == sec_two.symbol
+#==(sec_one::Security, sec_two::Security) = sec_one.symbol == sec_two.symbol=#
 
 
 
@@ -82,8 +82,7 @@ function serialize(symbol::SecuritySymbol)
 end
 
 function serialize(security::Security)
-  return Dict{String, Any}("symbol"        => Dict("id"             => security.symbol.id,
-                                                    "ticker"        => security.symbol.ticker),
+  return Dict{String, Any}("symbol"        => serialize(security.symbol),
                             "name"         => security.name,
                             "exchange"     => security.exchange,
                             "country"      => security.country,

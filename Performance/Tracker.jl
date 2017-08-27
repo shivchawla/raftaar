@@ -1,4 +1,4 @@
-typealias Tracker Dict{Date, Stats}
+const Tracker = Dict{Date, Stats}
 
 
 type Tracker 

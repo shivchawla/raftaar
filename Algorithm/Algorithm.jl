@@ -16,7 +16,7 @@
     Initializing = 11  #The algorithm is initializing
 =#
 
-typealias LogTracker Dict{String, Dict{String, Vector{String}}}
+const LogTracker = Dict{String, Dict{String, Vector{String}}}
 
 function LogTracker(data::Dict{String, Any}) 
     return data

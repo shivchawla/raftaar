@@ -120,13 +120,6 @@ function getcurrentdate(tradeenv::TradingEnvironment)
   tradeenv.currentdate
 end
 
-"""
-Function to get current date of the algorithm
-"""
-function getcurrentdate(tradeenv::TradingEnvironment)
-  tradeenv.currentdate
-end
-
 function getbenchmark(tradeenv::TradingEnvironment)
   return tradeenv.benchmark
 end

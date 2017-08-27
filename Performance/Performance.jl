@@ -109,10 +109,10 @@ Performance(data::Dict{String, Any}) = Performance(data["period"],
                                             Drawdown(data["drawdown"]),
                                             PortfolioStats(data["portfoliostats"]))
 
-typealias AccountTracker Dict{Date, Account}
-typealias CashTracker Dict{Date, Float64}
-typealias PerformanceTracker Dict{Date, Performance}
-typealias VariableTracker Dict{Date, Dict{String, Float64}}
+const AccountTracker = Dict{Date, Account}
+const CashTracker = Dict{Date, Float64}
+const PerformanceTracker = Dict{Date, Performance}
+const VariableTracker = Dict{Date, Dict{String, Float64}}
 
 AccountTracker(data::Dict{String, Any}) = Dict([(Date(date), Account(acc)) for (date, acc) in data])
 CashTracker(data::Dict{String, Any}) = Dict([(Date(date), val) for (date, val) in data])
@@ -168,7 +168,7 @@ function calculateperformance(algorithmreturns::Vector{Float64}, benchmarkreturn
     df = DataFrame(X = benchmarkreturns, Y = algorithmreturns)
     
     if(size(df, 1) > 2)
-        OLS = lm(Y ~ X, df)
+        OLS = fit(LinearModel, @formula(Y ~ X), df)
         coefficients = coef(OLS)
         ps.ratios.beta = coefficients[2]
         ps.ratios.alpha = coefficients[1]
