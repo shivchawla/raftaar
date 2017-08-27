@@ -29,7 +29,7 @@ usr_pwd_less = mongo_user=="" && mongo_pass==""
 
 info_static("Configuring datastore connections")
 const client = usr_pwd_less ? MongoClient(mongo_host, mongo_port) :
-                        MongoClient(mongo_host, mongo_user, mongo_pass, mongo_port)
+                        MongoClient(mongo_host, mongo_port, mongo_user, mongo_pass)
 
 YRead.configure(client, database = connection["mongo_database"])
 YRead.configure(priority = 2)
