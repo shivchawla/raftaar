@@ -148,24 +148,24 @@ Function to log message (with timestamp) based on message type
 function _logstandard(msg::String, msgtype::MessageType, pmode::Symbol, datetime::DateTime)
     datestr = ""
     if (datetime != DateTime())
-         datestr = string(datetime) +":"
+         datestr = string(datetime)*":"
     end
 
     if pmode == :console
         if msgtype == MessageType(INFO)
-            print_with_color(:green,  "[INFO] " * "$(datestr)" * msg * "\n")
+            print_with_color(:green,  "[INFO]" * "$(datestr)" * msg * "\n")
         elseif msgtype == MessageType(WARN)
-            print_with_color(:orange, "[WARNING] " * "$(datestr)" * msg * "\n")
+            print_with_color(:orange, "[WARNING]" * "$(datestr)" * msg * "\n")
         else 
-            print_with_color(:red, "[ERROR] " * "$(datestr)" * msg * "\n")
+            print_with_color(:red, "[ERROR]" * "$(datestr)" * msg * "\n")
         end
     else pmode == :socket
         if msgtype == MessageType(INFO)
-            fmsg = "[INFO] "* "$(datestr)" * msg
+            fmsg = "[INFO]"* "$(datestr)" * msg
         elseif msgtype == MessageType(WARN)
-            fmsg = "[WARNING] " * "$(datestr)" * msg
+            fmsg = "[WARNING]" * "$(datestr)" * msg
         else
-            fmsg = "[ERROR] " * "$(datestr)" * msg
+            fmsg = "[ERROR]" * "$(datestr)" * msg
         end
 
         write(params["client"], fmsg)
