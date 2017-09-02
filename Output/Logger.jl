@@ -105,7 +105,7 @@ end
 function error(msg::String; datetime::DateTime = now())
     mmode = params["style"]
     pmode = params["print"]
-    _log(msg, MessageType(ERROR), pmode, mmode, datetime)
+    _log(msg, MessageType(ERROR), pmode, mmode, DateTime())
 end
 
 function info(msg::String, mmode::Symbol; datetime::DateTime = now())

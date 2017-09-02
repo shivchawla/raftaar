@@ -6,32 +6,28 @@
 function handleexception(err::Any)
 
     msg = errormessage(err)
-    
-    st = catch_stacktrace()
-    errorlist = Vector{String}()
 
-    line = ""
-    
-    for err in st
-        
-        err = string(err)
-        push!(errorlist, err)
-             
-        if fname!=""
-            if searchindex(err, fname) > 0 
-                lines = split(err,",")
-                
-                if(length(lines) > 1)
-                    line = string(lines[2])    
+    st = catch_stacktrace()
+
+    # logic to get line and function number from user algo
+    try
+        lines = []
+        for err in st 
+            err = string(err)
+            #push!(errorlist, err)
+                 
+            if fname!=""
+                if searchindex(err, fname) > 0 
+                    lines = split(err, fname*":")
+                    #special logic to get function and line number
+                    msg = length(lines) == 2 ? msg*" in "*string(lines[1])*" line:"*string(parse(lines[2]) - 20) : msg    
                 end
             end
         end
     end
 
-    if line !=""
-        msg = msg*" "*line  
-    end
-
+    #replace "Raftaar."
+    msg = replace(msg, "Raftaar.", "")
     API.error(msg)
 
 end
@@ -45,7 +41,7 @@ function errormessage(err::Any)
         
         tpl = err.args
 
-        str = length(tpl) > 1 ? string(err.f)*"(" : ""
+        str = length(tpl) > 0 ? string(err.f)*"(" : ""
         
         if(length(tpl) > 0)
             for i = 1:length(tpl)
