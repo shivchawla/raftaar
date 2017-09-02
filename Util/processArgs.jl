@@ -14,6 +14,7 @@ function processargs(parsed_args::Dict{String,Any})
 
     open(tf, "w") do f
                 write(f, "using Raftaar\n")
+                write(f, "using TimeSeries\n")
                 write(f, parsed_args["code"])
               end
     fname = tf
