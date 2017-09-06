@@ -114,7 +114,7 @@ function placeorder(order::Order)
         order.datetime = now()
     end
     
-    info("Placing order: $(order.securitysymbol.ticker)/$(order.quantity)/$(order.ordertype)")
+    #info("Placing order: $(order.securitysymbol.ticker)/$(order.quantity)/$(order.ordertype)")
     placeorder!(algorithm.brokerage, order)  
 end
 export placeorder
@@ -148,7 +148,7 @@ export liquidate
 
 function liquidateportfolio()
     checkforparent([:ondata, :beforeclose])
-    for pos in getallpositions(algorithm.portfoli)
+    for pos in getallpositions(algorithm.account.portfolio)
         liquidate(pos)
     end
 end
