@@ -121,7 +121,7 @@ function _computecurrentperformance(firstperformance::Performance, lastperforman
         performance.drawdown.maxdrawdown = lastperformance.drawdown.maxdrawdown
     end
     # Now here we run a specialized algorithm that updates performance based on 
-    if lastperformance.period < 252
+    if lastperformance.period < 1000000000
         performance.period = lastperformance.period + 1
         #performance.positivedays = performance.returns.dailyreturn > 0 ? lastperformance.positivedays + 1 : lastperformance.positivedays
         #performance.negativedays = performance.returns.dailyreturn < 0 ? lastperformance.negativedays + 1 : lastperformance.negativedays
@@ -172,9 +172,9 @@ function updateperformanceratios(performancetracker::PerformanceTracker)
     end
 
     s_idx = 1
-    if length(sorteddates) > 252    #253
+    #=if length(sorteddates) > 252    #253
         s_idx = length(sorteddates) - 252 + 1   #2
-    end
+    end=#
 
     df = DataFrame(X = benchmarkreturns[s_idx:end], Y = algorithmreturns[s_idx:end])
     OLS = fit(LinearModel, @formula(Y ~ X), df)

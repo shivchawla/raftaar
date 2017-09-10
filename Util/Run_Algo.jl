@@ -100,11 +100,15 @@ function _run_algo_internal(start_date::Date = getstartdate(), end_date::Date = 
   alldata = history_unadj([benchmark], "Close", :Day, startdate = DateTime(start_date), enddate = DateTime(end_date))
 
   if alldata == nothing
+      Logger.warn("Benchmark data not available from $(startdate) to $(enddate)")
+      Logger.warn("Aborting test")
       return false
   end
 
   cp = history_unadj(getuniverse(), "Close", :Day, startdate = DateTime(start_date), enddate = DateTime(end_date))
   if cp == nothing
+      Logger.warn("Stock Data not available from $(startdate) to $(enddate)")
+      Logger.warn("Aborting test")
       return false
   end
 
