@@ -96,8 +96,11 @@ function _run_algo_internal(start_date::Date = getstartdate(), end_date::Date = 
 
   # Let's download new data now
 
-  #alldata = history([benchmark], "Close", :Day, 100, enddate = "2016-01-01")
+  #Set strict policy to FALSE for benchmark
+  YRead.setstrict(false)
   alldata = history_unadj([benchmark], "Close", :Day, startdate = DateTime(start_date), enddate = DateTime(end_date))
+  #undo strict policy for rest of the universe
+  YRead.setstrict(true)
 
   if alldata == nothing
       Logger.warn("Benchmark data not available from $(startdate) to $(enddate)")

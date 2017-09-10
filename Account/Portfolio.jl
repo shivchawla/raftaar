@@ -253,7 +253,7 @@ function serialize(portfolio::Portfolio)
                             "positions" => Dict{String, Any}())
   for (symbol, pos) in portfolio.positions
     #Removing the position with zero quantity before serialization
-    if(abs(position.quantity) != 0)
+    if(abs(pos.quantity) != 0)
       temp["positions"][tostring(symbol)] = serialize(pos)
     end
   end
