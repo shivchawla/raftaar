@@ -9,7 +9,6 @@ const _globaldatastores = Dict{String, Any}()
 const _tickertosecurity = Dict{String, Security}()
 const _seciddtosecurity = Dict{Int64, Security}()
 
-
 function getsubset{T,N,D}(ta::TimeArray{T,N,D}, d::D, ct::Int = 0)
     last = searchsortedlast(ta.timestamp, d)
     first = ct > 0 ? ((last - ct + 1 > 0) ? last - ct + 1 : 1) : 1
@@ -19,6 +18,9 @@ function getsubset{T,N,D}(ta::TimeArray{T,N,D}, d::D, ct::Int = 0)
         ta[first:last]
 end
 
+function getsubset{T,N,D}(ta::TimeArray{T,N,D}, sd::D, ed::D)
+    return to(from(ta, sd), ed)
+end
 
 # array of columns by name
 function getindex{T,N,D}(ta::TimeArray{T,N,D}, names::Vector{String})
@@ -32,17 +34,11 @@ function _updateglobaldatastores(key::String, ta::TimeArray)
         _globaldatastores[key] = ta 
     else
         old_ta = _globaldatastores[key]
-        
         oldnames = colnames(old_ta)
-      
         newnames = colnames(ta)
-      
         commonnames = intersect(newnames, oldnames)
-
         old_common_ta = old_ta[commonnames]
-
         new_common_ta = ta[commonnames]
-
         merged_common_ta = nothing
 
         # BUG FIX REQUIRED: Adjusted prices are adjusted only for the horizon 
@@ -106,7 +102,6 @@ function _updateglobaldatastores(key::String, ta::TimeArray)
         end
 
         # final merge
-
         merged_ta = nothing
 
         if merged_uncommon_ta != nothing && merged_common_ta != nothing
@@ -133,6 +128,7 @@ function fromglobalstore(ticker::String, key::String)
     return nothing
 end
 
+# Searches and return TA of available tickers
 function fromglobalstores(tickers::Vector{String}, key::String)
     if haskey(_globaldatastores, key)
         ta = _globaldatastores[key]
@@ -140,16 +136,19 @@ function fromglobalstores(tickers::Vector{String}, key::String)
         uniquenames = setdiff(tickers, columnnames)
 
         if length(uniquenames) > 0
+            availablenames = setdiff(tickers, uniquenames)
+            if length(availablenames) > 0
+                return ta[availablenames]
+            end
+            
             return nothing
         end
 
         return ta[tickers]
-
     end
 
     return nothing
 end
-
 
 function searchsecurity(secid::Int64)
 
@@ -175,57 +174,6 @@ function searchsecurity(secid::Int64)
     end
 end
 
-#=function _updateglobaldatastores(key::String, ta::TimeArray)
-
-    for ticker in colnames(ta)
-        _updateglobaldatastores(ticker, key , ta[ticker])
-    end
-end
-
-function _updateglobaldatastores(ticker::String, key::String, ta::TimeArray)
-    
-    if !haskey(_globaldatastores, ticker)
-        _globaldatastores[ticker] = Dict{String, TimeArray}()
-        _globaldatastores[ticker][key] = ta
-    else
-        if !haskey(_globaldatastores[ticker], key)
-            _globaldatastores[ticker][key] = ta
-        else 
-            #APPLY THE SPECIAL MERGE LOGIC
-            merged_ta = merge(_globaldatastores[ticker][key], ta, :outer)
-
-            val_old = values(merged_ta[ticker])
-            val_new = values(merged_ta[ticker*"_1"])
-
-            nrows = length(val_new)
-            vals = zeros(nrows, 1)
-            for i = 1:nrows
-                if isnan(val_old[i]) && isnan(val_new[i]) 
-                    vals[i] = NaN
-                elseif  isnan(val_old[i]) && !isnan(val_new[i]) 
-                    vals[i] = val_new[i]
-                elseif !isnan(val_old[i]) && isnan(val_new[i]) 
-                    vals[i] = val_old[i]
-                end
-            end
-
-            _globaldatastores[ticker][key] = TimeArray(merged_ta.timestamp, vals, [ticker])
-
-        end
-    end
-end
-
-
-function fromglobalstore(ticker::String, key::String)
-    if haskey(_globaldatastores, ticker)
-        if haskey(_globaldatastores[ticker], key)
-            return _globaldatastores[ticker][key]
-        end
-    end
-
-    return nothing
-end=#
-
 function findinglobalstores(tickers::Vector{String}, 
                                 datatype::String, 
                                 frequency::Symbol, 
@@ -233,28 +181,11 @@ function findinglobalstores(tickers::Vector{String},
                                 enddate::DateTime;
                                 securitytype::String="EQ",
                                 exchange::String="NSE",
-                                country::String="IN")  
+                                country::String="IN")      
     
-    return nothing
-end
-
-
-function findinglobalstores(tickers::Vector{String}, 
-                                datatype::String, 
-                                frequency::Symbol, 
-                                horizon::Int, 
-                                enddate::DateTime;
-                                securitytype::String="EQ",
-                                exchange::String="NSE",
-                                country::String="IN")
-    
-    if !haskey(_globaldatastores, datatype)
-        return nothing
-    else
-        #full_ta = _globaldatastores[datatype][tickers]
-
-        return nothing
-    end
+    full_ta = fromglobalstores(tickers, datatype)
+    output_ta = full_ta!=nothing ? getsubset(full_ta, Date(startdate), Date(enddate)) : nothing
+    return output_ta
 end
 
 function findinglobalstores(secids::Vector{Int64}, 
@@ -265,12 +196,15 @@ function findinglobalstores(secids::Vector{Int64},
                                 securitytype::String="EQ",
                                 exchange::String="NSE",
                                 country::String="IN")
-    return nothing
+    
+    tickers = [getsecurity(secid).symbol.ticker for secid in secids]
+    findinglobalstores(tickers, datatype, frequency, startdate, enddate, 
+                        securitytype = securitytype,
+                        exchange = exchange,
+                        country = country)
 end
 
-
-#= OLD FUNCTION
-function findinglobalstores(secids::Vector{Int64}, 
+function findinglobalstores(tickers::Vector{String}, 
                                 datatype::String, 
                                 frequency::Symbol, 
                                 horizon::Int, 
@@ -278,33 +212,12 @@ function findinglobalstores(secids::Vector{Int64},
                                 securitytype::String="EQ",
                                 exchange::String="NSE",
                                 country::String="IN")
-    #println("Here - Secids")  
-
-    #tickers = reshape([getsecurity(secid).symbol.ticker for secid in secids], (1, length(secids)))
-   
-    tickers = vec([getsecurity(secid).symbol.ticker for secid in secids])
-    output_ta = nothing
     
-    for ticker in tickers
-        ta = to(fromglobalstore(ticker, datatype), Date(enddate), horizon)
-        
-        if ta!=nothing && output_ta == nothing
-            output_ta = ta
-        elseif ta!=nothing
-            output_ta = merge(output_ta, ta, :outer)
-        end
-    end
+    full_ta = fromglobalstores(tickers, datatype)
+    output_ta = full_ta!=nothing ? getsubset(full_ta, Date(enddate), horizon) : nothing
+    return output_ta!=nothing ? (length(output_ta) < horizon ? nothing : output_ta) : nothing
 
-    #println("length")
-    #println(length(output_ta))
-
-    if(length(output_ta) == horizon)
-        #println(output_ta)
-    end
-
-    return length(output_ta) < horizon ? nothing : output_ta
-      
-end=#
+end
 
 function findinglobalstores(secids::Vector{Int64}, 
                                 datatype::String, 
@@ -314,12 +227,12 @@ function findinglobalstores(secids::Vector{Int64},
                                 securitytype::String="EQ",
                                 exchange::String="NSE",
                                 country::String="IN")
-    #println("Here - Secids")  
-
-    tickers = vec([getsecurity(secid).symbol.ticker for secid in secids])
-    output_ta = getsubset(fromglobalstores(tickers, datatype), Date(enddate), horizon)
-    
-    return length(output_ta) < horizon ? nothing : output_ta
+ 
+    tickers = [getsecurity(secid).symbol.ticker for secid in secids]
+    findinglobalstores(tickers, datatype, frequency, horizon, enddate, 
+                            securitytype = securitytype,
+                            exchange = exchange,
+                            country = country)
       
 end
 
@@ -350,7 +263,6 @@ function history(symbols::Vector{SecuritySymbol},
     end
     
     history(ids, datatype, frequency, horizon, enddate = enddate)
-
 end
 
 function history(secids::Array{Int,1},
@@ -358,6 +270,21 @@ function history(secids::Array{Int,1},
                     frequency::Symbol,
                     horizon::Int; enddate::DateTime = getcurrentdatetime()) 
     
+    tickers = [getsecurity(secid).symbol.ticker for secid in secids]
+    history(tickers, datatype, frequency, horizon, enddate = enddate)  
+
+end
+
+# Based on symbols
+function history(tickers::Array{String,1},
+                    datatype::String,
+                    frequency::Symbol,
+                    horizon::Int;
+                    enddate::DateTime = getcurrentdatetime(),
+                    securitytype::String="EQ",
+                    exchange::String="NSE",
+                    country::String="IN")
+
     SIZE = 50
 
     if frequency!=:Day
@@ -373,72 +300,33 @@ function history(secids::Array{Int,1},
         exit()
     end
 
-    secids = length(secids) > SIZE ? secids[1:50] : secids
+    tickers = length(tickers) > SIZE ? tickers[1:50] : tickers
+ 
+    #Retrieves the AVAILABLE data (some tickers may be missing)
+    ta = findinglobalstores(tickers, datatype, frequency, horizon, enddate,
+                                securitytype = securitytype,
+                                exchange = exchange,
+                                country = country) 
+   
+    cols = ta!=nothing ? colnames(ta) : String[]
 
-
-    ta = findinglobalstores(secids, datatype, frequency, horizon, enddate) 
-    if ta!=nothing
+    if length(setdiff(tickers, cols)) == 0 
         println("Reading from DATA STORES")
         return ta
     end
 
-    ta = YRead.history(secids, datatype, frequency,
-            horizon, enddate)
-
-    if (ta != nothing)
-        _updateglobaldatastores(datatype, ta)
-    end
+    more_ta = YRead.history(setdiff(tickers, cols), datatype, frequency, horizon, enddate)
     
-    return ta 
-
+    if (more_ta != nothing)
+        _updateglobaldatastores(datatype, more_ta)
+    end
+   
+    #finally get from updated global stores
+    return findinglobalstores(tickers, datatype, frequency, horizon, enddate,
+                                securitytype = securitytype,
+                                exchange = exchange,
+                                country = country)  
 end
-
-# Based on symbols
-function history(tickers::Array{String,1},
-                    datatype::String,
-                    frequency::Symbol,
-                    horizon::Int;
-                    enddate::DateTime = getcurrentdatetime(),
-                    securitytype::String="EQ",
-                    exchange::String="NSE",
-                    country::String="IN")
-    
-    SIZE = 50
-
-    if frequency!=:Day
-        info("""Only ":Day" frequency supported in history()""")
-        exit(0)
-    end
-
-    checkforparent([:ondata, :_init])
-
-    if enddate == DateTime()       
-        enddate = getcurrentdatetime()
-    elseif !checkforparent([:_init])
-        Logger.warn("history() can not be called with enddate argument")
-        exit(0)
-    end
-    
-    tickers = length(tickers) > SIZE ? tickers[1:50] : tickers
-
-    ta = findinglobalstores(tickers, datatype, frequency, horizon, enddate)
-    
-    if (ta!=nothing)
-        return ta
-    end
-
-    ta = YRead.history(tickers, datatype, frequency,
-            horizon, enddate, 
-            securitytype = securitytype, 
-            exchange = exchange, country = country) 
-
-    if (ta != nothing)
-        _updateglobaldatastores(datatype, ta)
-    end
-
-    return ta 
-end
-
 
 # Period based History
 function history(securities::Vector{Security},
@@ -458,7 +346,7 @@ function history(securities::Vector{Security},
     history(ids, datatype, frequency, 
                 startdate = startdate,
                 enddate = enddate,
-                securitytype  =securitytype,
+                securitytype = securitytype,
                 exchange = exchange,
                 country = country)
     
@@ -481,7 +369,7 @@ function history(symbols::Vector{SecuritySymbol},
     history(ids, datatype, frequency, 
                 startdate = startdate,
                 enddate = enddate,
-                securitytype  =securitytype,
+                securitytype = securitytype,
                 exchange = exchange,
                 country = country)   
 end
@@ -495,31 +383,17 @@ function history(secids::Vector{Int},
                     securitytype::String="EQ",
                     exchange::String="NSE",
                     country::String="IN") 
-    SIZE = 50
-
-    secids = length(secids) > SIZE ? secids[1:50] : secids
-
-    ta = findinglobalstores(secids, datatype, frequency, startdate, enddate)
     
-    if (ta!=nothing)
-        return ta
-    end
-
-    ta = YRead.history(secids, datatype, frequency, 
-                startdate,
-                enddate,
+    tickers = [getsecurity(secid).symbol.ticker for secid in secids]
+    
+    history(tickers, datatype, frequency, 
+                startdate = startdate,
+                enddate = enddate,
                 securitytype = securitytype,
                 exchange = exchange,
                 country = country)
 
-    if (ta != nothing)
-        _updateglobaldatastores(datatype, ta)
-    end
-
-    return ta 
-
 end
-
 
 function history(tickers::Vector{String},
                     datatype::String,
@@ -534,38 +408,46 @@ function history(tickers::Vector{String},
 
     tickers = length(tickers) > SIZE ? tickers[1:50] : tickers
 
-    ta = findinglobalstores(tickers, datatype, frequency, startdate, enddate)
-    
-    if (ta!=nothing)
+    ta = findinglobalstores(tickers, datatype, frequency, startdate,  enddate,
+                                securitytype = securitytype,
+                                exchange = exchange,
+                                country = country)
+
+    cols = ta!=nothing ? colnames(ta) : String[]
+
+    if length(setdiff(tickers, cols)) == 0 
+        println("Reading from DATA STORES")
         return ta
     end
 
-    ta = YRead.history(tickers, datatype, frequency,
-            startdate, enddate, 
-            securitytype = securitytype, 
-            exchange = exchange, country = country) 
+    more_ta = YRead.history(setdiff(tickers, cols), datatype, frequency, 
+                                startdate, enddate,
+                                securitytype = securitytype,
+                                exchange = exchange,
+                                country = country )
 
-    if (ta != nothing)
-        _updateglobaldatastores(datatype, ta)
+    if (more_ta != nothing)
+        _updateglobaldatastores(datatype, more_ta)
     end
-
-    return ta 
+    
+    #finally get from updated global stores
+    return findinglobalstores(tickers, datatype, frequency, startdate, enddate,
+                                securitytype = securitytype,
+                                exchange = exchange,
+                                country = country)      
 end
 
 export history
 
-
-
 #for Unadjusted History
-
 function history_unadj(securities::Vector{Security},
-                    datatype::String,
-                    frequency::Symbol;
-                    startdate::DateTime = now(),
-                    enddate::DateTime = now(),                   
-                    securitytype::String="EQ",
-                    exchange::String="NSE",
-                    country::String="IN") 
+                        datatype::String,
+                        frequency::Symbol;
+                        startdate::DateTime = now(),
+                        enddate::DateTime = now(),                   
+                        securitytype::String="EQ",
+                        exchange::String="NSE",
+                        country::String="IN") 
     
     ids = Vector{Int}(length(securities))
     for i = 1:length(securities)
@@ -573,22 +455,22 @@ function history_unadj(securities::Vector{Security},
     end
 
     history_unadj(ids, datatype, frequency, 
-                startdate = startdate,
-                enddate = enddate,
-                securitytype = securitytype,
-                exchange = exchange,
-                country = country)
+                    startdate = startdate,
+                    enddate = enddate,
+                    securitytype = securitytype,
+                    exchange = exchange,
+                    country = country)
     
 end
 
 function history_unadj(symbols::Vector{SecuritySymbol},
-                    datatype::String,
-                    frequency::Symbol;
-                    startdate::DateTime = now(),
-                    enddate::DateTime = now(),                   
-                    securitytype::String="EQ",
-                    exchange::String="NSE",
-                    country::String="IN") 
+                        datatype::String,
+                        frequency::Symbol;
+                        startdate::DateTime = now(),
+                        enddate::DateTime = now(),                   
+                        securitytype::String="EQ",
+                        exchange::String="NSE",
+                        country::String="IN") 
     
     ids = Vector{Int}(length(symbols))
     for i = 1:length(symbols)
@@ -596,112 +478,109 @@ function history_unadj(symbols::Vector{SecuritySymbol},
     end
 
     history_unadj(ids, datatype, frequency, 
-                startdate = startdate,
-                enddate = enddate,
-                securitytype  =securitytype,
-                exchange = exchange,
-                country = country)   
+                    startdate = startdate,
+                    enddate = enddate,
+                    securitytype  =securitytype,
+                    exchange = exchange,
+                    country = country)   
 end
 
 function history_unadj(tickers::Vector{String},
-                    datatype::String,
-                    frequency::Symbol;
-                    startdate::DateTime = now(),
-                    enddate::DateTime = now(),                   
-                    securitytype::String="EQ",
-                    exchange::String="NSE",
-                    country::String="IN") 
+                        datatype::String,
+                        frequency::Symbol;
+                        startdate::DateTime = now(),
+                        enddate::DateTime = now(),                   
+                        securitytype::String="EQ",
+                        exchange::String="NSE",
+                        country::String="IN") 
     
     SIZE = 50
 
     tickers = length(tickers) > SIZE ? tickers[1:50] : tickers
-
-    ta = findinglobalstores(tickers, "Unadj_"*datatype, frequency, startdate, enddate)
+    ta = findinglobalstores(tickers, "Unadj_"*datatype, frequency, 
+                                startdate, enddate,
+                                securitytype = securitytype,
+                                exchange = exchange,
+                                country = country)
     
-    if(ta!=nothing)
+    cols = ta!=nothing ? colnames(ta) : String[]
+
+    if length(setdiff(tickers, cols)) == 0 
+        println("Reading from DATA STORES")
         return ta
     end
 
-    ta = YRead.history_unadj(tickers, datatype, frequency,
-            startdate, enddate, 
-            securitytype = securitytype, 
-            exchange = exchange, country = country) 
-
-    if (ta != nothing)
-        _updateglobaldatastores("Unadj_"*datatype, ta)
+    more_ta = YRead.history_unadj(setdiff(tickers, cols), datatype, frequency,
+                                    startdate, enddate,
+                                    securitytype = securitytype,
+                                    exchange = exchange,
+                                    country = country)    
+    if (more_ta != nothing)
+        _updateglobaldatastores("Unadj_"*datatype, more_ta)
     end
     
-    return ta 
+    #finally get from updated global stores
+    return findinglobalstores(tickers, "Unadj_"*datatype, frequency,
+                                startdate, enddate,
+                                securitytype = securitytype,
+                                exchange = exchange,
+                                country = country)      
 end
 
 function history_unadj(secids::Vector{Int},
-                    datatype::String,
-                    frequency::Symbol;
-                    startdate::DateTime = now(),
-                    enddate::DateTime = now(),                   
-                    securitytype::String="EQ",
-                    exchange::String="NSE",
-                    country::String="IN") 
+                        datatype::String,
+                        frequency::Symbol;
+                        startdate::DateTime = now(),
+                        enddate::DateTime = now(),                   
+                        securitytype::String="EQ",
+                        exchange::String="NSE",
+                        country::String="IN") 
 
-    SIZE = 50
-    secids = length(secids) > SIZE ? secids[1:50] : secids
+    tickers = [getsecurity(secid).symbol.ticker for secid in secids]
 
-    ta = findinglobalstores(secids, "Unadj_"*datatype, frequency, startdate, enddate)
-
-    if(ta!=nothing)
-        return ta
-    end
-
-    ta = YRead.history_unadj(secids, datatype, frequency, 
-                startdate,
-                enddate,
-                securitytype = securitytype,
-                exchange = exchange,
-                country = country)
-
-    if (ta != nothing)
-        _updateglobaldatastores("Unadj_"*datatype, ta)
-    end
-    
-    
-    return ta 
+    history_unadj(tickers, datatype, frequency, 
+                    startdate = startdate,
+                    enddate = enddate,
+                    securitytype = securitytype,
+                    exchange = exchange,
+                    country = country)
 end
 
 export history_unadj
 
 
 function getadjustments(tickers::Vector{String},
-                        startdate::DateTime, 
-                        enddate::DateTime, 
-                        securitytype::String="EQ",
-                        exchange::String="NSE",
-                        country::String="IN")
+                            startdate::DateTime, 
+                            enddate::DateTime, 
+                            securitytype::String="EQ",
+                            exchange::String="NSE",
+                            country::String="IN")
 
     YRead.getadjustments(tickers, datatype, frequency,
-            startdate, enddate, 
-            securitytype = securitytype, 
-            exchange = exchange, country = country)    
+                            startdate, enddate, 
+                            securitytype = securitytype, 
+                            exchange = exchange, country = country)    
 end
 
 function getadjustments(secids::Vector{Int},
-                        startdate::DateTime, 
-                        enddate::DateTime, 
-                        securitytype::String="EQ",
-                        exchange::String="NSE",
-                        country::String="IN")
+                            startdate::DateTime, 
+                            enddate::DateTime, 
+                            securitytype::String="EQ",
+                            exchange::String="NSE",
+                            country::String="IN")
     
     YRead.getadjustments(tickers, datatype, frequency,
-            startdate, enddate, 
-            securitytype = securitytype, 
-            exchange = exchange, country = country)    
+                            startdate, enddate, 
+                            securitytype = securitytype, 
+                            exchange = exchange, country = country)    
 end
 
 function getadjustments(securities::Vector{Security},
-                        startdate::DateTime, 
-                        enddate::DateTime, 
-                        securitytype::String="EQ",
-                        exchange::String="NSE",
-                        country::String="IN")
+                            startdate::DateTime, 
+                            enddate::DateTime, 
+                            securitytype::String="EQ",
+                            exchange::String="NSE",
+                            country::String="IN")
 
     secids = Vector{Int}(length(securities))
     for i = 1:length(securities)
@@ -709,17 +588,17 @@ function getadjustments(securities::Vector{Security},
     end
 
     getadjustments(secids, datatype, frequency,
-            startdate, enddate, 
-            securitytype = securitytype, 
-            exchange = exchange, country = country)    
+                    startdate, enddate, 
+                    securitytype = securitytype, 
+                    exchange = exchange, country = country)    
 end
 
 function getadjustments(symbols::Vector{SecuritySymbol},
-                        startdate::DateTime, 
-                        enddate::DateTime, 
-                        securitytype::String="EQ",
-                        exchange::String="NSE",
-                        country::String="IN")
+                            startdate::DateTime, 
+                            enddate::DateTime, 
+                            securitytype::String="EQ",
+                            exchange::String="NSE",
+                            country::String="IN")
 
     secids = Vector{Int}(length(symbols))
     
@@ -728,49 +607,18 @@ function getadjustments(symbols::Vector{SecuritySymbol},
     end
 
     getadjustments(secids, datatype, frequency,
-            startdate, enddate, 
-            securitytype = securitytype, 
-            exchange = exchange, country = country)    
+                    startdate, enddate, 
+                    securitytype = securitytype, 
+                    exchange = exchange, country = country)    
 end
 
-
-
-#=function getsecurityids(tickers::Array{String,1}; 
-                        securitytype::String="EQ", 
-                        exchange::String="NSE",
-                        country::String="IN")
-    
-    getsecurityids(securitycollection, tickers, 
-                        securitytype = securitytype,
-                        exchange = exchange,
-                        country = country)
-
-end
-
-"""
-Get security id for a symbol id (and exchange and security type)
-"""
-function getsecurityid(ticker::String; 
-                        securitytype::String="EQ", 
-                        exchange::String="NSE",
-                        country::String="IN")
-
-    getsecurityid(securitycollection, ticker,
-                    securitytype = securitytype,
-                    exchange = exchange,
-                    country = country)
-end
-
-function getsymbol(id::Int)
-    return getsymbol(securitycollection, id)
-end=#
    
 function convert(::Type{Raftaar.Security}, security::YRead.Security)
     
     return Raftaar.Security(security.symbol.id, security.symbol.ticker, security.name,
-                      exchange = security.exchange,
-                      country = security.exchange,
-                      securitytype = security.securitytype)
+                              exchange = security.exchange,
+                              country = security.exchange,
+                              securitytype = security.securitytype)
 end
 
 
@@ -779,8 +627,8 @@ function getsecurity(ticker::String;
                         exchange::String="NSE",
                         country::String="IN")
     
-    
     mticker = ticker*"_"*securitytype*"_"*exchange*"_"*country
+    
     if haskey(_tickertosecurity, mticker)
         return _tickertosecurity[mticker]
     else
@@ -792,11 +640,8 @@ function getsecurity(ticker::String;
         _tickertosecurity[mticker] = security
         
         return security 
-    end   
-    
-    #convert(Raftaar.Security, sec)
+    end       
 end
-
 
 function getsecurity(secid::Int64, search::Bool = true)
 
@@ -827,17 +672,3 @@ getindex(dataframe::DataFrame, col_ind::Int64, ticker::String) = getindex(datafr
 getindex(dataframe::DataFrame, col_inds::UnitRange{Int64}, security::Security) = getindex(dataframe, col_ind, Symbol(security.symbol.ticker))
 getindex(dataframe::DataFrame, col_inds::UnitRange{Int64}, symbol::SecuritySymbol) = getindex(dataframe, col_ind, Symbol(symbol.ticker))
 getindex(dataframe::DataFrame, col_inds::UnitRange{Int64}, ticker::String) = getindex(dataframe, col_ind, Symbol(ticker))
-
-#=function history(symbol::String,
-                    datatype::String,
-                    frequency::Symbol,
-                    horizon::Int;
-                    enddate::DateTime=DateTime(),                    
-                    securitytype::String="EQ",
-                    exchange::String="NSE",
-                    country::String="IN")
-
- history(securitycollection, datacollection,
-            symbol, datatype, frequency,
-            horizon, enddate, securitytype = securitytype, exchange = exchange, country = country)  
-end=#

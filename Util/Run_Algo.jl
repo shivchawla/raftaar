@@ -70,114 +70,122 @@ function run_algo(forward_test::Bool = false)
 
     end=#
   else
-    # this means we are doing a backtest
-    # nothing much to do here except for calling initialize
+      # this means we are doing a backtest
+      # nothing much to do here except for calling initialize
 
-    try
-      initialize(getstate())
-    catch err
-      handleexception(err)
-      return
-    end
+      try
+        initialize(getstate())
+      catch err
+        handleexception(err)
+        return
+      end
 
-    _run_algo_internal()
-
+      _run_algo_internal()
+       
   end
 end
 
 function _run_algo_internal(start_date::Date = getstartdate(), end_date::Date = getenddate(); forward = false)
   
-  setcurrentdate(getstartdate())
+    try
+      setcurrentdate(getstartdate())
 
-  # The parameters start_date and end_date here represent the datesfor which I want to run the simulation
-  # In case of backtest, they're by default set to the ones provided as external parameters or from initialize function
-  # In case of forward test, they are just one single day
-  benchmark = API.getbenchmark()
+      # The parameters start_date and end_date here represent the datesfor which I want to run the simulation
+      # In case of backtest, they're by default set to the ones provided as external parameters or from initialize function
+      # In case of forward test, they are just one single day
+      benchmark = API.getbenchmark()
 
-  # Let's download new data now
+      #Let's download new data now
 
-  #Set strict policy to FALSE for benchmark
-  YRead.setstrict(false)
-  alldata = history_unadj([benchmark], "Close", :Day, startdate = DateTime(start_date), enddate = DateTime(end_date))
-  #undo strict policy for rest of the universe
-  YRead.setstrict(true)
+      #Set strict policy to FALSE for benchmark
+      YRead.setstrict(false)
+      alldata = history([benchmark], "Close", :Day, startdate = DateTime(start_date), enddate = DateTime(end_date))
+      #undo strict policy for rest of the universe
+      YRead.setstrict(true)
 
-  if alldata == nothing
-      Logger.warn("Benchmark data not available from $(startdate) to $(enddate)")
-      Logger.warn("Aborting test")
-      return false
-  end
+      if alldata == nothing
+          Logger.warn("Benchmark data not available from $(startdate) to $(enddate)")
+          Logger.warn("Aborting test")
+          return false
+      end
 
-  cp = history_unadj(getuniverse(), "Close", :Day, startdate = DateTime(start_date), enddate = DateTime(end_date))
-  if cp == nothing
-      Logger.warn("Stock Data not available from $(startdate) to $(enddate)")
-      Logger.warn("Aborting test")
-      return false
-  end
+      cp = history_unadj(getuniverse(), "Close", :Day, startdate = DateTime(start_date), enddate = DateTime(end_date))
+      if cp == nothing
+          Logger.warn("Stock Data not available from $(startdate) to $(enddate)")
+          Logger.warn("Aborting test")
+          return false
+      end
 
-  vol = history_unadj(getuniverse(), "Volume", :Day, startdate = DateTime(start_date), enddate = DateTime(end_date))
-  
-  #println(vol) #HERE IS THE PROBLEM
-  if vol == nothing
-      Logger.warn("No volume data available for any stock in the universe")
-  end
+      vol = history_unadj(getuniverse(), "Volume", :Day, startdate = DateTime(start_date), enddate = DateTime(end_date))
+      
+      if vol == nothing
+          Logger.warn("No volume data available for any stock in the universe")
+      end
 
-  #Join benchmark data with close prices
-  cp = !isempty(cp) && !isempty(alldata) ? merge(cp, alldata, :outer) : cp
-  labels = Dict{String,Float64}()
+      #Join benchmark data with close prices
+      cp = !isempty(cp) && !isempty(alldata) ? merge(cp, alldata, :outer) : cp
+      labels = Dict{String,Float64}()
 
-  bvals = values(cp[benchmark.ticker])
+      bvals = values(cp[benchmark.ticker])
 
-  for i = 1:length(cp)
-    val = bvals[i]
+      for i = 1:length(cp)
+        val = bvals[i]
 
-    j = i-1
+        j = i-1
 
-    while isnan(val) && j > 0
-      val = bvals[j]
-      j = j - 1
+        while isnan(val) && j > 0
+          val = bvals[j]
+          j = j - 1
+        end
+
+        val = isnan(val) ? 0.0 : val
+
+        labels[string(cp.timestamp[i])] = val
+      end
+
+      # Global data stores
+      #Get Adjusted history once for the full universe (from start to end date)
+      #THis will be used for any history calls in user algorithm
+      allsecurities_includingbenchmark = push!([d.symbol for d in getuniverse()], API.getbenchmark())
+      adjustedprices = history(allsecurities_includingbenchmark, "Close", :Day, startdate = DateTime(start_date), enddate = DateTime(end_date))
+
+      #Set benchmark value and Output labels from graphs
+      setbenchmarkvalues(labels)
+      adjustments = getadjustments(getuniverse(), DateTime(start_date), DateTime(end_date))
+
+      #continue with backtest if there are any rows in price data.
+      if !isempty(cp)
+        outputlabels(labels)
+      else
+        error("No price data found. Aborting Backtest!!!")
+        return
+      end
+
+      i = 1
+
+      success = true
+      for date in sort(collect(keys(labels)))
+          success = mainfnc(Date(date), i, cp, vol, adjustments, forward, dynamic = false)
+          
+          if(!success)
+              break
+          end
+          i = i + 1
+      end
+
+      _updatelogtracker()
+
+      if !forward
+        _outputbackteststatistics()
+      end
+      
+      return true
+    
+    catch err
+      println(err)
+      API.error("Internal Exception")
     end
 
-    val = isnan(val) ? 0.0 : val
-
-    labels[string(cp.timestamp[i])] = val
-  end
-
-  # Global data stores
-  allsecurities_includingbenchmark = push!([d.symbol for d in getuniverse()], API.getbenchmark())
-  adjustedprices = history(allsecurities_includingbenchmark, "Close", :Day, startdate = DateTime(start_date), enddate = DateTime(end_date))
-
-  #Set benchmark value and Output labels from graphs
-  setbenchmarkvalues(labels)
-  adjustments = getadjustments(getuniverse(), DateTime(start_date), DateTime(end_date))
-
-  #continue with backtest if there are any rows in price data.
-  if !isempty(cp)
-    outputlabels(labels)
-  else
-    error("No price data found. Aborting Backtest!!!")
-    return
-  end
-
-  i = 1
-
-  success = true
-  for date in sort(collect(keys(labels)))
-      success = mainfnc(Date(date), i, cp, vol, adjustments, forward, dynamic = false)
-      
-      if(!success)
-          break
-      end
-      i = i + 1
-  end
-
-  _updatelogtracker()
-
-  if !forward
-    _outputbackteststatistics()
-  end
-  
-  return true
 end
 
 function mainfnc(date::Date, counter::Int, close, volume, adjustments, forward; dynamic::Bool = true)
