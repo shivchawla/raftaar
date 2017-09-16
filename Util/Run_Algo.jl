@@ -182,7 +182,7 @@ function _run_algo_internal(start_date::Date = getstartdate(), end_date::Date = 
       return true
     
     catch err
-      println(err)
+      println(STDERR, err)
       API.error("Internal Exception")
     end
 
