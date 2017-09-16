@@ -85,7 +85,7 @@ function run_algo(forward_test::Bool = false)
   end
 end
 
-function _run_algo_internal(start_date::Date = getstartdate(), end_date::Date = getenddate(); forward = false)
+function _run_algo_internal(startdate::Date = getstartdate(), enddate::Date = getenddate(); forward = false)
   
     try
       setcurrentdate(getstartdate())
@@ -99,7 +99,7 @@ function _run_algo_internal(start_date::Date = getstartdate(), end_date::Date = 
 
       #Set strict policy to FALSE for benchmark
       YRead.setstrict(false)
-      alldata = history([benchmark], "Close", :Day, startdate = DateTime(start_date), enddate = DateTime(end_date))
+      alldata = history([benchmark], "Close", :Day, startdate = DateTime(startdate), enddate = DateTime(enddate))
       #undo strict policy for rest of the universe
       YRead.setstrict(true)
 
@@ -109,14 +109,14 @@ function _run_algo_internal(start_date::Date = getstartdate(), end_date::Date = 
           return false
       end
 
-      cp = history_unadj(getuniverse(), "Close", :Day, startdate = DateTime(start_date), enddate = DateTime(end_date))
+      cp = history_unadj(getuniverse(), "Close", :Day, startdate = DateTime(startdate), enddate = DateTime(enddate))
       if cp == nothing
           Logger.warn("Stock Data not available from $(startdate) to $(enddate)")
           Logger.warn("Aborting test")
           return false
       end
 
-      vol = history_unadj(getuniverse(), "Volume", :Day, startdate = DateTime(start_date), enddate = DateTime(end_date))
+      vol = history_unadj(getuniverse(), "Volume", :Day, startdate = DateTime(startdate), enddate = DateTime(enddate))
       
       if vol == nothing
           Logger.warn("No volume data available for any stock in the universe")
@@ -147,11 +147,11 @@ function _run_algo_internal(start_date::Date = getstartdate(), end_date::Date = 
       #Get Adjusted history once for the full universe (from start to end date)
       #THis will be used for any history calls in user algorithm
       allsecurities_includingbenchmark = push!([d.symbol for d in getuniverse()], API.getbenchmark())
-      adjustedprices = history(allsecurities_includingbenchmark, "Close", :Day, startdate = DateTime(start_date), enddate = DateTime(end_date))
+      adjustedprices = history(allsecurities_includingbenchmark, "Close", :Day, startdate = DateTime(startdate), enddate = DateTime(enddate))
 
       #Set benchmark value and Output labels from graphs
       setbenchmarkvalues(labels)
-      adjustments = getadjustments(getuniverse(), DateTime(start_date), DateTime(end_date))
+      adjustments = getadjustments(getuniverse(), DateTime(startdate), DateTime(enddate))
 
       #continue with backtest if there are any rows in price data.
       if !isempty(cp)
