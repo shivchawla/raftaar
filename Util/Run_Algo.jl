@@ -123,7 +123,8 @@ function _run_algo_internal(startdate::Date = getstartdate(), enddate::Date = ge
       end
 
       #Join benchmark data with close prices
-      cp = !isempty(cp) && !isempty(alldata) ? merge(cp, alldata, :outer) : cp
+      #Right join (benchmark data comes from NSE database and excludes the holidays)
+      cp = !isempty(cp) && !isempty(alldata) ? merge(cp, alldata, :right) : cp
       labels = Dict{String,Float64}()
 
       bvals = values(cp[benchmark.ticker])
