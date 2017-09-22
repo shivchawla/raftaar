@@ -178,7 +178,7 @@ function updatependingorders!(brokerage::BacktestBrokerage, universe::Universe, 
 		if order.orderstatus == OrderStatus(Canceled)
 			removeopenorder!(blotter, order.id)
 			continue
-		#=else
+		else
 			#Step 3 check if account has sufficient capital to execute the order
 			if !checkforsufficientcapital(brokerage.margin,
 											brokerage.commission,
@@ -186,16 +186,14 @@ function updatependingorders!(brokerage::BacktestBrokerage, universe::Universe, 
 
 				removeopenorder!(blotter, order.id)
 				continue
-			end	=#
+			end
 		end
 
 		latesttradebar = getlatesttradebar(universe, order.securitysymbol)
 
-
 		# Get fill based on size or order and latest price
-		fill = getorderfill(order, brokerage.slippage,
-							brokerage.commission, brokerage.participationrate,
-							latesttradebar)
+		fill = getorderfill(order, brokerage.slippage, brokerage.commission, 
+							brokerage.participationrate, latesttradebar, account)
 
 		#Append fill with other fills
 		#check if fill has any quantity
@@ -271,6 +269,8 @@ function checkforsufficientcapital(margin::Margin, commission::Commission, accou
     		&& abs(account.portfolio[order.securitysymbol].quantity) >= abs(order.quantity))
     	return true
 	end
+
+	return true
 
 	freemargin = getmarginremaining(account, margin, order)
 

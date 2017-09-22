@@ -102,7 +102,7 @@ end
 """
 Function to generate fill for an order based on latest price, slippage and commission model
 """
-function getorderfill(order::Order, slippage::Slippage, commission::Commission, participationrate::Float64, latesttradebar::TradeBar)
+function getorderfill(order::Order, slippage::Slippage, commission::Commission, participationrate::Float64, latesttradebar::TradeBar, account::Account)
     fill = OrderFill(order, latesttradebar.datetime)
 
     #can't process order with stale data
@@ -117,26 +117,32 @@ function getorderfill(order::Order, slippage::Slippage, commission::Commission, 
         return fill
     end
 
-    
 
     slippage = getslippage(order, slippage, lastprice)
+    fillprice = 0
     # find the execution price based on slippage model
     if order.quantity  < 0
-        fill.fillprice = round(lastprice - slippage, 2)
+        fillprice = round(lastprice - slippage, 2)
     else
-        fill.fillprice = round(lastprice + slippage, 2)
+        fillprice = round(lastprice + slippage, 2)
     end
 
     #find the quantity that can be executed...assume 5% of the total volume
+    remainingquantity = order.remainingquantity
     availablequantity = Int(round(participationrate * volume))
+    maxquantity = remainingquantity < 0 ? availablequantity : min(availablequantity, getmaximumlongquantity(account.cash, fillprice, commission))
 
-    if availablequantity > abs(order.remainingquantity)
+    if maxquantity > abs(order.remainingquantity)        
         fill.fillquantity = order.remainingquantity
     else
-        fill.fillquantity = sign(order.remainingquantity) * availablequantity
+        fill.fillquantity = sign(order.remainingquantity) * maxquantity
     end
 
-    fill.orderfee = getcommission(fill, commission)
+    #Update fillprice and orderfee when fill quantity is non-zero
+    if abs(fill.fillquantity) > 0
+        fill.fillprice = fillprice
+        fill.orderfee = getcommission(fill, commission)
+    end
 
     return fill
 end
@@ -179,4 +185,25 @@ function serialize(ordertracker::OrderTracker)
     temp[string(date)] = [serialize(order) for order in vectorOrders]
   end
   return temp
+end
+
+function getmaximumlongquantity(cash::Float64, fillprice::Float64, commission::Commission) 
+    
+    filled = false
+    qty = Int(floor(cash/fillprice))
+
+    while qty > 0 && !filled
+        remainingcash = cash - qty*fillprice
+
+        commission_val = getcommission(qty, fillprice, commission)
+
+        if(commission_val > remainingcash)
+            qty -= 1
+        else 
+            filled = true
+        end
+    end
+
+    return filled ? qty : 0
+
 end

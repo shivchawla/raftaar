@@ -42,6 +42,15 @@ function getcommission(fill::OrderFill, commission::Commission)
     return 0.0
 end
 
+function getcommission(fillquantity::Int, fillprice::Float64, commission::Commission)
+    if commission.model == CommissionModel(PerTrade)
+        return round(abs(fillquantity*fillprice) * commission.value, 2)
+    end
+
+    return 0.0
+end
+
+
 function serialize(commission::Commission)
   return Dict{String, Any}("model" => string(commission.model),
                             "value" => commission.value)
