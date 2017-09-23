@@ -185,6 +185,12 @@ end
 
 export _outputbackteststatistics
 
+function _outputbacktestlogs()
+    outputbacktestlogs(algorithm)
+end
+
+export _outputbacktestlogs
+
 function _updatelogtracker()
     updatelogtracker(algorithm)
 end

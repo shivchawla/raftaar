@@ -246,8 +246,19 @@ function outputbackteststatistics(algorithm::Algorithm)
         #2b. Total Return
         #
 end
-
 export outputbackteststatistics
+
+function outputbacktestlogs(algorithm::Algorithm)
+    outputdict = Dict{String, Any}(
+                    "outputtype" => "backtest",
+                    "detail" => false,
+                    "logs" => Logger.getlogbook())
+    
+    println(outputdict)
+
+    Logger.print(JSON.json(outputdict))
+end
+export outputbacktestlogs
 
 function updatelogtracker(algorithm::Algorithm)
     for (date, dict) in Logger.getlogbook()

@@ -50,15 +50,25 @@ wsh = WebSocketHandler() do req, client
     catch err
         info_static("Error parsing arguments from settings panel")
         handleexception(err)
+        
+        if !parsed_args["forward"] 
+            #_outputbackteststatistics()
+            _outputbacktestlogs()
+        end
+
         close(client)
         return
     end
         
-    info_static("Building user algorithm")
+    info_static("Checking user algorithm for errors")
     try
         include(fname)
     catch err
         handleexception(err)
+        if !parsed_args["forward"] 
+            #_outputbackteststatistics()
+            _outputbacktestlogs()
+        end
         close(client)
         return
     end
@@ -90,7 +100,6 @@ wsh = WebSocketHandler() do req, client
         write(f, "\ninfo_static(\"Ending Backtest\")")
     end
 
-
     nf = Base.source_dir()*"/temp/temp_run_$(now()).jl"
     cp(tf, nf, remove_destination=true)
     
@@ -98,6 +107,11 @@ wsh = WebSocketHandler() do req, client
     try
         evalfile(nf)
     catch err
+        if !parsed_args["forward"] 
+            _outputbacktestlogs()
+            #_outputbackteststatistics() ERROR
+        end
+        
         println(err)
     end
 
