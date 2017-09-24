@@ -25,7 +25,6 @@ Account(data::Dict{String, Any}) = Account(data["seedcash"], data["cash"], data[
 function to reset the cash position of the account
 """
 function setcash!(account::Account, amount::Float64)
-    
     account.seedcash = amount
     account.cash = 0.0
     updateaccount_forcash!(account, amount)
@@ -36,7 +35,7 @@ function to add more cash to the account
 """
 function addcash!(account::Account, amount::Float64)
     #account.cash += amount
-    updateaccount_forcash!(account, cash)
+    updateaccount_forcash!(account, amount)
 end
 
 """
@@ -87,13 +86,6 @@ function updateaccount_fills!(account::Account, fills::Vector{OrderFill})
 
         updateaccount_forcash!(account, cashgenerated)
     end
-end
-
-"""
-function to get all positions in a portfolio
-"""
-function getallpositions(account::Account)
-  values(account.portfolio)
 end
 
 function getposition(account::Account, ss::SecuritySymbol)
