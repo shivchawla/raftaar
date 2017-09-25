@@ -176,6 +176,8 @@ function _run_algo_internal(startdate::Date = getstartdate(), enddate::Date = ge
 
       _updatelogtracker()
 
+      info_static("Ending Backtest")
+
       if !forward
         _outputbackteststatistics()
       end
@@ -261,7 +263,9 @@ function mainfnc(date::Date, counter::Int, close, volume, adjustments, forward; 
   #call the user defined
 
   try
-    ondata(currentprices, getstate())
+    #if _checkforrebalance()
+      ondata(currentprices, getstate())
+    #end
   catch err
     handleexception(err)
     return false

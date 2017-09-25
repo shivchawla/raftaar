@@ -18,6 +18,8 @@ end
 
 LogBook() = LogBook(:json, Dict{String, Vector{String}}(), 20)
 
+const logcounter = Dict{String, Int}()
+
 @enum MessageType INFO WARN ERROR
 
 import Base: info, error
@@ -173,7 +175,7 @@ function _logstandard(msg::String, msgtype::MessageType, pmode::Symbol, datetime
 
 end
 
-todbformat(datetime::DateTime) = Dates.format(datetime, "yyyy-mm-dd HH:MM:SS")
+todbformat(datetime::DateTime) = Dates.format(datetime, "yyyy-mm-dd HH:MM:SS")*
 
 """
 Function to log message AS JSON (with timestamp) based on message type
@@ -192,28 +194,26 @@ function _logJSON(msg::String, msgtype::MessageType, pmode::Symbol, datetime::Da
 
     jsonmsg = JSON.json(msg_dict)
 
-    datekey = string(Date(datetime))
-    if !haskey(logbook.container, datekey)
-        logbook.container[datekey] = Dict{String, Vector{String}}()
-    end
-
     entry_datetime = todbformat(now())
-    if !haskey(logbook.container[datekey], entry_datetime)
-        logbook.container[datekey][entry_datetime] = Vector{String}()
+    if !haskey(logbook.container, entry_datetime)
+        logbook.container[entry_datetime] = Dict{String, Vector{String}}()
+    end
+    
+    datekey = string(Date(datetime))
+    if !haskey(logbook.container[entry_datetime], datekey)
+        logbook.container[entry_datetime][datekey] = Vector{String}()
     end
         
-    numlogs = 0
-    for (k,v) in logbook.container[datekey]
-        numlogs += length(logbook.container[datekey][k])
-    end
+    numlogs = haskey(logcounter, datekey) ? logcounter[datekey] : 0
 
     if (numlogs < limit && numlogs < 50) || msgtype == MessageType(ERROR)
 
         pmode == :console ? println(jsonmsg) : (haskey(params, "client") ? write(params["client"], jsonmsg) : println("Socket Client is missing\n$(jsonmsg)"))
 
-        push!(logbook.container[datekey][entry_datetime], jsonmsg)
+        push!(logbook.container[entry_datetime][datekey], jsonmsg)
         
         numlogs += 1
+        logcounter[datekey] = numlogs
 
         if numlogs == limit || numlogs == 50
             msg_dict = Dict{String, String}("outputtype" => "log",
@@ -226,7 +226,7 @@ function _logJSON(msg::String, msgtype::MessageType, pmode::Symbol, datetime::Da
 
             json_msg = JSON.json(msg_dict)
 
-            push!(logbook.container[datekey][entry_datetime], jsonmsg)
+            push!(logbook.container[entry_datetime][datekey], jsonmsg)
 
             pmode == :console ? println(jsonmsg) : (haskey(params, "client") ? write(params["client"], jsonmsg) : println("Socket Client is missing\n$(jsonmsg)"))
         end
@@ -245,6 +245,7 @@ end
 
 function resetLog()
     logbook.container = Dict{String, Vector{String}}()
+    logcounter = Dict{String, Int}()
 end
 
 function getlogbook()

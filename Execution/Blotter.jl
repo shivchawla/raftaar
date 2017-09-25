@@ -102,7 +102,7 @@ end
 """
 Function to generate fill for an order based on latest price, slippage and commission model
 """
-function getorderfill(order::Order, slippage::Slippage, commission::Commission, participationrate::Float64, latesttradebar::TradeBar, account::Account)
+function getorderfill(order::Order, slippage::Slippage, commission::Commission, participationrate::Float64, latesttradebar::TradeBar)# availablecash::Float64)
     fill = OrderFill(order, latesttradebar.datetime)
 
     #can't process order with stale data
@@ -117,7 +117,6 @@ function getorderfill(order::Order, slippage::Slippage, commission::Commission, 
         return fill
     end
 
-
     slippage = getslippage(order, slippage, lastprice)
     fillprice = 0
     # find the execution price based on slippage model
@@ -130,7 +129,7 @@ function getorderfill(order::Order, slippage::Slippage, commission::Commission, 
     #find the quantity that can be executed...assume 5% of the total volume
     remainingquantity = order.remainingquantity
     availablequantity = Int(round(participationrate * volume))
-    maxquantity = remainingquantity < 0 ? availablequantity : min(availablequantity, getmaximumlongquantity(account.cash, fillprice, commission))
+    maxquantity = availablequantity  #remainingquantity < 0 ? availablequantity : min(availablequantity, getmaximumlongquantity(availablecash, fillprice, commission))
 
     if maxquantity > abs(order.remainingquantity)        
         fill.fillquantity = order.remainingquantity

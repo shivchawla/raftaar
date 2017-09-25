@@ -97,7 +97,6 @@ wsh = WebSocketHandler() do req, client
             write(f, "\nrun_algo(false)")
         end
         write(f, "\nAPI.reset()")
-        write(f, "\ninfo_static(\"Ending Backtest\")")
     end
 
     nf = Base.source_dir()*"/temp/temp_run_$(now()).jl"
