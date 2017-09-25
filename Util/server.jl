@@ -16,6 +16,8 @@ try
   host = ARGS[2]
 end
 
+const tmpdir = "/tmp/jp_$port"
+
 #global Dict to store open connections in
 global connections = Dict{Int,WebSocket}()
 
@@ -44,7 +46,7 @@ wsh = WebSocketHandler() do req, client
 
     parseError = false
     info_static("Processing parsed arguments from settings panel")
-
+    
     try
         global fname = processargs(parsed_args)
     catch err
@@ -59,7 +61,7 @@ wsh = WebSocketHandler() do req, client
         close(client)
         return
     end
-        
+
     info_static("Checking user algorithm for errors")
     try
         include(fname)
@@ -75,11 +77,15 @@ wsh = WebSocketHandler() do req, client
 
     #create a temporary file to copy all the relevant code required
     #to run the backtest
-    tf = tempname()
+    (tf, io) = mktemp(tmpdir)
+    close(io)
+    
+    cp(Base.source_dir()*"/handleErrors.jl", "$tmpdir/handleErrors.jl", remove_destination=true)
+    cp(Base.source_dir()*"/Run_Algo.jl", "$tmpdir/Run_Algo.jl", remove_destination=true)
 
     #copy the boilerplate code
     #includes relevant modules and create db connections
-    cp(Base.source_dir()*"/boilerPlate.jl", tf)
+    cp(Base.source_dir()*"/boilerPlate.jl", tf, remove_destination=true)
 
     #Append user source code to the fle
     open(tf, "a") do f
@@ -99,12 +105,9 @@ wsh = WebSocketHandler() do req, client
         write(f, "\nAPI.reset()")
     end
 
-    nf = Base.source_dir()*"/temp/temp_run_$(now()).jl"
-    cp(tf, nf, remove_destination=true)
-    
     #Run the complete file
     try
-        evalfile(nf)
+        evalfile(tf)
     catch err
         if !parsed_args["forward"] 
             _outputbacktestlogs()
@@ -115,7 +118,10 @@ wsh = WebSocketHandler() do req, client
     end
 
     #remove the tempfile after completion
-    rm(nf)
+    rm(tf)
+    rm(fname)
+    rm("$tmpdir/handleErrors.jl")
+    rm("$tmpdir/Run_Algo.jl")
 
     #close the ws client on successful completion
     close(client)

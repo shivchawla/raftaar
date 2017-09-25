@@ -175,7 +175,7 @@ function _logstandard(msg::String, msgtype::MessageType, pmode::Symbol, datetime
 
 end
 
-todbformat(datetime::DateTime) = Dates.format(datetime, "yyyy-mm-dd HH:MM:SS")*
+todbformat(datetime::DateTime) = Dates.format(datetime, "yyyy-mm-dd HH:MM:SS")
 
 """
 Function to log message AS JSON (with timestamp) based on message type

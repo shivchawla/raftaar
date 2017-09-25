@@ -10,13 +10,15 @@ function processargs(parsed_args::Dict{String,Any})
     fname = parsed_args["file"]
   elseif (parsed_args["file"] == nothing)
 
-    tf = tempname()
+    #tf = tempname()
 
-    open(tf, "w") do f
-                write(f, "using Raftaar\n")
-                write(f, "using TimeSeries\n")
-                write(f, parsed_args["code"])
-              end
+
+    #open(tf, "w") do f
+    (tf, f) = mktemp(tmpdir)
+    write(f, "using Raftaar\n")
+    write(f, "using TimeSeries\n")
+    write(f, parsed_args["code"])
+    close(f)
     fname = tf
   end
 
@@ -76,8 +78,6 @@ function processargs(parsed_args::Dict{String,Any})
           Logger.error("""Can't parse the "commission" argument. Need Name,Value type""");
         end
 
-        #eval(parse(ss[1]))
-        #println(eval(parse(ss[1])))
         setcommission((String(ss[1]), parse(ss[2])/100.0))
 
       end

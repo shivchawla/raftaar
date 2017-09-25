@@ -12,6 +12,8 @@ idx_arr = search(fname_full, dir)
 fname = length(idx_arr) != 0 ? fname_full[(idx_arr[end] + 1):end] : fname_full
 
 #wrt the temp folder
-const PATH = Base.source_dir()*"/.."
+#const PATH = Base.source_dir()*"/.."
+const PATH = Base.source_dir()
+
 include(PATH*"/handleErrors.jl")
 include(PATH*"/Run_Algo.jl")
