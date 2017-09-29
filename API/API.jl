@@ -357,6 +357,9 @@ function reset()
     Raftaar.resetAlgo(algorithm)
     Logger.resetLog()
     global dataAvailable = false
+    for (k,v) in _globaldatastores
+        delete!(_globaldatastores, k)
+    end
 end
 
 end
