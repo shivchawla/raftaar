@@ -356,6 +356,7 @@ export wasDataFound
 function reset()
     Raftaar.resetAlgo(algorithm)
     Logger.resetLog()
+    global dataAvailable = false
 end
 
 end
