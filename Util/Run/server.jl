@@ -117,7 +117,7 @@ wsh = WebSocketHandler() do req, client
 
         #copy the boilerplate code
         #includes relevant modules and create db connections
-        cp(Base.source_dir()*"/boilerPlate.jl", tf, remove_destination=true)
+        cp(Base.source_dir()*"/../boilerPlate.jl", tf, remove_destination=true)
 
         #Append user source code to the fle
         open(tf, "a") do f
@@ -138,7 +138,7 @@ wsh = WebSocketHandler() do req, client
         end
     catch err
         println(err)
-        info_static("Internal Error")
+        error_static("Internal Error")
         if !parsed_args["forward"]
             _outputbacktestlogs()
         end
