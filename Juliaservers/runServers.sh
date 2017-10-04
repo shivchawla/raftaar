@@ -1,12 +1,12 @@
 # @Author: Shiv Chawla
 # @Date:   2017-10-04 12:19:26
 # @Last Modified by:   Shiv Chawla
-# @Last Modified time: 2017-10-04 17:34:03
+# @Last Modified time: 2017-10-04 17:41:19
 #!/bin/bash
 julia='/root/julia/bin/julia'
 PATH=:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/root/julia/bin/
 
-dir="/root/aimsquant/raftaar/Servers"
+dir="/root/aimsquant/raftaar/Juliaservers"
 cd $dir
 
 if [ ! -d "$PWD/logs/" ]; then
