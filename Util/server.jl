@@ -11,7 +11,7 @@ try
   host = ARGS[2]
 end
 
-const dir = "/home/jp_$port"
+const dir = "/home/jp_$port/local"
 
 include("parseArgs.jl")
 include("processArgs.jl")
