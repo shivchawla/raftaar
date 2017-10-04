@@ -11,7 +11,7 @@ try
   host = ARGS[2]
 end
 
-const tmpdir = "/tmp/jp_$port"
+const dir = "/home/jp_$port"
 
 include("parseArgs.jl")
 include("processArgs.jl")
@@ -34,9 +34,9 @@ function remove_files()
         #remove the tempfile after completion
         rm(tf)
         rm(fname)
-        rm("$tmpdir/handleErrors.jl")
-        rm("$tmpdir/Run_Algo.jl")
-        rm("$tmpdir/*")
+        rm("$dir/handleErrors.jl")
+        rm("$dir/Run_Algo.jl")
+        rm("$dir/*")
     end
 end
 
@@ -85,7 +85,7 @@ wsh = WebSocketHandler() do req, client
     end
     
     try
-        global fname = processargs(parsed_args, tmpdir)
+        global fname = processargs(parsed_args, dir)
     catch err
         println(err)
         error_static("Error parsing arguments from settings panel")
@@ -108,12 +108,12 @@ wsh = WebSocketHandler() do req, client
     try
         #create a temporary file to copy all the relevant code required
         #to run the backtest
-        (tf, io) = mktemp(tmpdir)
+        (tf, io) = mktemp(dir)
         global tf = tf
         close(io)
         
-        cp(Base.source_dir()*"/handleErrors.jl", "$tmpdir/handleErrors.jl", remove_destination=true)
-        cp(Base.source_dir()*"/Run_Algo.jl", "$tmpdir/Run_Algo.jl", remove_destination=true)
+        cp(Base.source_dir()*"/handleErrors.jl", "$dir/handleErrors.jl", remove_destination=true)
+        cp(Base.source_dir()*"/Run_Algo.jl", "$dir/Run_Algo.jl", remove_destination=true)
 
         #copy the boilerplate code
         #includes relevant modules and create db connections
