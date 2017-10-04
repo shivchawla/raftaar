@@ -13,10 +13,10 @@ end
 
 const dir = "/home/jp_$port/local"
 
-include("parseArgs.jl")
-include("processArgs.jl")
+include("../parseArgs.jl")
+include("../processArgs.jl")
 include("handleErrors.jl")
-include("dbConnections.jl")
+include("../dbConnections.jl")
 
 #global Dict to store open connections in
 global connections = Dict{Int, Bool}()

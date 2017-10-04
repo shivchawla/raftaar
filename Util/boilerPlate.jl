@@ -5,7 +5,7 @@ using JSON
 
 fname_full = @__FILE__
 
-dir = Base.source_dir()*"/"
+dir = Base.source_dir()*"/../"
 
 #find fname_full in dir
 idx_arr = search(fname_full, dir)
