@@ -92,6 +92,18 @@ function info_static(msg::String)
     _log(msg, MessageType(INFO), pmode, mmode, DateTime())
 end
 
+function error_static(msg::String)
+    mmode = params["style"]
+    pmode = params["print"]
+    _log(msg, MessageType(ERROR), pmode, mmode, DateTime())
+end
+
+function warn_static(msg::String)
+    mmode = params["style"]
+    pmode = params["print"]
+    _log(msg, MessageType(WARN), pmode, mmode, DateTime())
+end
+
 function info(msg::String; datetime::DateTime = now())
     mmode = params["style"]
     pmode = params["print"]
@@ -252,6 +264,6 @@ function getlogbook()
     return logbook.container
 end
 
-export info, error, warn, info_static
+export info, error, warn, info_static, error_static, warn_static
 
 end

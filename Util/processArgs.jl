@@ -3,7 +3,7 @@
 # Email: shiv.chawla@aimsquant.com
 # Organization: AIMSQUANT PVT. LTD.
 
-function processargs(parsed_args::Dict{String,Any})
+function processargs(parsed_args::Dict{String,Any}, tmpdir::String)
   fname = ""
   #Include the strategy code
   if (parsed_args["code"] == nothing)
@@ -17,7 +17,10 @@ function processargs(parsed_args::Dict{String,Any})
     (tf, f) = mktemp(tmpdir)
     write(f, "using Raftaar\n")
     write(f, "using TimeSeries\n")
-    write(f, parsed_args["code"])
+
+    #replace Base. with empty String
+    #disallow explicit use of Base. module
+    write(f, replace(parsed_args["code"], "Base.", ""))
     close(f)
     fname = tf
   end

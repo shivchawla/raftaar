@@ -3,11 +3,6 @@ using WebSockets
 using HttpServer
 using Logger
 
-include("parseArgs.jl")
-include("processArgs.jl")
-include("handleErrors.jl")
-include("dbConnections.jl")
-
 port = 2000
 host = "127.0.0.1"
 
@@ -18,8 +13,13 @@ end
 
 const tmpdir = "/tmp/jp_$port"
 
+include("parseArgs.jl")
+include("processArgs.jl")
+include("handleErrors.jl")
+include("dbConnections.jl")
+
 #global Dict to store open connections in
-global connections = Dict{Int,WebSocket}()
+global connections = Dict{Int, Bool}()
 
 function decodeMessage(msg)
     String(copy(msg))
@@ -42,23 +42,25 @@ end
 
 function close_connection(client)
     remove_files()
-    delete!(connections, client.id)
+    global connections = delete!(connections, client.id)
     close(client)
+    #API.reset()
 end
 
 wsh = WebSocketHandler() do req, client
     
     #check if there are no connections
-    if(length(collect(keys(connections)))) > 0)
+    if(length(collect(keys(connections))) > 0)
        msg = Dict{String, Any}("msg" => "Server Unavailable", "code" => 503, "outputtype" => "internal");
        write(client, JSON.json(msg))
-       close_connection(client) 
+       close_connection(client)
+       return #BUG FIX--return after closing connection is necessary 
     end
     
     remove_files()
 
     #continue otherewise
-    connections[client.id] = client
+    connections[client.id] = true
 
     try 
         setlogmode(:json, :socket, true, client)
@@ -76,23 +78,20 @@ wsh = WebSocketHandler() do req, client
         parseError = false
         info_static("Processing parsed arguments from settings panel")
     catch err
-        info_static("Internal Error while processing settings")
+        println(err)
+        error_static("Internal Error while processing settings")
         close_connection(client)
         return
     end
     
     try
-        global fname = processargs(parsed_args)
+        global fname = processargs(parsed_args, tmpdir)
     catch err
-        info_static("Error parsing arguments from settings panel")
-        handleexception(err)
-        
-        if !parsed_args["forward"] 
-            #_outputbackteststatistics()
-            _outputbacktestlogs()
-        end
-
+        println(err)
+        error_static("Error parsing arguments from settings panel")
+        handleexception(err, parsed_args["forward"])
         close_connection(client)
+        API.reset()
         return
     end
 
@@ -100,12 +99,9 @@ wsh = WebSocketHandler() do req, client
     try
         include(fname)
     catch err
-        handleexception(err)
-        if !parsed_args["forward"] 
-            #_outputbackteststatistics()
-            _outputbacktestlogs()
-        end
+        handleexception(err, parsed_args["forward"])
         close_connection(client)
+        API.reset()
         return
     end
    
@@ -138,11 +134,16 @@ wsh = WebSocketHandler() do req, client
             else
                 write(f, "\nrun_algo(false)")
             end
-            write(f, "\nAPI.reset()")
+            #write(f, "\nAPI.reset()")
         end
     catch err
+        println(err)
         info_static("Internal Error")
+        if !parsed_args["forward"]
+            _outputbacktestlogs()
+        end
         close_connection(client)
+        API.reset()
         return
     end
 
@@ -150,19 +151,18 @@ wsh = WebSocketHandler() do req, client
     try
         evalfile(tf)
     catch err
-        if !parsed_args["forward"] 
-            _outputbacktestlogs()
-            #_outputbackteststatistics() ERROR
-        end
-        
-        println(err)
+        handleexception(err, parsed_args["forward"])
     end
 
-    #close the ws client on successful completion
+    # Finally close the ws client on successful/failed completion
     close_connection(client)
-
+    API.reset()
 end
 
-server = Server(wsh)
-run(server, host=IPv4(host), port=port)
+try
+    server = Server(wsh)
+    run(server, host=IPv4(host), port=port)
+catch err
+    println("Error while launching WS server")
+end
 

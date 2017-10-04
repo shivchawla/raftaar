@@ -33,7 +33,7 @@ function run_algo(forward_test::Bool = false)
       try
         initialize(getstate())
       catch err
-        handleexception(err)
+        handleexception(err, forward_test)
         return
       end
 
@@ -76,7 +76,7 @@ function run_algo(forward_test::Bool = false)
       try
         initialize(getstate())
       catch err
-        handleexception(err)
+        handleexception(err, forward_test)
         return
       end
 
@@ -264,10 +264,10 @@ function mainfnc(date::Date, counter::Int, close, volume, adjustments, forward; 
 
   try
     #if _checkforrebalance()
-      ondata(currentprices, getstate())
+    ondata(currentprices, getstate())
     #end
   catch err
-    handleexception(err)
+    handleexception(err, forward)
     return false
   end
 

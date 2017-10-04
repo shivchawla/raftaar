@@ -2,8 +2,18 @@
 # Author: Shiv Chawla
 # Email: shiv.chawla@aimsquant.com
 # Organization: AIMSQUANT PVT. LTD.
+import Base: exit, quit
 
-function handleexception(err::Any)
+#overwriting Base.exit
+function exit(code=0)
+    warn_static("Illegal Action at exit()")
+end
+
+function quit()
+    warn_static("Illegal Action at quit()")
+end
+
+function handleexception(err::Any, forward=false)
 
     msg = errormessage(err)
 
@@ -28,8 +38,12 @@ function handleexception(err::Any)
 
     #replace "Raftaar."
     msg = replace(msg, "Raftaar.", "")
+    
     API.error(msg)
 
+    if !forward
+        _outputbacktestlogs()
+    end
 end
 
 function errormessage(err::Any)

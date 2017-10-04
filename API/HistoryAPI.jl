@@ -174,6 +174,9 @@ function searchsecurity(secid::Int64)
     end
 end
 
+
+#Time gap based global stores is not GOOD
+#If data is not available for all dates, new data is not downloaded
 function findinglobalstores(tickers::Vector{String}, 
                                 datatype::String, 
                                 frequency::Symbol, 
