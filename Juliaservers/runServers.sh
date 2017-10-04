@@ -1,10 +1,11 @@
 # @Author: Shiv Chawla
 # @Date:   2017-10-04 12:19:26
 # @Last Modified by:   Shiv Chawla
-# @Last Modified time: 2017-10-04 14:58:45
+# @Last Modified time: 2017-10-04 17:34:03
 #!/bin/bash
 julia='/root/julia/bin/julia'
 PATH=:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/root/julia/bin/
+
 dir="/root/aimsquant/raftaar/Servers"
 cd $dir
 
@@ -12,9 +13,14 @@ if [ ! -d "$PWD/logs/" ]; then
         mkdir "$PWD/logs"
 fi
 
+#Set permissions of folder
+raftaarDir="/root/aimsquant/raftaar/"
+setfacl -R -m g:julia:--x $raftaarDir
+setfacl -R -m g:julia:--x $raftaarDir/Juliaservers
+setfacl -R -m g:julia:r-x $raftaarDir/Util
+
 ports="6001 6002 6003 6004 7001"
 IFS=' ' read -a portsArray <<<"$ports"
-#read -a portsArray <<<$ports
 
 for index in "${!portsArray[@]}"
 do
@@ -35,5 +41,13 @@ do
    touch $fname
    touch $efname
 
-   bash $PWD/_daemon.sh $fname $efname $servicename $port &
+   bash $PWD/_daemon.sh $fname $efname $servicename $port &     
 done
+
+#Sleep before resetting some file permissions
+sleep 20
+
+setfacl -R -m g:julia:--- $raftaarDir/Util
+setfacl -m g:julia:r-x $raftaarDir/Util
+setfacl -R -m g:julia:r-x $raftaarDir/Util/Run
+
