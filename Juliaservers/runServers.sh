@@ -1,7 +1,7 @@
 # @Author: Shiv Chawla
 # @Date:   2017-10-04 12:19:26
 # @Last Modified by:   Shiv Chawla
-# @Last Modified time: 2017-10-08 15:31:13
+# @Last Modified time: 2017-10-08 17:23:02
 #!/bin/bash
 base_dir="/home/admin"
 julia='$base_dir/bin/julia'
@@ -19,8 +19,11 @@ setfacl -R -m g:julia:r-x $raftaar_dir
 setfacl -R -m g:julia:--x $raftaar_dir/Juliaservers
 setfacl -R -m g:julia:r-x $raftaar_dir/Util
 
-address="0.0.0.0"
-ports="6001 6002 6003 6004 7001"
+set -- "${1:-6001 6002 6003 6004 7001}" "${2:-0.0.0.0}" 
+
+ports="$1"
+address="$2"
+
 IFS=' ' read -a portsArray <<<"$ports"
 
 for index in "${!portsArray[@]}"
@@ -48,6 +51,7 @@ done
 #Sleep before resetting some file permissions
 sleep 200
 
+setfacl -R -m g:julia:--x $raftaar_dir    
 setfacl -R -m g:julia:--- $raftaar_dir/Util
 setfacl -m g:julia:r-x $raftaar_dir/Util
 setfacl -R -m g:julia:r-x $raftaar_dir/Util/Run
