@@ -22,8 +22,7 @@ const logcounter = Dict{String, Int}()
 
 @enum MessageType INFO WARN ERROR
 
-import Base: info, error
-import Base.error
+#import Base: info, error
 using JSON
 
 const logbook = LogBook()
@@ -264,6 +263,6 @@ function getlogbook()
     return logbook.container
 end
 
-export info, error, warn, info_static, error_static, warn_static
+export info_static, error_static, warn_static
 
 end

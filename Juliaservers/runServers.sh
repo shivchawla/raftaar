@@ -1,7 +1,7 @@
 # @Author: Shiv Chawla
 # @Date:   2017-10-04 12:19:26
 # @Last Modified by:   Shiv Chawla
-# @Last Modified time: 2017-10-04 17:41:19
+# @Last Modified time: 2017-10-07 09:16:35
 #!/bin/bash
 julia='/root/julia/bin/julia'
 PATH=:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/root/julia/bin/
@@ -19,6 +19,7 @@ setfacl -R -m g:julia:--x $raftaarDir
 setfacl -R -m g:julia:--x $raftaarDir/Juliaservers
 setfacl -R -m g:julia:r-x $raftaarDir/Util
 
+address="127.0.0.1"
 ports="6001 6002 6003 6004 7001"
 IFS=' ' read -a portsArray <<<"$ports"
 
@@ -41,11 +42,11 @@ do
    touch $fname
    touch $efname
 
-   bash $PWD/_daemon.sh $fname $efname $servicename $port &     
+   bash $PWD/_daemon.sh $fname $efname $servicename $port $address &     
 done
 
 #Sleep before resetting some file permissions
-sleep 20
+sleep 200
 
 setfacl -R -m g:julia:--- $raftaarDir/Util
 setfacl -m g:julia:r-x $raftaarDir/Util
