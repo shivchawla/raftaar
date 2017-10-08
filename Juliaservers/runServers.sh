@@ -1,7 +1,7 @@
 # @Author: Shiv Chawla
 # @Date:   2017-10-04 12:19:26
 # @Last Modified by:   Shiv Chawla
-# @Last Modified time: 2017-10-07 09:16:35
+# @Last Modified time: 2017-10-08 15:09:15
 #!/bin/bash
 julia='/root/julia/bin/julia'
 PATH=:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/root/julia/bin/
@@ -15,7 +15,7 @@ fi
 
 #Set permissions of folder
 raftaarDir="/root/aimsquant/raftaar/"
-setfacl -R -m g:julia:--x $raftaarDir
+setfacl -R -m g:julia:r-x $raftaarDir
 setfacl -R -m g:julia:--x $raftaarDir/Juliaservers
 setfacl -R -m g:julia:r-x $raftaarDir/Util
 
