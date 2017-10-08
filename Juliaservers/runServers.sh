@@ -1,25 +1,25 @@
 # @Author: Shiv Chawla
 # @Date:   2017-10-04 12:19:26
 # @Last Modified by:   Shiv Chawla
-# @Last Modified time: 2017-10-08 15:09:15
+# @Last Modified time: 2017-10-08 15:31:13
 #!/bin/bash
-julia='/root/julia/bin/julia'
+base_dir="/home/admin"
+julia='$base_dir/bin/julia'
 PATH=:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/root/julia/bin/
 
-dir="/root/aimsquant/raftaar/Juliaservers"
-cd $dir
+raftaar_dir="$base_dir/raftaar"
+cd "$raftaar_dir/Juliaservers"
 
 if [ ! -d "$PWD/logs/" ]; then
         mkdir "$PWD/logs"
 fi
 
 #Set permissions of folder
-raftaarDir="/root/aimsquant/raftaar/"
-setfacl -R -m g:julia:r-x $raftaarDir
-setfacl -R -m g:julia:--x $raftaarDir/Juliaservers
-setfacl -R -m g:julia:r-x $raftaarDir/Util
+setfacl -R -m g:julia:r-x $raftaar_dir
+setfacl -R -m g:julia:--x $raftaar_dir/Juliaservers
+setfacl -R -m g:julia:r-x $raftaar_dir/Util
 
-address="127.0.0.1"
+address="0.0.0.0"
 ports="6001 6002 6003 6004 7001"
 IFS=' ' read -a portsArray <<<"$ports"
 
@@ -48,7 +48,7 @@ done
 #Sleep before resetting some file permissions
 sleep 200
 
-setfacl -R -m g:julia:--- $raftaarDir/Util
-setfacl -m g:julia:r-x $raftaarDir/Util
-setfacl -R -m g:julia:r-x $raftaarDir/Util/Run
+setfacl -R -m g:julia:--- $raftaar_dir/Util
+setfacl -m g:julia:r-x $raftaar_dir/Util
+setfacl -R -m g:julia:r-x $raftaar_dir/Util/Run
 
