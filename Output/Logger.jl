@@ -36,25 +36,28 @@ const params = Dict{String, Any}("style" => :text,
 """
 Function to configure mode of the logger and change the datetime
 """
-function configure(;style_mode::Symbol = :text, print_mode::Symbol = :console, save_mode::Bool = true, save_limit::Int = 30, display::Bool = true)
-    params["style"] = style_mode
-    params["print"] = print_mode
-    params["save"] = save_mode
-    params["limit"] = save_limit
-    params["display"] = display
+function configure(;style_mode::Symbol = :text, print_mode::Symbol = :console, save_mode::Bool = true, save_limit::Int = 30, display::Bool=true)
+    global params["style"] = style_mode
+    global params["print"] = print_mode
+    global params["save"] = save_mode
+    global params["limit"] = save_limit
+    global params["display"] = display
 
     if(save_mode)
         logbook.savelimit = save_limit
     end
 end
 
-function configure(client::WebSocket; style_mode::Symbol = :text, print_mode::Symbol = :socket, save_mode::Bool = true, save_limit::Int = 30, display::Bool = true)
-    params["style"] = style_mode
-    params["print"] = print_mode
-    params["save"] = save_mode
-    params["limit"] = save_limit
-    params["client"] = client
-    params["display"] = display
+function configure(client::WebSocket; style_mode::Symbol = :text, print_mode::Symbol = :socket, save_mode::Bool = true, save_limit::Int = 30, display::Bool=true)
+    global params["style"] = style_mode
+    global params["print"] = print_mode
+    global params["save"] = save_mode
+    global params["limit"] = save_limit
+    if haskey(params, "client")
+        global params = delete!(params, "client")
+    end
+    global params["client"] = client
+    global params["display"] = display
 
     if(save_mode)
         logbook.savelimit = save_limit
@@ -62,12 +65,12 @@ function configure(client::WebSocket; style_mode::Symbol = :text, print_mode::Sy
 end
 
 function update_display(display::Bool)
-    params["display"] = display
+    global params["display"] = display
 end
 
 function updateclock(algo_clock::DateTime)
-    params["datetime"] = algo_clock
-    params["counter"] = 0
+    global params["datetime"] = algo_clock
+    global params["counter"] = 0
 end
 
 """
@@ -138,7 +141,7 @@ end
 
 function _log(msg::String, msgtype::MessageType, pmode::Symbol, mmode::Symbol, datetime::DateTime)
     
-    if(!params["display"])
+    if !get(params, "display", true)
         return
     end
 
@@ -255,8 +258,8 @@ function print(str)
 end
 
 function resetLog()
-    logbook.container = Dict{String, Vector{String}}()
-    logcounter = Dict{String, Int}()
+    global logbook.container = Dict{String, Vector{String}}()
+    global logcounter = Dict{String, Int}()
 end
 
 function getlogbook()

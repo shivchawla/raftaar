@@ -18,6 +18,7 @@ using Logger
 
 function run_algo(forward_test::Bool = false)
 
+  Logger.info_static("Running User algorithm")
   benchmark = "CNX_NIFTY"
   setbenchmark(benchmark)
 
@@ -30,6 +31,8 @@ function run_algo(forward_test::Bool = false)
     if !wasDataFound()
       # Oh no, no data found
       # let's call the initialize function
+      
+      println("Initializing")
       try
         initialize(getstate())
       catch err
@@ -37,6 +40,7 @@ function run_algo(forward_test::Bool = false)
         return
       end
 
+      println("Running actual")
       if _run_algo_internal(forward = forward_test)
           _serializeData()
       end
@@ -74,6 +78,7 @@ function run_algo(forward_test::Bool = false)
       # nothing much to do here except for calling initialize
 
       try
+        Logger.info_static("Initializing user algorithm")
         initialize(getstate())
       catch err
         handleexception(err, forward_test)
@@ -88,6 +93,7 @@ end
 function _run_algo_internal(startdate::Date = getstartdate(), enddate::Date = getenddate(); forward = false)
   
     try
+      Logger.info_static("Fetching data")
       setcurrentdate(getstartdate())
 
       # The parameters start_date and end_date here represent the datesfor which I want to run the simulation
@@ -104,22 +110,22 @@ function _run_algo_internal(startdate::Date = getstartdate(), enddate::Date = ge
       YRead.setstrict(true)
 
       if alldata == nothing
-          Logger.warn("Benchmark data not available from $(startdate) to $(enddate)")
-          Logger.warn("Aborting test")
+          Logger.warn_static("Benchmark data not available from $(startdate) to $(enddate)")
+          Logger.warn_static("Aborting test")
           return false
       end
 
       cp = history_unadj(getuniverse(), "Close", :Day, startdate = DateTime(startdate), enddate = DateTime(enddate))
       if cp == nothing
-          Logger.warn("Stock Data not available from $(startdate) to $(enddate)")
-          Logger.warn("Aborting test")
+          Logger.warn_static("Stock Data not available from $(startdate) to $(enddate)")
+          Logger.warn_static("Aborting test")
           return false
       end
 
       vol = history_unadj(getuniverse(), "Volume", :Day, startdate = DateTime(startdate), enddate = DateTime(enddate))
       
       if vol == nothing
-          Logger.warn("No volume data available for any stock in the universe")
+          Logger.warn_static("No volume data available for any stock in the universe")
       end
 
       #Join benchmark data with close prices
@@ -158,12 +164,13 @@ function _run_algo_internal(startdate::Date = getstartdate(), enddate::Date = ge
       if !isempty(cp)
         outputlabels(labels)
       else
-        error("No price data found. Aborting Backtest!!!")
+        Logger.error_static("No price data found. Aborting Backtest!!!")
         return
       end
 
       i = 1
 
+      Logger.info_static("Running algorithm for each data")
       success = true
       for date in sort(collect(keys(labels)))
           success = mainfnc(Date(date), i, cp, vol, adjustments, forward, dynamic = false)
@@ -176,7 +183,7 @@ function _run_algo_internal(startdate::Date = getstartdate(), enddate::Date = ge
 
       _updatelogtracker()
 
-      info_static("Ending Backtest")
+      Logger.info_static("Ending Backtest")
 
       if !forward
         _outputbackteststatistics()
@@ -185,6 +192,7 @@ function _run_algo_internal(startdate::Date = getstartdate(), enddate::Date = ge
       return true
     
     catch err
+      println(err)
       println(STDERR, err)
       API.error("Internal Exception")
     end
