@@ -259,7 +259,9 @@ end
 
 function resetLog()
     global logbook.container = Dict{String, Vector{String}}()
-    global logcounter = Dict{String, Int}()
+    for key in keys(logcounter)
+        global logcounter[key] = 0
+    end
 end
 
 function getlogbook()
