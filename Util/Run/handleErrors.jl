@@ -37,7 +37,7 @@ function handleexception(err::Any, forward=false)
                 if searchindex(err, fname) > 0 
                     lines = split(err, fname*":")
                     #special logic to get function and line number
-                    stack_msg *="\n\n" * (length(lines) == 2 ? msg*" in "*string(lines[1])*" line:"*string(parse(lines[2]) - 23) : msg)
+                    stack_msg *="\n\n" * (length(lines) == 2 ? msg*" in "*string(lines[1])*" line:"*string(parse(lines[2]) - 20) : msg)
                     found_in_stack=true
                     continue    
                 end
@@ -50,7 +50,7 @@ function handleexception(err::Any, forward=false)
     end
 
     if found_in_stack 
-        msg*=stack_msg
+        msg=stack_msg
     end 
 
     msg = replace(msg, "Raftaar.", "")
