@@ -2,7 +2,9 @@
 # Author: Shiv Chawla
 # Email: shiv.chawla@aimsquant.com
 # Organization: AIMSQUANT PVT. LTD.
+
 import Base: exit, quit
+using BufferedStreams
 
 #overwriting Base.exit
 function exit(code=0)
@@ -15,31 +17,45 @@ end
 
 function handleexception(err::Any, forward=false)
 
-    msg = errormessage(err)
-
+    out = BufferedOutputStream()
+    showerror(out, err)
+    msg = String(take!(out))
+    close(out)
+    
     st = catch_stacktrace()
 
+    stack_msg = ""
+    found_in_stack=false
+    
     # logic to get line and function number from user algo
     try
         lines = []
-        for err in st 
+        for err in reverse(st) 
             err = string(err)
-            #push!(errorlist, err)
-                 
-            if fname!=""
+            
+            if fname!="" && !found_in_stack
                 if searchindex(err, fname) > 0 
                     lines = split(err, fname*":")
                     #special logic to get function and line number
-                    msg = length(lines) == 2 ? msg*" in "*string(lines[1])*" line:"*string(parse(lines[2]) - 20) : msg    
+                    stack_msg *="\n\n" * (length(lines) == 2 ? msg*" in "*string(lines[1])*" line:"*string(parse(lines[2]) - 23) : msg)
+                    found_in_stack=true
+                    continue    
                 end
+            end
+
+            if found_in_stack
+                stack_msg*="\n\n$err"
             end
         end
     end
 
-    #replace "Raftaar."
+    if found_in_stack 
+        msg*=stack_msg
+    end 
+
     msg = replace(msg, "Raftaar.", "")
     
-    API.error(msg)
+    Logger.error(msg)
 
     if !forward
         _outputbacktestlogs()
@@ -76,4 +92,3 @@ function errormessage(err::Any)
         return string(err)
     end 
 end
-

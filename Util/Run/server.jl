@@ -134,7 +134,6 @@ wsh = WebSocketHandler() do req, client
             else
                 write(f, "\nrun_algo(false)")
             end
-            #write(f, "\nAPI.reset()")
         end
     catch err
         println(err)

@@ -3,15 +3,6 @@
 # Email: shiv.chawla@aimsquant.com
 # Organization: AIMSQUANT PVT. LTD.
 
-
-#include("../Examples/constantpct.jl")
-#include("../Util/Run_Helper.jl")
-
-#alldata = history(["CNX_BANK","CNX_100","CNX_ENERGY"], "Close", :Day, 500, enddate = "2016-01-01")
-#alldata = history(["CNX_ENERGY"], "Close", :A, 200, enddate = "2016-01-01")
-
-# import Logger: warn, info, error
-
 using DataFrames
 using TimeSeries
 using Logger
@@ -183,7 +174,9 @@ function _run_algo_internal(startdate::Date = getstartdate(), enddate::Date = ge
 
       _updatelogtracker()
 
-      Logger.info_static("Ending Backtest")
+      if success
+          Logger.info_static("Ending Backtest")
+      end
 
       if !forward
         _outputbackteststatistics()
