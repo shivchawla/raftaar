@@ -53,6 +53,7 @@ function handleexception(err::Any, forward=false)
         msg=stack_msg
     end 
 
+    msg = replace(msg, "/home/admin/raftaar","..")
     msg = replace(msg, "Raftaar.", "")
     
     Logger.error(msg)

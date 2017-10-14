@@ -1,7 +1,7 @@
 # @Author: Shiv Chawla
 # @Date:   2017-10-04 12:19:26
 # @Last Modified by:   Shiv Chawla
-# @Last Modified time: 2017-10-08 17:23:02
+# @Last Modified time: 2017-10-14 22:09:28
 #!/bin/bash
 base_dir="/home/admin"
 julia='$base_dir/bin/julia'
@@ -15,6 +15,11 @@ if [ ! -d "$PWD/logs/" ]; then
 fi
 
 #Set permissions of folder
+setfacl -R -m g:julia:--x /home
+setfacl -R -m g:julia:--x $base_dir
+setfacl -R -m g:julia:r-x $base_dir/julia
+setfacl -R -m g:julia:r-x $base_dir/.julia
+
 setfacl -R -m g:julia:r-x $raftaar_dir
 setfacl -R -m g:julia:--x $raftaar_dir/Juliaservers
 setfacl -R -m g:julia:r-x $raftaar_dir/Util
@@ -55,4 +60,3 @@ setfacl -R -m g:julia:--x $raftaar_dir
 setfacl -R -m g:julia:--- $raftaar_dir/Util
 setfacl -m g:julia:r-x $raftaar_dir/Util
 setfacl -R -m g:julia:r-x $raftaar_dir/Util/Run
-
