@@ -102,7 +102,7 @@ end
 """
 Function to generate fill for an order based on latest price, slippage and commission model
 """
-function getorderfill(order::Order, slippage::Slippage, commission::Commission, participationrate::Float64, latesttradebar::TradeBar)# availablecash::Float64)
+function getorderfill(order::Order, slippage::Slippage, commission::Commission, executionpolicy::ExecutionPolicy, participationrate::Float64, latesttradebar::TradeBar)# availablecash::Float64)
     fill = OrderFill(order, latesttradebar.datetime)
 
     #can't process order with stale data
@@ -110,7 +110,8 @@ function getorderfill(order::Order, slippage::Slippage, commission::Commission, 
         return fill
     end
 
-    lastprice = latesttradebar.close
+    lastprice = getexecutionprice(executionpolicy, latesttradebar)
+    
     volume = latesttradebar.volume
 
     if isnan(lastprice) || isnan(volume) || lastprice <= 0.0 || volume <= 0
@@ -205,4 +206,25 @@ function getmaximumlongquantity(cash::Float64, fillprice::Float64, commission::C
 
     return filled ? qty : 0
 
+end
+
+function getexecutionprice(executionpolicy::ExecutionPolicy, tradebar::TradeBar)
+    if executionpolicy == ExecutionPolicy(EP_Close)
+        return tradebar.close
+    elseif executionpolicy == ExecutionPolicy(EP_Open)
+        return tradebar.open
+    elseif executionpolicy == ExecutionPolicy(EP_High)
+        return tradebar.high
+    elseif executionpolicy == ExecutionPolicy(EP_Low)
+        return tradebar.low
+    elseif executionpolicy == ExecutionPolicy(EP_AverageHighLow)
+        divisor = (tradebar.high != 0.0 ? 1 : 0) + (tradebar.low != 0.0 ? 1 : 0)  
+        return divisor != 0 ? (tradebar.high + tradebar.low)/divisor : 0.0
+    elseif executionpolicy == ExecutionPolicy(EP_AverageAll)
+        divisor = (tradebar.high != 0.0 ? 1 : 0) + (tradebar.low != 0.0 ? 1 : 0) +
+                  (tradebar.open != 0.0 ? 1 : 0) + (tradebar.close != 0.0 ? 1 : 0) 
+        return divisor != 0 ? (tradebar.close + tradebar.open + tradebar.high + tradebar.low)/divisor : 0.0
+    else
+        return tradebar.close
+    end
 end

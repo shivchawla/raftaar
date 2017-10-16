@@ -261,7 +261,7 @@ end
 """
 Function to get the latest price of the security
 """
-function getlatestprice(universe::Universe, ticker::String, securitytype::SecurityType = SecurityType(Equity), field::FieldType=FieldType(Close))
+function getlatestprice(universe::Universe, ticker::String, country::String="IN", exchange::String="NSE", securitytype::SecurityType = SecurityType(Equity), field::FieldType=FieldType(Close))
 	ss = createsymbol(ticker, securitytype)
 	getlatestprice(universe, ss, field)
 end
@@ -300,6 +300,9 @@ function getlatestprice(universe::Universe, symbol::SecuritySymbol, field::Field
     return -999
 end
 
+function getlatesttradebar(universe::Universe, security::Security)
+     getlatesttradebar(security.symbol) 
+end
 
 function getlatesttradebar(universe::Universe, symbol::SecuritySymbol)
     tradebars = universe.tradebars

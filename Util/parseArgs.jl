@@ -45,6 +45,10 @@ function getargparsesettings()
             help = "Cancel Policy of the the backtest"
             arg_type = String
             default = "EOD"
+        "--executionpolicy"
+            help = "Execution Policy of the the backtest (Time of execution)"
+            arg_type = String
+            default = "Close"    
         "--resolution"
             help = "Resolution frequency of the backtest"
             arg_type = String

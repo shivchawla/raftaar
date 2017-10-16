@@ -96,37 +96,54 @@ function _run_algo_internal(startdate::Date = getstartdate(), enddate::Date = ge
 
       #Set strict policy to FALSE for benchmark
       YRead.setstrict(false)
-      alldata = history([benchmark], "Close", :Day, startdate = DateTime(startdate), enddate = DateTime(enddate))
+      benchmarkdata = history([benchmark], "Close", :Day, startdate = DateTime(startdate), enddate = DateTime(enddate))
       #undo strict policy for rest of the universe
       YRead.setstrict(true)
 
-      if alldata == nothing
+      if benchmarkdata == nothing
           Logger.warn_static("Benchmark data not available from $(startdate) to $(enddate)")
           Logger.warn_static("Aborting test")
           return false
       end
 
-      cp = history_unadj(getuniverse(), "Close", :Day, startdate = DateTime(startdate), enddate = DateTime(enddate))
-      if cp == nothing
-          Logger.warn_static("Stock Data not available from $(startdate) to $(enddate)")
+      closeprices = history_unadj(getuniverse(), "Close", :Day, startdate = DateTime(startdate), enddate = DateTime(enddate))
+      if closeprices == nothing
+          Logger.warn_static("Close Price Data not available from $(startdate) to $(enddate)")
           Logger.warn_static("Aborting test")
           return false
       end
 
-      vol = history_unadj(getuniverse(), "Volume", :Day, startdate = DateTime(startdate), enddate = DateTime(enddate))
-      
+      openprices = history_unadj(getuniverse(), "Open", :Day, startdate = DateTime(startdate), enddate = DateTime(enddate))
+      if openprices == nothing
+          #Logger.warn_static("Open Price Data not available from $(startdate) to $(enddate)")
+          openprices = closeprices
+      end
+
+      highprices = history_unadj(getuniverse(), "High", :Day, startdate = DateTime(startdate), enddate = DateTime(enddate))
+      if highprices == nothing
+          #Logger.warn_static("High Price Data not available from $(startdate) to $(enddate)")
+          highprices = closeprices
+      end
+
+      lowprices = history_unadj(getuniverse(), "Low", :Day, startdate = DateTime(startdate), enddate = DateTime(enddate))
+      if lowprices == nothing
+          #Logger.warn_static("Low Price Data not available from $(startdate) to $(enddate)")
+          lowprices = closeprices
+      end
+
+      vol = history_unadj(getuniverse(), "Volume", :Day, startdate = DateTime(startdate), enddate = DateTime(enddate))      
       if vol == nothing
           Logger.warn_static("No volume data available for any stock in the universe")
       end
 
       #Join benchmark data with close prices
       #Right join (benchmark data comes from NSE database and excludes the holidays)
-      cp = !isempty(cp) && !isempty(alldata) ? merge(cp, alldata, :right) : cp
+      closeprices = !isempty(closeprices) && !isempty(benchmarkdata) ? merge(closeprices, benchmarkdata, :right) : closeprices
       labels = Dict{String,Float64}()
 
-      bvals = values(cp[benchmark.ticker])
+      bvals = values(closeprices[benchmark.ticker])
 
-      for i = 1:length(cp)
+      for i = 1:length(closeprices)
         val = bvals[i]
 
         j = i-1
@@ -138,21 +155,21 @@ function _run_algo_internal(startdate::Date = getstartdate(), enddate::Date = ge
 
         val = isnan(val) ? 0.0 : val
 
-        labels[string(cp.timestamp[i])] = val
+        labels[string(closeprices.timestamp[i])] = val
       end
 
       # Global data stores
       #Get Adjusted history once for the full universe (from start to end date)
       #THis will be used for any history calls in user algorithm
       allsecurities_includingbenchmark = push!([d.symbol for d in getuniverse()], API.getbenchmark())
-      adjustedprices = history(allsecurities_includingbenchmark, "Close", :Day, startdate = DateTime(startdate), enddate = DateTime(enddate))
+      adjustedcloseprices = history(allsecurities_includingbenchmark, "Close", :Day, startdate = DateTime(startdate), enddate = DateTime(enddate))
 
       #Set benchmark value and Output labels from graphs
       setbenchmarkvalues(labels)
       adjustments = getadjustments(getuniverse(), DateTime(startdate), DateTime(enddate))
 
       #continue with backtest if there are any rows in price data.
-      if !isempty(cp)
+      if !isempty(closeprices)
         outputlabels(labels)
       else
         Logger.error_static("No price data found. Aborting Backtest!!!")
@@ -164,7 +181,7 @@ function _run_algo_internal(startdate::Date = getstartdate(), enddate::Date = ge
       Logger.info_static("Running algorithm for each data")
       success = true
       for date in sort(collect(keys(labels)))
-          success = mainfnc(Date(date), i, cp, vol, adjustments, forward, dynamic = false)
+          success = mainfnc(Date(date), i, openprices, highprices, lowprices, closeprices, vol, adjustments, forward, dynamic = false)
           
           if(!success)
               break
@@ -192,8 +209,10 @@ function _run_algo_internal(startdate::Date = getstartdate(), enddate::Date = ge
 
 end
 
-function mainfnc(date::Date, counter::Int, close, volume, adjustments, forward; dynamic::Bool = true)
+function mainfnc(date::Date, counter::Int, open, high, low, close, volume, adjustments, forward; dynamic::Bool = true)
   
+  currentData = Dict{String, TimeArray}()
+
   setcurrentdate(date)
   if dynamic
     #DYNAMIC doesn't work
@@ -201,34 +220,13 @@ function mainfnc(date::Date, counter::Int, close, volume, adjustments, forward; 
   else
     setcurrentdate(date)
 
-    # check if volume dataframe has same rows as close OR if it has row
-    #nrows_volume = length(volume)
-    #currentvolume = nrows_volume > counter ? volume[date] : DataFrame()
+    currentData["Open"] = __toPricesTA(open, date)
+    currentData["High"] = __toPricesTA(high, date)
+    currentData["Low"] = __toPricesTA(low, date)
+    currentData["Close"] = __toPricesTA(close, date)
+    currentData["Volume"] = __toVolumeTA(volume, date)
 
-    currentvolume = nothing
-    try
-      currentvolume = volume[date]
-    end
-
-    if (currentvolume == nothing)
-      Logger.warn("Volume data is missing")
-      Logger.warn("Assuming default volume of 10mn")
-      names = push!([d.symbol.ticker for d in getuniverse()], API.getbenchmark().ticker)
-      currentvolume = TimeArray([date], 10000000.*ones(1, length(names)), names)
-    end
-
-    currentprices = nothing
-    try
-      currentprices = close[date]
-    end
-
-    if (currentprices == nothing)
-      Logger.warn("Price Data is missing")
-      names = push!([d.symbol.ticker for d in getuniverse()], API.getbenchmark().ticker)
-      currentprices = TimeArray([date], zeros(1, length(names)), names)
-    end
-
-    updatedatastores(date, currentprices, currentvolume, adjustments)
+    updatedatastores(date, currentData, adjustments)
   end
 
   ip = getinvestmentplan()
@@ -265,7 +263,7 @@ function mainfnc(date::Date, counter::Int, close, volume, adjustments, forward; 
 
   try
     #if _checkforrebalance()
-    ondata(currentprices, getstate())
+    ondata(currentData["Close"], getstate())
     #end
   catch err
     handleexception(err, forward)
@@ -285,4 +283,34 @@ function mainfnc(date::Date, counter::Int, close, volume, adjustments, forward; 
   #Internal system checks policy for stocks not in universe
   #If liquidation is set to true, add additional pending orders of liquidation
 
+end
+
+function __toPricesTA(prices, date)
+  currentprices = nothing
+  try
+    currentprices = prices[date]
+  end
+
+  if (currentprices == nothing)
+    #Logger.warn("Price Data is missing")
+    names = push!([d.symbol.ticker for d in getuniverse()], API.getbenchmark().ticker)
+    currentprices = TimeArray([date], zeros(1, length(names)), names)
+  end
+
+  return currentprices
+end
+
+function __toVolumeTA(volume, date)
+  try
+    currentvolume = volume[date]
+  end
+
+  if (currentvolume == nothing)
+    #Logger.warn("Volume data is missing")
+    #Logger.warn("Assuming default volume of 10mn")
+    names = push!([d.symbol.ticker for d in getuniverse()], API.getbenchmark().ticker)
+    currentvolume = TimeArray([date], zeros(1, length(names)), names)
+  end
+
+  return currentvolume
 end

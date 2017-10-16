@@ -37,6 +37,12 @@ function setparticipationrate(participationrate::Float64)
 end
 export setparticipationrate
 
+function setexecutionpolicy(executionpolicy::String)
+    checkforparent([:initialize,:_init])
+    setexecutionpolicy!(algorithm.brokerage, executionpolicy)
+end
+export setexecutionpolicy
+
 
 function _checkforrebalance()
     rebalance = getrebalancefrequency()

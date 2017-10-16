@@ -254,7 +254,7 @@ end
 
 export fetchprices
 
-function updatedatastores(date::Date, prices::TimeArray, volumes::TimeArray, adjustments)
+function updatedatastores(date::Date, ohlcv::Dict{String, TimeArray}, adjustments)
 
     datetime = DateTime(date)
 
@@ -262,44 +262,66 @@ function updatedatastores(date::Date, prices::TimeArray, volumes::TimeArray, adj
     adjs = Dict{SecuritySymbol, Adjustment}()
 
     for security in getuniverse()
+ 
+        openprices = ohlcv["Open"]
+        highprices = ohlcv["High"]
+        lowprices = ohlcv["Low"]
+        closeprices = ohlcv["Close"]
+        volumes = ohlcv["Volume"]
 
-        close = 0.0
-        volume = 10000000
-
-        close_names = colnames(prices)
-        volume_names = colnames(volumes)
+        opennames = colnames(openprices)
+        highnames = colnames(highprices)
+        lownames = colnames(lowprices)
+        closenames = colnames(closeprices)
+        volumenames = colnames(volumes)
+        
         #added try to prevent error in case security is not present
-        #try
+        colname = security.symbol.ticker
 
-            colname = security.symbol.ticker
+        open = __getprices(opennames, openprices, colname)
+        high = __getprices(highnames, highprices, colname)
+        low = __getprices(lownames, lowprices, colname)
+        close = __getprices(closenames, closeprices, colname)
+        
+        volume = __getvolume(volumenames, volumes, colname)
+        
+        #check if price is DataArray NA
+        tradebar =  TradeBar(datetime, open, high, low, close, volume)
 
-            if colname in close_names
-                close = values(prices[colname])[1]
-                close = !isnan(close) ? close : -1.0
+        ss = security.symbol
+        tradebars[ss] = tradebar
+
+        if haskey(adjustments, security.symbol.id)
+            if haskey(adjustments[security.symbol.id], date)
+                adj = adjustments[security.symbol.id][date]
+                adjs[security.symbol] = Adjustment(adj[1], string(adj[3]), adj[2])
             end
+        end
 
-            if colname in volume_names
-                volume = values(volumes[colname])[1]
-                volume = !isnan(volume) ? volume : 0
-            end
-
-            #check if price is DataArray NA
-            tradebar =  TradeBar(datetime, close, close, close, close, volume)
-
-            ss = security.symbol
-            tradebars[ss] = tradebar
-
-            if haskey(adjustments, security.symbol.id)
-                if haskey(adjustments[security.symbol.id], date)
-                    adj = adjustments[security.symbol.id][date]
-                    adjs[security.symbol] = Adjustment(adj[1], string(adj[3]), adj[2])
-                end
-            end
-
-        #end
     end
 
     _updatedatastores(tradebars, adjs)
+end
+
+function __getprices(names, prices, colname)
+    defaultprice = 0.0
+    price = 0.0
+    if colname in names
+        price = values(prices[colname])[1]
+        price = !isnan(price) ? price : defaultprice
+    end
+
+    return price
+end
+
+function __getvolume(names, volumes, colname)
+    defaultvolume = 0
+    volume = 0
+    if colname in names
+        volume = values(volumes[colname])[1]
+        volume = !isnan(volume) ? volume : defaultvolume
+    end
+    return volume
 end
 
 #precompile(updatepricestores, (DateTime, DataFrame))

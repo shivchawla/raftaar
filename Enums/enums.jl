@@ -9,6 +9,11 @@ Definition of CancelPolicy
 @enum CancelPolicy EOD GTC 
 
 """
+Definition of ExecutionPolicy
+"""
+@enum ExecutionPolicy EP_Close EP_Open EP_High EP_Low EP_AverageHighLow EP_AverageAll
+
+"""
 OrderType
 """
 @enum OrderType Limit StopLimit StopMarket MarketOnOpen MarketOnClose Market

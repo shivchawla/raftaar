@@ -3,18 +3,14 @@
 # Email: shiv.chawla@aimsquant.com
 # Organization: AIMSQUANT PVT. LTD.
 
-function processargs(parsed_args::Dict{String,Any}, tmpdir::String)
+function processargs(parsed_args::Dict{String,Any}, dir::String)
   fname = ""
   #Include the strategy code
   if (parsed_args["code"] == nothing)
     fname = parsed_args["file"]
   elseif (parsed_args["file"] == nothing)
 
-    #tf = tempname()
-
-
-    #open(tf, "w") do f
-    (tf, f) = mktemp(tmpdir)
+    (tf, f) = mktemp(dir)
     write(f, "using Raftaar\n")
     write(f, "using TimeSeries\n")
 
@@ -68,6 +64,11 @@ function processargs(parsed_args::Dict{String,Any}, tmpdir::String)
       if (parsed_args["cancelpolicy"] != nothing)
         cancelpolicy = parsed_args["cancelpolicy"]
         setcancelpolicy(cancelpolicy)
+      end
+
+      if (parsed_args["executionpolicy"] != nothing)
+        executionpolicy = parsed_args["executionpolicy"]
+        setexecutionpolicy(executionpolicy)
       end
 
       if (parsed_args["resolution"] != nothing)

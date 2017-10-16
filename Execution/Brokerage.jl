@@ -15,6 +15,7 @@ type BacktestBrokerage
 	margin::Margin
 	slippage::Slippage
 	cancelpolicy::CancelPolicy
+	executionpolicy::ExecutionPolicy
 	participationrate::Float64
 end
 
@@ -22,11 +23,15 @@ end
 Empty brokerage constructor
 """
 BacktestBrokerage() = BacktestBrokerage(Blotter(), Commission(), Margin(),
-							Slippage(), CancelPolicy(EOD), 0.05)
+							Slippage(), CancelPolicy(EOD), ExecutionPolicy(EP_Close), 0.05)
 
-BacktestBrokerage(data::Dict{String, Any}) = BacktestBrokerage(Blotter(data["blotter"]), Commission(data["commission"]),
-												Margin(data["margin"]), Slippage(data["slippage"]),
-												eval(parse(data["cancelpolicy"])), data["participationrate"])
+BacktestBrokerage(data::Dict{String, Any}) = BacktestBrokerage(Blotter(data["blotter"]), 
+												Commission(data["commission"]),
+												Margin(data["margin"]), 
+												Slippage(data["slippage"]),
+												eval(parse(data["cancelpolicy"])),
+												haskey(data, "executionpolicy") ? eval(parse(data["executionpolicy"])) : ExecutionPolicy(EP_Close),
+												data["participationrate"])
 
 """
 Function to set commission model
@@ -79,6 +84,17 @@ Function to set participationrate
 """
 function setparticipationrate!(brokerage::BacktestBrokerage, participationrate::Float64)
 	brokerage.participationrate = participationrate
+end
+
+"""
+Function to set execution policy
+"""
+function setexecutionpolicy!(brokerage::BacktestBrokerage, executionpolicy::String)
+	brokerage.executionpolicy = ExecutionPolicy(eval(parse("EP_"*executionpolicy)))
+end
+
+function setexecutionpolicy!(brokerage::BacktestBrokerage, executionpolicy::ExecutionPolicy)
+	brokerage.executionpolicy = executionpolicy
 end
 
 """
@@ -192,8 +208,8 @@ function updatependingorders!(brokerage::BacktestBrokerage, universe::Universe, 
 		latesttradebar = getlatesttradebar(universe, order.securitysymbol)
 
 
-		# Get fill based on size or order and latest price
-		fill = getorderfill(order, brokerage.slippage, brokerage.commission, 
+		# Get fill based on size of order/latest tradebar/execution policy
+		fill = getorderfill(order, brokerage.slippage, brokerage.commission, brokerage.executionpolicy, 
 							brokerage.participationrate, latesttradebar)
 
 		#Append fill with other fills
@@ -309,12 +325,14 @@ function serialize(brokerage::BacktestBrokerage)
                             "margin"            => serialize(brokerage.margin),
                             "slippage"          => serialize(brokerage.slippage),
                             "cancelpolicy"      => string(brokerage.cancelpolicy),
+                            "executionpolicy"   => string(brokerage.executionpolicy),
                             "participationrate" => brokerage.participationrate)
 end
 
 ==(bk1::BacktestBrokerage, bk2::BacktestBrokerage) = bk1.blotter == bk2.blotter &&
-																											bk1.commission == bk2.commission &&
-																											bk1.margin == bk2.margin &&
-																											bk1.slippage == bk2.slippage &&
-																											bk1.cancelpolicy == bk2.cancelpolicy &&
-																											bk1.participationrate == bk2.participationrate
+											bk1.commission == bk2.commission &&
+											bk1.margin == bk2.margin &&
+											bk1.slippage == bk2.slippage &&
+											bk1.cancelpolicy == bk2.cancelpolicy &&
+											bk1.executionpolicy == bk2.executionpolicy &&
+											bk1.participationrate == bk2.participationrate
