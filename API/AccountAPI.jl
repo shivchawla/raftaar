@@ -4,19 +4,17 @@ import Raftaar: getposition, getallpositions
 Functions to expose Account and Portfolio API
 """
 function setcash(cash::Float64)
-    checkforparent([:initialize,:_init])
+    __IllegalContextMessage(:setcash, :ondata)
     setcash!(algorithm, cash)
 end
 export setcash
 
 function addcash(cash::Float64)
-    checkforparent([:initialize,:_init])
     addcash!(algorithm, cash)
 end
 export addcash
 
 function getposition(ticker::String)
-    
     getposition(algorithm.state.account, ticker)
 end
 export getposition

@@ -2,47 +2,46 @@
 Functions to expose brokerage API
 """ 
 function setcancelpolicy(cancelpolicy::CancelPolicy)
-    checkforparent([:initialize,:_init])
+    __IllegalContextMessage(:setcancelpolicy, :ondata)
     setcancelpolicy!(algorithm.brokerage, CancelPolicy(EOD))
 end
 
 function setcancelpolicy(cancelpolicy::String)
-    checkforparent([:initialize,:_init])
+    __IllegalContextMessage(:setcancelpolicy, :ondata)
     setcancelpolicy!(algorithm.brokerage, cancelpolicy)
 end
 
 function setcommission(commission::Tuple{String, Float64})
-    checkforparent([:initialize,:_init])
+    __IllegalContextMessage(:setcommission, :ondata)
     setcommission!(algorithm.brokerage, commission)
 end
 
 function setcommission(commission::Commission)
-    checkforparent([:initialize,:_init])
+    __IllegalContextMessage(:setcommission, :ondata)
     setcommission!(algorithm.brokerage, commission)
 end
 
 function setslippage(slippage::Slippage)
-    checkforparent([:initialize,:_init])
+    __IllegalContextMessage(:setslippage, :ondata)
     setslippage!(algorithm.brokerage, slippage)
 end
 
 function setslippage(slippage::Tuple{String, Float64})
-    checkforparent([:initialize,:_init])
+    __IllegalContextMessage(:setslippage, :ondata)
     setslippage!(algorithm.brokerage, slippage)
 end
 
 function setparticipationrate(participationrate::Float64)
-    checkforparent([:initialize,:_init])
+    __IllegalContextMessage(:setparticipationrate, :ondata)
     setparticipationrate!(algorithm.brokerage, participationrate)
 end
 export setparticipationrate
 
 function setexecutionpolicy(executionpolicy::String)
-    checkforparent([:initialize,:_init])
+    __IllegalContextMessage(:setexecutionpolicy, :ondata)
     setexecutionpolicy!(algorithm.brokerage, executionpolicy)
 end
 export setexecutionpolicy
-
 
 function _checkforrebalance()
     rebalance = getrebalancefrequency()
@@ -62,12 +61,11 @@ function _checkforrebalance()
     
 end
 
-
 function placeorder(ticker::String, quantity::Int64)
     if !_checkforrebalance()
         return
     end
-    checkforparent([:ondata, :beforeclose])
+    __IllegalContextMessage(:placeorder, :initialize)
     placeorder(getsecurity(ticker), quantity)
 end 
 
@@ -75,7 +73,7 @@ function placeorder(secid::Int, quantity::Int64)
     if !_checkforrebalance()
         return
     end
-    checkforparent([:ondata, :beforeclose])
+    __IllegalContextMessage(:placeorder, :initialize)
     placeorder(getsecurity(secid), quantity)
 end 
 
@@ -83,7 +81,7 @@ function placeorder(security::Security, quantity::Int64)
     if !_checkforrebalance()
         return
     end
-    checkforparent([:ondata, :beforeclose])
+    __IllegalContextMessage(:placeorder, :initialize)
     placeorder(security.symbol, quantity)
 end 
 
@@ -92,7 +90,7 @@ function placeorder(symbol::SecuritySymbol, quantity::Int64)
     if !_checkforrebalance()
         return
     end
-    checkforparent([:ondata, :beforeclose]) 
+    __IllegalContextMessage(:placeorder, :initialize)
     placeorder(Order(symbol, quantity))  
     
 end
@@ -101,7 +99,7 @@ function placeorder(order::Order)
     if !_checkforrebalance()
         return
     end
-    checkforparent([:ondata, :beforeclose])
+    __IllegalContextMessage(:placeorder, :initialize)
     if(order.quantity == 0)
         Logger.warn("Can't place order with 0 quantity for $(order.securitysymbol.ticker)")
         return
@@ -126,34 +124,34 @@ end
 export placeorder
 
 function liquidate(ticker::String)
-    checkforparent([:ondata, :beforeclose])
+    __IllegalContextMessage(:liquidate, :initialize)
     setholdingshares(ticker, 0)  
 end
 
 function liquidate(secid::Int)
-    checkforparent([:ondata, :beforeclose])
+    __IllegalContextMessage(:liquidate, :initialize)
     setholdingshares(secid, 0)  
 end
 
 function liquidate(symbol::SecuritySymbol)
-    checkforparent([:ondata, :beforeclose])
+    __IllegalContextMessage(:liquidate, :initialize)
     setholdingshares(symbol, 0)  
 end
 
 function liquidate(security::Security)
-    checkforparent([:ondata, :beforeclose])
+    __IllegalContextMessage(:liquidate, :initialize)
     setholdingshares(security, 0)  
 end
 
 function liquidate(pos::Position)
-    checkforparent([:ondata, :beforeclose])
+    __IllegalContextMessage(:liquidate, :initialize)
     setholdingshares(pos.securitysymbol, 0)  
 end
 
 export liquidate
 
 function liquidateportfolio()
-    checkforparent([:ondata, :beforeclose])
+    __IllegalContextMessage(:liquidate, :initialize)
     for pos in getallpositions(algorithm.account.portfolio)
         liquidate(pos)
     end
@@ -166,7 +164,7 @@ function setholdingpct(ticker::String, target::Float64)
     if !_checkforrebalance()
         return
     end
-    checkforparent([:ondata, :beforeclose])
+    __IllegalContextMessage(:setholdingpct, :initialize)
     setholdingpct(getsecurity(ticker), target)
 end
 
@@ -174,7 +172,7 @@ function setholdingpct(secid::Int, target::Float64)
     if !_checkforrebalance()
         return
     end
-    checkforparent([:ondata, :beforeclose])
+    __IllegalContextMessage(:setholdingpct, :initialize)
     setholdingpct(getsecurity(secid), target)
 end
 
@@ -183,7 +181,7 @@ function setholdingpct(security::Security, target::Float64)
     if !_checkforrebalance()
         return
     end
-    checkforparent([:ondata, :beforeclose])
+    __IllegalContextMessage(:setholdingpct, :initialize)
     setholdingpct(security.symbol, target)
 end
 
@@ -191,7 +189,7 @@ function setholdingpct(symbol::SecuritySymbol, target::Float64)
     if !_checkforrebalance()
         return
     end
-    checkforparent([:ondata, :beforeclose])
+    __IllegalContextMessage(:setholdingpct, :initialize)
     
     if !ispartofuniverse(symbol)
         adduniverse(symbol)
@@ -238,7 +236,7 @@ function setholdingvalue(secid::Int, target::Float64)
     if !_checkforrebalance()
         return
     end
-    checkforparent([:ondata, :beforeclose])
+    __IllegalContextMessage(:setholdingvalue, :initialize)
     setholdingvalue(getsecurity(secid), target)
 end
 
@@ -246,7 +244,7 @@ function setholdingvalue(ticker::String, target::Float64)
     if !_checkforrebalance()
         return
     end
-    checkforparent([:ondata, :beforeclose])
+    __IllegalContextMessage(:setholdingvalue, :initialize)
     setholdingvalue(getsecurity(ticker), target)
 end
 
@@ -254,7 +252,7 @@ function setholdingvalue(security::Security, target::Float64)
     if !_checkforrebalance()
         return
     end
-    checkforparent([:ondata, :beforeclose])
+    __IllegalContextMessage(:setholdingvalue, :initialize)
     setholdingvalue(security.symbol, target)
 end
 
@@ -262,7 +260,7 @@ function setholdingvalue(symbol::SecuritySymbol, target::Float64)
     if !_checkforrebalance()
         return
     end
-    checkforparent([:ondata, :beforeclose])
+    __IllegalContextMessage(:setholdingvalue, :initialize)
     
     if !ispartofuniverse(symbol)
         adduniverse(symbol)
@@ -309,7 +307,7 @@ function setholdingshares(secid::Int, target::Int64)
     if !_checkforrebalance()
         return
     end
-    checkforparent([:ondata, :beforeclose])
+    __IllegalContextMessage(:setholdingshares, :initialize)
     setholdingshares(getsecurity(secid), target)
 end
 
@@ -317,23 +315,25 @@ function setholdingshares(ticker::String, target::Int64)
     if !_checkforrebalance()
         return
     end
-    checkforparent([:ondata, :beforeclose])
+    __IllegalContextMessage(:setholdingshares, :initialize)
     setholdingshares(getsecurity(ticker), target)
 end
 
 function setholdingshares(security::Security, target::Int64)
+    __IllegalContextMessage(:setholdingshares, :initialize)
+
     if !_checkforrebalance()
         return
     end
-    checkforparent([:ondata, :beforeclose])
     setholdingshares(security.symbol, target)
 end
 
 function setholdingshares(symbol::SecuritySymbol, target::Int64)
+    __IllegalContextMessage(:setholdingshares, :initialize)
+
     if !_checkforrebalance()
         return
     end
-    checkforparent([:ondata, :beforeclose])
     
     if !ispartofuniverse(symbol)
         adduniverse(symbol)
@@ -376,59 +376,59 @@ function hedgeportfolio()
 end
 
 function getopenorders(ticker::String)
-    checkforparent([:ondata, :beforeclose])
+    __IllegalContextMessage(:getopenorders, :initialize)
     deepcopy(getopenorders(algorithm.brokerage, getsecurity(ticker).symbol))
 end
 
 function getopenorders(secid::Int)
-    checkforparent([:ondata, :beforeclose])
+    __IllegalContextMessage(:getopenorders, :initialize)
     deepcopy(getopenorders(algorithm.brokerage, getsecurity(secid).symbol))
 end
 
 function getopenorders(symbol::SecuritySymbol)
-    checkforparent([:ondata, :beforeclose])
+    __IllegalContextMessage(:getopenorders, :initialize)
     deepcopy(getopenorders(algorithm.brokerage, symbol))
 end
 
 function getopenorders(security::Security)
-    checkforparent([:ondata, :beforeclose])
+    __IllegalContextMessage(:getopenorders, :initialize)
     deepcopy(getopenorders(algorithm.brokerage, security.symbol))
 end
 
 function getopenorders()
-    checkforparent([:ondata, :beforeclose])
+    __IllegalContextMessage(:getopenorders, :initialize)
     deepcopy(getopenorders(algorithm.brokerage))
 end
 export getopenorders
 
 function cancelopenorders(ticker::String)
-    checkforparent([:ondata, :beforeclose])
+    __IllegalContextMessage(:cancelopenorders, :initialize)
     security = getsecurity(ticker)
     info("Canceling all orders for $(security.symbol.id)/$(security.symbol.ticker)")
     cancelallorders!(algorithm.brokerage, security.symbol)
 end
 
 function cancelopenorders(secid::Int)
-    checkforparent([:ondata, :beforeclose])
+    __IllegalContextMessage(:cancelopenorders, :initialize)
     security = getsecurity(secid)
     info("Canceling all orders for $(security.symbol.id)/$(security.symbol.ticker)")
     cancelallorders!(algorithm.brokerage, security.symbol)
 end
     
 function cancelopenorders(security::Security)
-    checkforparent([:ondata, :beforeclose])
+    __IllegalContextMessage(:cancelopenorders, :initialize)
     info("Canceling all orders for $(security.symbol.id)/$(security.symbol.ticker)")
     cancelallorders!(algorithm.brokerage, security.symbol)
 end
 
 function cancelopenorders(symbol::SecuritySymbol)
-    checkforparent([:ondata, :beforeclose])
+    __IllegalContextMessage(:cancelopenorders, :initialize)
     info("Canceling all orders for $(symbol.id)/$(symbol.ticker)")
     cancelallorders!(algorithm.brokerage, symbol)
 end
 
 function cancelopenorders()
-    checkforparent([:ondata, :beforeclose])
+    __IllegalContextMessage(:cancelopenorders, :initialize)
     info("Canceling all orders")
     cancelallorders!(algorithm.brokerage)    
 end

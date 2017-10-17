@@ -2,12 +2,12 @@
 Functions to expose trading environment API
 """
 function setresolution(resolution::Resolution)
-    checkforparent(:initialize)
+    __IllegalContextMessage(:setresolution, :ondata)
     setresolution!(algorithm.tradeenv, resolution)
 end
 
 function setresolution(resolution::String)
-    checkforparent([:initialize,:_init])
+    __IllegalContextMessage(:setresolution, :ondata)
     setresolution!(algorithm.tradeenv, resolution)
 end
 
@@ -17,7 +17,8 @@ wasRunStartDateFound = false
 wasRunEndDateFound = false
 
 function setstartdate(date::Date; forward_with_serialize_data = false)
-    checkforparent([:initialize,:_init])
+    __IllegalContextMessage(:setstartdate, :ondata)
+
     if forward_with_serialize_data
         global runStartDate = date
         global wasRunStartDateFound = true
@@ -27,16 +28,18 @@ function setstartdate(date::Date; forward_with_serialize_data = false)
 end
 
 function setstartdate(dt::DateTime; forward_with_serialize_data = false)
+    __IllegalContextMessage(:setstartdate, :ondata)
     setstartdate(Date(dt), forward_with_serialize_data = forward_with_serialize_data)
 end
 
 function setstartdate(date::String; format="yyyy-mm-dd", forward_with_serialize_data = false)
+    __IllegalContextMessage(:setstartdate, :ondata)
     setstartdate(Date(date, format), forward_with_serialize_data = forward_with_serialize_data)
 end
 export setstartdate
 
 function setenddate(date::Date; forward_with_serialize_data = false)
-    checkforparent([:initialize,:_init])
+    __IllegalContextMessage(:setenddate, :ondata)
     if forward_with_serialize_data
         global runEndDate = date
         global wasRunEndDateFound = true
@@ -46,10 +49,12 @@ function setenddate(date::Date; forward_with_serialize_data = false)
 end
 
 function setenddate(dt::DateTime; forward_with_serialize_data = false)
-  setenddate(Date(dt), forward_with_serialize_data = forward_with_serialize_data)
+    __IllegalContextMessage(:setenddate, :ondata)
+    setenddate(Date(dt), forward_with_serialize_data = forward_with_serialize_data)
 end
 
 function setenddate(date::String; format="yyyy-mm-dd", forward_with_serialize_data = false)
+    __IllegalContextMessage(:setenddate, :ondata)
     setenddate(Date(date, format), forward_with_serialize_data = forward_with_serialize_data)
 end
 export setenddate
@@ -71,24 +76,29 @@ end
 export setcurrentdatetime
 
 function setinvestmentplan(plan::String)
+    __IllegalContextMessage(:setinvestmentplan, :ondata)
+    setinvestmentplan!(algorithm.tradeenv, plan)
+end
+
+function setinvestmentplan(plan::InvestmentPlan)
+    __IllegalContextMessage(:setinvestmentplan, :ondata)
     setinvestmentplan!(algorithm.tradeenv, plan)
 end
 
 function setrebalance(rebalance::String)
+    __IllegalContextMessage(:setrebalance, :ondata)
     setrebalance!(algorithm.tradeenv, rebalance)
 end
 
-function setinvestmentplan(plan::InvestmentPlan)
-    setinvestmentplan!(algorithm.tradeenv, plan)
-end
-
 function setrebalance(rebalance::Rebalance)
+    __IllegalContextMessage(:setrebalance, :ondata)
     setrebalance!(algorithm.tradeenv, rebalance)
 end
 
 export setrebalance, setinvestmentplan
 
 function setbenchmarkvalues(prices::Dict{String, Float64})
+    __IllegalContextMessage(:setbenchmarkvalues, :ondata)
     setbenchmarkvalues!(algorithm.tradeenv, prices)
 end
 export setbenchmarkvalues

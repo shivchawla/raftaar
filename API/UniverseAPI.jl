@@ -27,8 +27,7 @@ end
 function adduniverse(ticker::String;
                         securitytype::String="EQ",
                         exchange::String="NSE")
-    
-    checkforparent([:ondata,:beforeopen,:initialize,:_init])  
+      
     security = getsecurity(ticker, securitytype=securitytype, exchange=exchange)
     adduniverse!(algorithm.universe, security)
 end
@@ -37,8 +36,6 @@ end
 function adduniverse(tickers::Vector{String};
                         securitytype::String="EQ",
                         exchange::String="NSE")
-
-    checkforparent([:ondata,:beforeopen,:initialize,:_init])  
     for ticker in tickers
         adduniverse(ticker, securitytype = securitytype, exchange = exchange)
     end
@@ -50,7 +47,6 @@ end
 
 function adduniverse(secids::Vector{Int})
 
-    checkforparent([:ondata,:beforeopen,:initialize,:_init])  
     for secid in secids
         adduniverse(secid)
     end
@@ -62,7 +58,6 @@ end
 
 function adduniverse(symbols::Vector{SecuritySymbol})
 
-    checkforparent([:ondata,:beforeopen,:initialize,:_init])  
     for symbol in symbols
         adduniverse(symbol)
     end
@@ -74,7 +69,6 @@ end
 
 function adduniverse(securities::Vector{Security})
 
-    checkforparent([:ondata,:beforeopen,:initialize,:_init])  
     for security in securities
         adduniverse(security)
     end
@@ -87,8 +81,6 @@ function setuniverse(ticker::String;
                         securitytype::String="EQ",
                         exchange::String="NSE")
     
-    checkforparent([:ondata,:beforeopen,:initialize,:_init])  
-   
     # Get security id for the ticker before adding to the Raftaar
     security = getsecurity(ticker, securitytype=securitytype, exchange=exchange)
     setuniverse!(algorithm.universe, security)
@@ -99,7 +91,6 @@ function setuniverse(tickers::Vector{String};
                         securitytype::String="EQ",
                         exchange::String="NSE")
 
-    checkforparent([:ondata,:beforeopen,:initialize,:_init])  
     securities = Vector{Security}()
     inuniverse = Dict{String, Bool}()
 
@@ -124,7 +115,6 @@ end
 
 function setuniverse(secids::Vector{Int})
 
-    checkforparent([:ondata,:beforeopen,:initialize,:_init])  
     securities = Vector{Security}()
     inuniverse = Dict{Int, Bool}()
 

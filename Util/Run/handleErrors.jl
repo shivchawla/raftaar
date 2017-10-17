@@ -43,9 +43,9 @@ function handleexception(err::Any, forward=false)
                 end
             end
 
-            if found_in_stack
+            #=if found_in_stack
                 stack_msg*="\n\n$err"
-            end
+            end=#
         end
     end
 

@@ -254,8 +254,6 @@ function outputbacktestlogs(algorithm::Algorithm)
                     "detail" => false,
                     "logs" => Logger.getlogbook())
     
-    println(outputdict)
-
     Logger.print(JSON.json(outputdict))
 end
 export outputbacktestlogs

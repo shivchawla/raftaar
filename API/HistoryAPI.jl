@@ -243,7 +243,9 @@ function history(securities::Vector{Security},
                     datatype::String,
                     frequency::Symbol,
                     horizon::Int; enddate::DateTime = getcurrentdatetime())
-    checkforparent([:ondata])
+    
+    __IllegalContextMessage(:history, :initalize)
+
     ids = Vector{Int}(length(securities))
 
     for i = 1:length(ids)
@@ -258,7 +260,7 @@ function history(symbols::Vector{SecuritySymbol},
                     frequency::Symbol,
                     horizon::Int; enddate::DateTime = getcurrentdatetime())
     
-    checkforparent([:ondata])
+    __IllegalContextMessage(:history, :initalize)
     ids = Vector{Int}(length(symbols))
 
     for i = 1:length(ids)
@@ -272,7 +274,8 @@ function history(secids::Array{Int,1},
                     datatype::String,
                     frequency::Symbol,
                     horizon::Int; enddate::DateTime = getcurrentdatetime()) 
-    
+    __IllegalContextMessage(:history, :initalize)
+
     tickers = [getsecurity(secid).symbol.ticker for secid in secids]
     history(tickers, datatype, frequency, horizon, enddate = enddate)  
 
@@ -287,6 +290,8 @@ function history(tickers::Array{String,1},
                     securitytype::String="EQ",
                     exchange::String="NSE",
                     country::String="IN")
+    
+    __IllegalContextMessage(:history, :initalize)
 
     SIZE = 50
 
@@ -294,7 +299,6 @@ function history(tickers::Array{String,1},
         info("""Only ":Day" frequency supported in history()""")
         exit()
     end
-    checkforparent([:ondata, :_init])
 
     if enddate == DateTime()
         enddate = getcurrentdatetime()
@@ -341,6 +345,8 @@ function history(securities::Vector{Security},
                     exchange::String="NSE",
                     country::String="IN") 
     
+    __IllegalContextMessage(:history, :initalize)
+
     ids = Vector{Int}(length(securities))
     for i = 1:length(securities)
         ids[i] = securities[i].symbol.id
@@ -364,6 +370,8 @@ function history(symbols::Vector{SecuritySymbol},
                     exchange::String="NSE",
                     country::String="IN") 
     
+    __IllegalContextMessage(:history, :initalize)
+
     ids = Vector{Int}(length(symbols))
     for i = 1:length(symbols)
         ids[i] = symbols[i].id
@@ -387,6 +395,8 @@ function history(secids::Vector{Int},
                     exchange::String="NSE",
                     country::String="IN") 
     
+    __IllegalContextMessage(:history, :initalize)
+
     tickers = [getsecurity(secid).symbol.ticker for secid in secids]
     
     history(tickers, datatype, frequency, 
@@ -406,9 +416,10 @@ function history(tickers::Vector{String},
                     securitytype::String="EQ",
                     exchange::String="NSE",
                     country::String="IN") 
-    
-    SIZE = 50
 
+    __IllegalContextMessage(:history, :initalize)
+
+    SIZE = 50
     tickers = length(tickers) > SIZE ? tickers[1:50] : tickers
 
     ta = findinglobalstores(tickers, datatype, frequency, startdate,  enddate,
@@ -452,6 +463,8 @@ function history_unadj(securities::Vector{Security},
                         exchange::String="NSE",
                         country::String="IN") 
     
+    __IllegalContextMessage(:history_unadj, :initalize)
+
     ids = Vector{Int}(length(securities))
     for i = 1:length(securities)
         ids[i] = securities[i].symbol.id
@@ -475,6 +488,8 @@ function history_unadj(symbols::Vector{SecuritySymbol},
                         exchange::String="NSE",
                         country::String="IN") 
     
+    __IllegalContextMessage(:history_unadj, :initalize)
+
     ids = Vector{Int}(length(symbols))
     for i = 1:length(symbols)
         ids[i] = symbols[i].id
@@ -497,8 +512,9 @@ function history_unadj(tickers::Vector{String},
                         exchange::String="NSE",
                         country::String="IN") 
     
-    SIZE = 50
+    __IllegalContextMessage(:history_unadj, :initalize)
 
+    SIZE = 50
     tickers = length(tickers) > SIZE ? tickers[1:50] : tickers
     ta = findinglobalstores(tickers, "Unadj_"*datatype, frequency, 
                                 startdate, enddate,
@@ -538,9 +554,10 @@ function history_unadj(secids::Vector{Int},
                         securitytype::String="EQ",
                         exchange::String="NSE",
                         country::String="IN") 
+    
+    __IllegalContextMessage(:history_unadj, :initalize)
 
     tickers = [getsecurity(secid).symbol.ticker for secid in secids]
-
     history_unadj(tickers, datatype, frequency, 
                     startdate = startdate,
                     enddate = enddate,

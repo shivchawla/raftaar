@@ -31,6 +31,12 @@ function setlogmode(style::Symbol, print::Symbol, save::Bool, client::WebSocket)
 end
 export setlogmode
 
+function __IllegalContextMessage(func::Symbol, context::Symbol)
+    if hasparent(context)
+        Base.error("Can't call $func from the context of $context")
+    end
+end
+
 include("TradingEnvAPI.jl")
 include("HistoryAPI.jl")
 include("AccountAPI.jl")
