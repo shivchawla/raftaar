@@ -4,7 +4,8 @@
 # Invest in bottom (least performing) 5 stocks of NIFTY based on
 # last 22 days return
 ##################
-using Raftaar
+using UtilityAPI
+
 # Intialize the strategy with various settings and/or parameters
 function initialize(state)
 	
@@ -38,23 +39,19 @@ end
 # every DAY/WEEK/MONTH (depends on rebalance frequency)
 # Default rebalance Frequency: Daily
 function ondata(data, state)
+
 	# Get Universe
 	universe = getuniverse()
-	# Fetch prices for last 22 days
-	prices = dropnan(history(universe, "Close", :Day, 22), :any)
-	# Logic to calculate returns over last month
-	# Output: TimeArray
-	# http://timeseriesjl.readthedocs.io/en/latest/
-	logpricesdiff = diff(log.(prices))
 	
-	returnsTA = basecall(logpricesdiff, cumsum)[end]
-
-	# Create vector with two columns (Name and Returns) 
-	rets = [colnames(prices) vec(values(returnsTA))]
-
+	#println("Fetching Prices")
+	returnsTA = UtilityAPI.price_returns(universe, "Close", :Day, window = 22, total=true)
+	
+	#Create vector with two columns (Name and Returns) 
+	rets = [colnames(returnsTA) vec(values(returnsTA))]
+	
 	# Sorted returns
-	sortedrets = sortrows(rets, by=x->(x[2]))
-	info(string(sortedrets))
+	sortedrets = sortrows(rets, by=x->(-x[2]))
+	#info(string(sortedrets))
 	
 	# Get 5 names with lowest retursn
 	topnames = sortedrets[1:5]
@@ -67,7 +64,8 @@ function ondata(data, state)
 			setholdingpct(stock, 0.0)
 		end
 	end
-	info("$(length(topnames))")
+	
+	#info("$(length(topnames))")
 	# Create momemtum portfolio
 	for (i,stock) in enumerate(topnames)
 		setholdingpct(stock, 1.0/length(topnames)) # -0.2)#(6-i)*(1.0/15.0))
