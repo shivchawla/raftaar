@@ -219,8 +219,11 @@ function setholdingpct(symbol::SecuritySymbol, target::Float64)
 
     openqty = 0
 
-    for order in getopenorders(symbol)
-        openqty += order.quantity
+    orders = getopenorders(algorithm.brokerage, symbol)
+    if length(orders) > 0
+        for order in orders
+            openqty += order.quantity
+        end
     end
     netroundedshares = roundedshares - openqty
 
@@ -371,6 +374,48 @@ function setholdingshares(symbol::SecuritySymbol, target::Int64)
 
 end
 export setholdingshares
+
+
+function targetportfolio(port::Dict{String, Float64})
+    targetportfolio([(getsecurity(k).symbol.id, v) for (k,v) in port])
+end
+
+function targetportfolio(port::Dict{Int64, Float64})
+    targetportfolio([(k, v) for (k,v) in port])
+end
+
+function targetportfolio(port::Dict{SecuritySymbol, Float64})
+    targetportfolio([(k.id, v) for (k,v) in port])
+end
+
+function targetportfolio(port::Vector{Tuple{String, Float64}})
+    targetportfolio([(getsecurity(v[1]).symbol.id, v[2]) for v in port])
+end
+
+function targetportfolio(port::Vector{Tuple{SecuritySymbol, Float64}})
+    targetportfolio([(v[1].id, v[2]) for v in port])
+end
+
+function targetportfolio(port::Vector{Tuple{Security, Float64}})
+    targetportfolio([(v[1].symbol.id, v[2]) for v in port])
+end
+
+function targetportfolio(port::Vector{Tuple{Int64, Float64}})
+    currentpositionids = [pos.securitysymbol.id for pos in getallpositions()]
+
+    expectedpositionsids = [v[1] for v in port]
+
+    diffs = setdiff(currentpositionids, expectedpositionsids)
+
+    for id in diffs
+        setholdingpct(id, 0.0)
+    end
+
+    @sync @parallel for v in port
+        setholdingpct(v[1], v[2])
+    end
+end
+export targetportfolio
 
 function hedgeportfolio()
 end

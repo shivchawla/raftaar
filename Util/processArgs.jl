@@ -11,9 +11,7 @@ function processargs(parsed_args::Dict{String,Any}, dir::String)
   elseif (parsed_args["file"] == nothing)
 
     (tf, f) = mktemp(dir)
-    write(f, "using Raftaar\n")
-    write(f, "using TimeSeries\n")
-
+  
     #replace Base. with empty String
     #disallow explicit use of Base. module
     write(f, replace(parsed_args["code"], "Base.", ""))

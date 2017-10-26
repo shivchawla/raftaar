@@ -68,10 +68,6 @@ function getallpositions(portfolio::Portfolio)
   values(portfolio.positions)
 end
 
-function getposition(portfolio::Portfolio, security::Security)
-  return getposition(portfolio, security.symbol)
-end
-
 function getposition(portfolio::Portfolio, ss::SecuritySymbol)
   return portfolio[ss]
 end

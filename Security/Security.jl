@@ -3,8 +3,7 @@
 # Email: shiv.chawla@aimsquant.com
 # Organization: AIMSQUANT PVT. LTD.
 
-import Base: ==
-import Base.convert
+import Base: ==, convert, hash
 
 """
 Combination of stock ticker and integer id
@@ -42,7 +41,7 @@ empty(symbol::SecuritySymbol) = (symbol.id==0 && symbol.ticker=="")
 # Let's check only the symbol ids (and not tickers) because the ids are unique.
 # ==(symbol_one::SecuritySymbol, symbol_two::SecuritySymbol) = symbol_one.id == symbol_two.id && symbol_one.ticker == symbol_two.ticker
 ==(symbol_one::SecuritySymbol, symbol_two::SecuritySymbol) = symbol_one.id == symbol_two.id
-Base.hash(symbol::SecuritySymbol, h::UInt) = hash(symbol.id, h)
+hash(symbol::SecuritySymbol, h::UInt) = Base.hash(symbol.id)
 
 
 """

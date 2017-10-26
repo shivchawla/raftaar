@@ -73,7 +73,7 @@ function setcurrentdate(date::Date)
     setcurrentdate!(algorithm.tradeenv, date)
     Logger.updateclock(DateTime(date))
 end
-export setcurrentdatetime
+#export setcurrentdate
 
 function setinvestmentplan(plan::String)
     __IllegalContextMessage(:setinvestmentplan, :ondata)

@@ -3,10 +3,6 @@
 # Email: shiv.chawla@aimsquant.com
 # Organization: AIMSQUANT PVT. LTD.
 
-using DataFrames
-using TimeSeries
-using Logger
-
 function run_algo(forward_test::Bool = false)
 
   Logger.info_static("Running User algorithm")
@@ -25,7 +21,9 @@ function run_algo(forward_test::Bool = false)
       
       println("Initializing")
       try
+        API.setparent(:initialize)
         initialize(getstate())
+        API.setparent(:all)
       catch err
         handleexception(err, forward_test)
         return
@@ -70,7 +68,9 @@ function run_algo(forward_test::Bool = false)
 
       try
         Logger.info_static("Initializing user algorithm")
+        API.setparent(:initialize)
         initialize(getstate())
+        API.setparent(:all)
       catch err
         handleexception(err, forward_test)
         return
@@ -96,9 +96,12 @@ function _run_algo_internal(startdate::Date = getstartdate(), enddate::Date = ge
 
       #Set strict policy to FALSE for benchmark
       YRead.setstrict(false)
-      benchmarkdata = history([benchmark], "Close", :Day, startdate = DateTime(startdate), enddate = DateTime(enddate))
+      benchmarkdata = YRead.history([benchmark.id], "Close", :Day, DateTime(startdate), DateTime(enddate))
       #undo strict policy for rest of the universe
       YRead.setstrict(true)
+
+      # Get all ids for stocks in universe 
+      universeIds = [security.symbol.id  for security in getuniverse()]
 
       if benchmarkdata == nothing
           Logger.warn_static("Benchmark data not available from $(startdate) to $(enddate)")
@@ -106,32 +109,32 @@ function _run_algo_internal(startdate::Date = getstartdate(), enddate::Date = ge
           return false
       end
 
-      closeprices = history_unadj(getuniverse(), "Close", :Day, startdate = DateTime(startdate), enddate = DateTime(enddate))
+      closeprices = YRead.history_unadj(universeIds, "Close", :Day, DateTime(startdate), DateTime(enddate))
       if closeprices == nothing
           Logger.warn_static("Close Price Data not available from $(startdate) to $(enddate)")
           Logger.warn_static("Aborting test")
           return false
       end
 
-      openprices = history_unadj(getuniverse(), "Open", :Day, startdate = DateTime(startdate), enddate = DateTime(enddate))
+      openprices = YRead.history_unadj(universeIds, "Open", :Day, DateTime(startdate), DateTime(enddate))
       if openprices == nothing
           #Logger.warn_static("Open Price Data not available from $(startdate) to $(enddate)")
           openprices = closeprices
       end
 
-      highprices = history_unadj(getuniverse(), "High", :Day, startdate = DateTime(startdate), enddate = DateTime(enddate))
+      highprices = YRead.history_unadj(universeIds, "High", :Day, DateTime(startdate), DateTime(enddate))
       if highprices == nothing
           #Logger.warn_static("High Price Data not available from $(startdate) to $(enddate)")
           highprices = closeprices
       end
 
-      lowprices = history_unadj(getuniverse(), "Low", :Day, startdate = DateTime(startdate), enddate = DateTime(enddate))
+      lowprices = YRead.history_unadj(universeIds, "Low", :Day, DateTime(startdate), DateTime(enddate))
       if lowprices == nothing
           #Logger.warn_static("Low Price Data not available from $(startdate) to $(enddate)")
           lowprices = closeprices
       end
 
-      vol = history_unadj(getuniverse(), "Volume", :Day, startdate = DateTime(startdate), enddate = DateTime(enddate))      
+      vol = YRead.history_unadj(universeIds, "Volume", :Day, DateTime(startdate), DateTime(enddate))      
       if vol == nothing
           Logger.warn_static("No volume data available for any stock in the universe")
       end
@@ -142,6 +145,8 @@ function _run_algo_internal(startdate::Date = getstartdate(), enddate::Date = ge
       labels = Dict{String,Float64}()
 
       bvals = values(closeprices[benchmark.ticker])
+
+      println("Length Labels = $(length(bvals))")
 
       for i = 1:length(closeprices)
         val = bvals[i]
@@ -161,12 +166,12 @@ function _run_algo_internal(startdate::Date = getstartdate(), enddate::Date = ge
       # Global data stores
       #Get Adjusted history once for the full universe (from start to end date)
       #THis will be used for any history calls in user algorithm
-      allsecurities_includingbenchmark = push!([d.symbol for d in getuniverse()], API.getbenchmark())
-      adjustedcloseprices = history(allsecurities_includingbenchmark, "Close", :Day, startdate = DateTime(startdate), enddate = DateTime(enddate))
+      allsecurities_includingbenchmark = push!(universeIds, benchmark.id)
+      adjustedcloseprices = YRead.history(allsecurities_includingbenchmark, "Close", :Day, DateTime(startdate), DateTime(enddate))
 
       #Set benchmark value and Output labels from graphs
       setbenchmarkvalues(labels)
-      adjustments = getadjustments(getuniverse(), DateTime(startdate), DateTime(enddate))
+      adjustments = YRead.getadjustments(universeIds, DateTime(startdate), DateTime(enddate))
 
       #continue with backtest if there are any rows in price data.
       if !isempty(closeprices)
@@ -178,10 +183,11 @@ function _run_algo_internal(startdate::Date = getstartdate(), enddate::Date = ge
 
       i = 1
 
-      Logger.info_static("Running algorithm for each data")
+      Logger.info_static("Running algorithm for each timestamp")
       success = true
       for date in sort(collect(keys(labels)))
-          success = mainfnc(Date(date), i, openprices, highprices, lowprices, closeprices, vol, adjustments, forward, dynamic = false)
+          println("For Date: $(date)")
+          success = mainfnc(Date(date), i, openprices, highprices, lowprices, closeprices, vol, adjustments, forward)
           
           if(!success)
               break
@@ -209,14 +215,14 @@ function _run_algo_internal(startdate::Date = getstartdate(), enddate::Date = ge
 
 end
 
-function mainfnc(date::Date, counter::Int, open, high, low, close, volume, adjustments, forward; dynamic::Bool = true)
+function mainfnc(date::Date, counter::Int, open, high, low, close, volume, adjustments, forward; dynamic::Bool = false)
   
   currentData = Dict{String, TimeArray}()
 
   setcurrentdate(date)
   if dynamic
     #DYNAMIC doesn't work
-    updatedatastores(date, fetchprices(date), fetchvolumes(date), getadjustments())
+    updatedatastores(date, fetchprices(date), fetchvolumes(date), YRead.getadjustments())
   else
     setcurrentdate(date)
 
@@ -262,16 +268,16 @@ function mainfnc(date::Date, counter::Int, open, high, low, close, volume, adjus
   #call the user defined
 
   try
-    #if _checkforrebalance()
+    API.setparent(:ondata)
     ondata(currentData["Close"], getstate())
-    #end
+    API.setparent(:all)
   catch err
     handleexception(err, forward)
     return false
   end
 
   if !forward
-    _outputdailyperformance()
+      _outputdailyperformance()
   end
 
   return true

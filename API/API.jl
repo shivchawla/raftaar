@@ -10,15 +10,17 @@ __precompile__(true)
 module API
 
 using Raftaar
-using DataFrames
 using TimeSeries
 using Logger
 using WebSockets
-using JSON
-using LibBSON
+using YRead
 
 #Import list of functions to be overloaded
 import Raftaar: getuniverse, getopenorders
+import Raftaar: Security, SecuritySymbol
+import Base: getindex, convert
+
+_currentparent = Symbol()
 
 algorithm = Raftaar.Algorithm()
 
@@ -31,17 +33,29 @@ function setlogmode(style::Symbol, print::Symbol, save::Bool, client::WebSocket)
 end
 export setlogmode
 
-function __IllegalContextMessage(func::Symbol, context::Symbol)
-    if hasparent(context)
-        Base.error("Can't call $func from the context of $context")
+function setparent(parent::Symbol)
+    if (parent == :ondata && !hasparent(:initialize)) || (parent == :initialize && !hasparent(:ondata)) || parent == :all
+        global _currentparent = parent
+    else
+        Base.error("Can't set parent from the context")
+        return
     end
 end
 
+function __IllegalContextMessage(func::Symbol, context::Symbol)
+    if _currentparent == context
+        Base.error("Can't call $func from the context of $context")
+    end
+end
+export __IllegalContextMessage
+
 include("TradingEnvAPI.jl")
-include("HistoryAPI.jl")
+#include("HistoryAPI.jl")
 include("AccountAPI.jl")
 include("UniverseAPI.jl")
 include("BrokerageAPI.jl")
+#include("UtilityAPI.jl")
+#include("OptimizeAPI.jl")
 
 export  setstartdate,
         setenddate,
@@ -370,9 +384,16 @@ function reset()
     Raftaar.resetAlgo(algorithm)
     Logger.resetLog()
     global dataAvailable = false
-    for (k,v) in _globaldatastores
-        delete!(_globaldatastores, k)
-    end
+    YRead.reset()
 end
+
+function convert(::Type{Raftaar.Security}, security::YRead.Security)
+    
+    return Raftaar.Security(security.symbol.id, security.symbol.ticker, security.name,
+                              exchange = security.exchange,
+                              country = security.exchange,
+                              securitytype = security.securitytype)
+end
+
 
 end

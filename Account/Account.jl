@@ -88,10 +88,6 @@ function updateaccount_fills!(account::Account, fills::Vector{OrderFill})
     end
 end
 
-function getposition(account::Account, ss::SecuritySymbol)
-  return getposition(account.portfolio, ss)
-end
-
 #precompile(updateaccountforfills!,(Account, Portfolio, Vector{OrderFill}))
 
 function serialize(account::Account)
