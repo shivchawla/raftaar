@@ -2,6 +2,7 @@ using API
 using WebSockets
 using HttpServer
 using Logger
+using Mongo
 
 port = 2000
 host = "127.0.0.1"
@@ -11,7 +12,7 @@ try
   host = ARGS[2]
 end
 
-const dir = "/home/jp_$port/local"
+const dir = "/Users/shivkumarchawla/local"
 
 include("../parseArgs.jl")
 include("../processArgs.jl")
@@ -41,7 +42,7 @@ function remove_files()
 end
 
 function close_connection(client)
-    remove_files()
+    #remove_files()
     global connections = delete!(connections, client.id)
     close(client)
     #API.reset()
@@ -63,20 +64,23 @@ wsh = WebSocketHandler() do req, client
     connections[client.id] = true
 
     try 
-        setlogmode(:json, :socket, true, client)
+        #setlogmode(:json, :socket, true, client)
+        #setlogmode(:json, :console, true)
+        Logger.setwebsocketclient(client)
+        Logger.configure(style=:json, modes=[:socket, :db])
 
         msg = read(client)
         argsString = decodeMessage(msg)
         args = [String(ss) for ss in split(argsString,"??##")]
 
-        info_static("Starting Backtest")
 
-        # Parse arguments from the connection message.
-        info_static("Parsing arguments from settings panel")
+        info_static("Starting Backtest")
+        info_static("Processing parsed arguments from settings panel")
         global parsed_args = parse_arguments(args)
 
-        parseError = false
-        info_static("Processing parsed arguments from settings panel")
+        backtestid = haskey(parsed_args, "backtestid") ? parsed_args["backtestid"] : ""
+        Logger.setbacktestid(backtestid)
+
     catch err
         println(err)
         error_static("Internal Error while processing settings")
@@ -162,6 +166,7 @@ try
     server = Server(wsh)
     run(server, host=IPv4(host), port=port)
 catch err
+    println(err)
     println("Error while launching WS server")
 end
 

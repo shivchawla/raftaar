@@ -1,20 +1,47 @@
-using YRead
-import Mongo: MongoClient
-using API
-using JSON
+function connect(host::String, port::Int, user::String="", pass::String="")
+    usr_pwd_less = user=="" && pass==""
 
-#Setup database connections
-connection = JSON.parsefile(Base.source_dir()*"/connection.json")
-mongo_user = connection["mongo_user"]
-mongo_pass = connection["mongo_pass"]
-mongo_host = connection["mongo_host"]
-mongo_port = connection["mongo_port"]
-   
-usr_pwd_less = mongo_user=="" && mongo_pass==""
+    #info_static("Configuring datastore connections")
+    client = usr_pwd_less ? MongoClient(host, port) :
+                            MongoClient(host, port, user, pass)
+end
 
-#info_static("Configuring datastore connections")
-const client = usr_pwd_less ? MongoClient(mongo_host, mongo_port) :
-                        MongoClient(mongo_host, mongo_port, mongo_user, mongo_pass)
+# Setup data stores 
+function setdatastores(connections)
+    try
+        yojak_conn = connections["yojak_datastore"]
+        yuser = yojak_conn["user"]
+        ypass = yojak_conn["pass"]
+        yhost = yojak_conn["host"]
+        yport = yojak_conn["port"]
+        ydatabase = yojak_conn["database"]
+           
+        const yclient =  connect(yhost, yport, yuser, ypass)
+        YRead.configure(yclient, database = ydatabase, priority = 2)
+    catch err
+        println(err)  
+    end
+end
 
-YRead.configure(client, database = connection["mongo_database"], priority = 2)
-#YRead.setpriority(priority = 2)
+# Setup logger database connection
+function setloggerconnection(connections)
+    try
+        logger_conn = connections["logger"]
+        user = logger_conn["user"]
+        pass = logger_conn["pass"]
+        host = logger_conn["host"]
+        port = logger_conn["port"]
+        database = logger_conn["database"]
+        collection = logger_conn["collection"]
+           
+        const lclient =  connect(host, port, user, pass)
+        Logger.setmongoclient(MongoCollection(lclient, database, collection)) 
+    catch err
+        println(err)
+    end
+end
+
+connections = JSON.parsefile(Base.source_dir()*"/connection.json")
+setdatastores(connections)
+setloggerconnection(connections)
+

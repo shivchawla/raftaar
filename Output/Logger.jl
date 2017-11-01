@@ -8,6 +8,7 @@ module Logger
 
 import WebSockets: WebSocket
 using LibBSON
+using Mongo
 
 type LogBook
     mode::Symbol
@@ -27,41 +28,57 @@ using JSON
 
 const logbook = LogBook()
 const params = Dict{String, Any}("style" => :text,
-                                "print" => :console,
+                                "modes" => [:console],
                                 "save" => false,
                                 "limit" => 30,
                                 "counter" => 0,
-                                "display" => true)
+                                "display" => true,
+                                "backtestid" => "")
 
 """
 Function to configure mode of the logger and change the datetime
 """
-function configure(;style_mode::Symbol = :text, print_mode::Symbol = :console, save_mode::Bool = true, save_limit::Int = 30, display::Bool=true)
-    global params["style"] = style_mode
-    global params["print"] = print_mode
-    global params["save"] = save_mode
-    global params["limit"] = save_limit
+function configure(;style::Symbol = :text, mode::Symbol = :console, save::Bool = true, limit::Int = 30, display::Bool=true)
+    global params["style"] = style
+    global params["modes"] = [mode]
+    global params["save"] = save
+    global params["limit"] = limit
     global params["display"] = display
 
-    if(save_mode)
-        logbook.savelimit = save_limit
+    if(save)
+        logbook.savelimit = limit
     end
 end
 
-function configure(client::WebSocket; style_mode::Symbol = :text, print_mode::Symbol = :socket, save_mode::Bool = true, save_limit::Int = 30, display::Bool=true)
-    global params["style"] = style_mode
-    global params["print"] = print_mode
-    global params["save"] = save_mode
-    global params["limit"] = save_limit
-    if haskey(params, "client")
-        global params = delete!(params, "client")
-    end
-    global params["client"] = client
+function configure(;style::Symbol = :text, modes::Vector{Symbol}=[:console], save::Bool = true, limit::Int = 30, display::Bool=true)
+    global params["style"] = style
+    global params["modes"] = modes
+    global params["save"] = save
+    global params["limit"] = limit
+    
     global params["display"] = display
 
-    if(save_mode)
-        logbook.savelimit = save_limit
+    if(save)
+        logbook.savelimit = limit
     end
+end
+
+function setwebsocketclient(ws_client::WebSocket)
+    if haskey(params, "ws_client")
+        global params = delete!(params, "ws_client")
+    end
+    global params["ws_client"] = ws_client
+end
+
+function setmongoclient(coll::MongoCollection)
+    if haskey(params, "mongo_collection")
+        global params = delete!(params, "mongo_collection")
+    end
+    global params["mongo_collection"] = coll
+end
+
+function setbacktestid(backtestid::String)
+    global params["backtestid"] = backtestid
 end
 
 function update_display(display::Bool)
@@ -76,84 +93,68 @@ end
 """
 Function to record and print log messages
 """
-function info(msg::String, mmode::Symbol, pmode::Symbol; datetime::DateTime = now())
-    _log(msg, MessageType(INFO), pmode, mmode, datetime)
+function info(msg::String, style::Symbol, mode::Symbol; datetime::DateTime = now())
+    _log(msg, MessageType(INFO), [mode], style, datetime)
 end
 
-function warn(msg::String, mmode::Symbol, pmode::Symbol; datetime::DateTime = now())
-    _log(msg, MessageType(WARN), pmode, mmode, datetime)
+function warn(msg::String, style::Symbol, mode::Symbol; datetime::DateTime = now())
+    _log(msg, MessageType(WARN), [mode], style, datetime)
 end
 
-function error(msg::String, mmode::Symbol, pmode::Symbol; datetime::DateTime = now())
-    _log(msg, MessageType(ERROR), pmode, mmode, datetime)
+function error(msg::String, style::Symbol, mode::Symbol; datetime::DateTime = now())
+    _log(msg, MessageType(ERROR), [mode], style, datetime)
 end
 
 function info_static(msg::String)
-    mmode = params["style"]
-    pmode = params["print"]
-    _log(msg, MessageType(INFO), pmode, mmode, DateTime())
+    _log(msg, MessageType(INFO), params["modes"], params["style"], DateTime())
 end
 
 function error_static(msg::String)
-    mmode = params["style"]
-    pmode = params["print"]
-    _log(msg, MessageType(ERROR), pmode, mmode, DateTime())
+    _log(msg, MessageType(ERROR), params["modes"], params["style"], DateTime())
 end
 
 function warn_static(msg::String)
-    mmode = params["style"]
-    pmode = params["print"]
-    _log(msg, MessageType(WARN), pmode, mmode, DateTime())
+    _log(msg, MessageType(WARN), params["modes"], params["style"], DateTime())
 end
 
 function info(msg::String; datetime::DateTime = now())
-    mmode = params["style"]
-    pmode = params["print"]
-    _log(msg, MessageType(INFO), pmode, mmode, datetime)
+    _log(msg, MessageType(INFO), params["modes"], params["style"], datetime)
 end
 
 function warn(msg::String; datetime::DateTime = now())
-    mmode = params["style"]
-    pmode = params["print"]
-    _log(msg, MessageType(WARN), pmode, mmode, datetime)
+    _log(msg, MessageType(WARN), params["modes"], params["style"], datetime)
 end
 
 function error(msg::String; datetime::DateTime = now())
-    mmode = params["style"]
-    pmode = params["print"]
-    _log(msg, MessageType(ERROR), pmode, mmode, DateTime())
+    _log(msg, MessageType(ERROR), params["modes"], params["style"], DateTime())
 end
 
-function info(msg::String, mmode::Symbol; datetime::DateTime = now())
-    pmode = params["print"]
-    _log(msg, MessageType(INFO), pmode, mmode, datetime)
+function info(msg::String, style::Symbol; datetime::DateTime = now())
+    _log(msg, MessageType(INFO), params["modes"], style, datetime)
 end
 
-function warn(msg::String, mmode::Symbol; datetime::DateTime = now())
-   pmode = params["print"]
-    _log(msg, MessageType(WARN), pmode, mmode, datetime)
+function warn(msg::String, style::Symbol; datetime::DateTime = now())
+    _log(msg, MessageType(WARN), params["modes"], style, datetime)
 end
 
-function error(msg::String, mmode::Symbol; datetime::DateTime = now())
-    pmode = params["print"]
-    _log(msg, MessageType(ERROR), pmode, mmode, datetime)
+function error(msg::String, style::Symbol; datetime::DateTime = now())
+    _log(msg, MessageType(ERROR), params["modes"], style, datetime)
 end
 
-function _log(msg::String, msgtype::MessageType, pmode::Symbol, mmode::Symbol, datetime::DateTime)
+function _log(msg::String, msgtype::MessageType, modes::Vector{Symbol}, style::Symbol, datetime::DateTime)
     
     if !get(params, "display", true)
         return
     end
 
-    #mode = params["mode"]
     if haskey(params, "datetime") && datetime!=DateTime()
         datetime = params["datetime"]
     end
 
-    if mmode == :text
-        _logstandard(msg, msgtype, pmode, datetime)
-    elseif mmode == :json
-        _logJSON(msg, msgtype, pmode, datetime)
+    if style == :text
+        _logstandard(msg, msgtype, modes, datetime)
+    elseif style == :json
+        _logJSON(msg, msgtype, modes, datetime)
     end
 end
 
@@ -161,13 +162,13 @@ end
 """
 Function to log message (with timestamp) based on message type
 """
-function _logstandard(msg::String, msgtype::MessageType, pmode::Symbol, datetime::DateTime)
+function _logstandard(msg::String, msgtype::MessageType, modes::Vector{Symbol}, datetime::DateTime)
     datestr = ""
     if (datetime != DateTime())
          datestr = string(datetime)*":"
     end
 
-    if pmode == :console
+    if (:console in modes)
         if msgtype == MessageType(INFO)
             print_with_color(:green,  "[INFO]" * "$(datestr)" * msg * "\n")
         elseif msgtype == MessageType(WARN)
@@ -175,7 +176,9 @@ function _logstandard(msg::String, msgtype::MessageType, pmode::Symbol, datetime
         else 
             print_with_color(:red, "[ERROR]" * "$(datestr)" * msg * "\n")
         end
-    else pmode == :socket
+    end
+    
+    if (:socket in modes)
         if msgtype == MessageType(INFO)
             fmsg = "[INFO]"* "$(datestr)" * msg
         elseif msgtype == MessageType(WARN)
@@ -187,6 +190,11 @@ function _logstandard(msg::String, msgtype::MessageType, pmode::Symbol, datetime
         write(params["client"], fmsg)
     end
 
+    if (:db in modes)
+
+    end
+
+
 end
 
 todbformat(datetime::DateTime) = Dates.format(datetime, "yyyy-mm-dd HH:MM:SS")
@@ -194,12 +202,13 @@ todbformat(datetime::DateTime) = Dates.format(datetime, "yyyy-mm-dd HH:MM:SS")
 """
 Function to log message AS JSON (with timestamp) based on message type
 """
-function _logJSON(msg::String, msgtype::MessageType, pmode::Symbol, datetime::DateTime)
+function _logJSON(msg::String, msgtype::MessageType, modes::Vector{Symbol}, datetime::DateTime)
   
     limit = params["limit"]
     msg_dict = Dict{String, String}("outputtype" => "log",
                                         "messagetype" => string(msgtype),
-                                        "message" => msg)
+                                        "message" => msg,
+                                        "backtestid" => params["backtestid"])
 
     if(datetime != DateTime()) 
         datetimestr = todbformat(datetime)
@@ -222,7 +231,21 @@ function _logJSON(msg::String, msgtype::MessageType, pmode::Symbol, datetime::Da
 
     if (numlogs < limit && numlogs < 50) || msgtype == MessageType(ERROR)
 
-        pmode == :console ? println(jsonmsg) : (haskey(params, "client") ? write(params["client"], jsonmsg) : println("Socket Client is missing\n$(jsonmsg)"))
+        if (:console in modes)
+            println(jsonmsg)
+        end
+
+        if (:socket in modes)
+            haskey(params, "ws_client") ? 
+                    write(params["ws_client"], jsonmsg) : 
+                    println("Socket Client is missing")
+        end
+
+        if (:db in modes)
+            haskey(params, "mongo_collection") ? 
+                    insert(params["mongo_collection"], msg_dict) : 
+                    println("Mongo collection is missing")
+        end
 
         push!(logbook.container[entry_datetime][datekey], jsonmsg)
         
@@ -242,19 +265,33 @@ function _logJSON(msg::String, msgtype::MessageType, pmode::Symbol, datetime::Da
 
             push!(logbook.container[entry_datetime][datekey], jsonmsg)
 
-            pmode == :console ? println(jsonmsg) : (haskey(params, "client") ? write(params["client"], jsonmsg) : println("Socket Client is missing\n$(jsonmsg)"))
+            #mode == :console ? println(jsonmsg) : (haskey(params, "client") ? write(params["client"], jsonmsg) : println("Socket Client is missing\n$(jsonmsg)"))
         end
     end
 end
 
 function print(str)
-    pmode = :console
+    modes = [:console]
 
-    if haskey(params, "print")
-        pmode = params["print"]
+    if haskey(params, "modes")
+        modes = params["modes"]
     end
 
-    pmode == :console ? println(str) : (haskey(params, "client") ? write(params["client"], str) : println("Socket Client is missing\n$(str)"))
+    if (:console in modes)
+        println(str)
+    end
+
+    if (:socket in modes)
+        haskey(params, "ws_client") ? 
+            write(params["ws_client"], str) : 
+            println("Socket Client is missing")
+    end
+
+    if (:db in modes)
+        haskey(params, "mongo_collection") ? 
+            insert(params["mongo_collection"], JSON.parse(str)) : 
+            println("Mongo Client is missing")
+    end
 end
 
 function resetLog()

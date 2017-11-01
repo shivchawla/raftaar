@@ -9,6 +9,10 @@ function getargparsesettings()
     s = ArgParseSettings()
 
     @add_arg_table s begin
+        "--backtestid"
+            help = "Backtest Id"
+            arg_type = String
+            default = ""
         "--code"
             help = "strategy code"
             arg_type = String
