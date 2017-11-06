@@ -111,6 +111,8 @@ function getorderfill(order::Order, slippage::Slippage, commission::Commission, 
     end
 
     lastprice = getexecutionprice(executionpolicy, latesttradebar)
+    highprice = latesttradebar.high
+    lowprice = latesttradebar.low
     
     volume = latesttradebar.volume
 
@@ -122,9 +124,9 @@ function getorderfill(order::Order, slippage::Slippage, commission::Commission, 
     fillprice = 0
     # find the execution price based on slippage model
     if order.quantity  < 0
-        fillprice = round(lastprice - slippage, 2)
+        fillprice = round(max(lastprice - slippage, lowprice), 2)
     else
-        fillprice = round(lastprice + slippage, 2)
+        fillprice = round(min(lastprice + slippage, highprice), 2)
     end
 
     #find the quantity that can be executed...assume 5% of the total volume

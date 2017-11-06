@@ -243,7 +243,7 @@ isvalid(ss::SecuritySymbol) = ss.ticker!="NULL" && ss.id!=0 && ss.id!=-1
 function updateuniverseforids()
 
     #if dynamic universe
-    for security in getuniverse()
+    for security in getuniverse(validprice=false)
 
         id = getsecurityid(security.symbol.ticker,
                       securitytype = security.securitytype,
@@ -264,7 +264,7 @@ export updateuniverseforids
 function fetchprices(date::DateTime)
     ids = Vector{Int}()
 
-    for security in getuniverse()
+    for security in getuniverse(validprice=false)
         id = security.symbol.id
         push!(ids, id)
     end
@@ -281,7 +281,7 @@ function updatedatastores(date::Date, ohlcv::Dict{String, TimeArray}, adjustment
     tradebars = Dict{SecuritySymbol, TradeBar}()
     adjs = Dict{SecuritySymbol, Adjustment}()
 
-    for security in getuniverse()
+    for security in getuniverse(validprice=false)
  
         openprices = ohlcv["Open"]
         highprices = ohlcv["High"]
@@ -385,6 +385,10 @@ function reset()
     Logger.resetLog()
     global dataAvailable = false
     YRead.reset()
+
+    # reset parent
+    global _currentparent = Symbol()
+
 end
 
 function convert(::Type{Raftaar.Security}, security::YRead.Security)

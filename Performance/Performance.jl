@@ -154,8 +154,8 @@ Function to compute performance based on vector of returns
 function calculateperformance(algorithmreturns::Vector{Float64}, benchmarkreturns::Vector{Float64})
    
     # replace NaN with zeros
-    algorithmreturns[isnan(algorithmreturns)] = 0.0
-    benchmarkreturns[isnan(benchmarkreturns)] = 0.0
+    algorithmreturns[isnan.(algorithmreturns)] = 0.0
+    benchmarkreturns[isnan.(benchmarkreturns)] = 0.0
     
     ps = Performance()
 

@@ -201,7 +201,7 @@ function setholdingpct(symbol::SecuritySymbol, target::Float64)
 
     initialshares = getposition(symbol).quantity
     
-    if target == 0 && abs(initialshares) > 0
+    if target == 0.0 && abs(initialshares) > 0
         placeorder(symbol, -initialshares)
         return
     end
@@ -215,7 +215,10 @@ function setholdingpct(symbol::SecuritySymbol, target::Float64)
 
     currentvalue = initialshares * latestprice
     valuetobeinvested = getportfoliovalue() * target - currentvalue
-    roundedshares = valuetobeinvested > 0 ? floor(Int, valuetobeinvested/latestprice) : -ceil(Int, abs(valuetobeinvested)/latestprice)
+    
+    #in case of sell, it was selling more 
+    #roundedshares = valuetobeinvested > 0 ? floor(Int, valuetobeinvested/latestprice) : -ceil(Int, abs(valuetobeinvested)/latestprice)
+    roundedshares = floor(Int, abs(valuetobeinvested)/latestprice) 
 
     openqty = 0
 
@@ -290,8 +293,9 @@ function setholdingvalue(symbol::SecuritySymbol, target::Float64)
     currentvalue = initialshares * latestprice
     
     valuetobeinvested = target - currentvalue
-    roundedshares = valuetobeinvested > 0 ? floor(Int, valuetobeinvested/latestprice) : -ceil(Int, abs(valuetobeinvested)/latestprice)
-
+    #roundedshares = valuetobeinvested > 0 ? floor(Int, valuetobeinvested/latestprice) : -ceil(Int, abs(valuetobeinvested)/latestprice)
+    roundedshares = floor(Int, abs(valuetobeinvested)/latestprice) 
+    
     openqty = 0
     for order in getopenorders(symbol)
         openqty += order.quantity

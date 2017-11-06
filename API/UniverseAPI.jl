@@ -187,8 +187,25 @@ function setuniverse(tickers::Vector{String}, securitytype::SecurityType = Secur
     setuniverse2!(algorithm.universe, tickers, securitytype)
 end=#
 
-function getuniverse()  #return array of security symbol
-    deepcopy(getuniverse(algorithm.universe))
+function getuniverse(;validprice=true)  #return array of security symbol
+
+    if validprice
+        securities_with_valid_price = Vector{Security}()
+        for sec in getuniverse(algorithm.universe)
+            price = getlatestprice(sec.symbol)
+            if price != 0.0
+                push!(securities_with_valid_price, sec)
+            end
+        end
+        
+        if(length(securities_with_valid_price) == 0)
+            Logger.warn("Empty universe")
+        end
+        
+        return securities_with_valid_price
+    else
+        deepcopy(getuniverse(algorithm.universe))
+    end   
 end
 export getuniverse
 

@@ -55,7 +55,7 @@ function history(tickers::Array{String,1},
     
     __IllegalContextMessage(:history, :initalize)
 
-    SIZE = 50
+    SIZE = 500
 
     if frequency!=:Day
         info("""Only ":Day" frequency supported in history()""")
@@ -70,12 +70,12 @@ function history(tickers::Array{String,1},
     end=#
 
 
-    tickers = length(tickers) > SIZE ? tickers[1:50] : tickers
+    tickers = length(tickers) > SIZE ? tickers[1:SIZE] : tickers
  
     YRead.history(tickers, datatype, frequency, horizon, getcurrentdatetime(),
             securitytype = securitytype,
             exchange = exchange,
-            country = country)  
+            country = country)[tickers]  
 end
 
 # Period based History

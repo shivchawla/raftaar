@@ -101,7 +101,7 @@ function _run_algo_internal(startdate::Date = getstartdate(), enddate::Date = ge
       YRead.setstrict(true)
 
       # Get all ids for stocks in universe 
-      universeIds = [security.symbol.id  for security in getuniverse()]
+      universeIds = [security.symbol.id  for security in getuniverse(validprice=false)]
 
       if benchmarkdata == nothing
           Logger.warn_static("Benchmark data not available from $(startdate) to $(enddate)")
@@ -269,7 +269,10 @@ function mainfnc(date::Date, counter::Int, open, high, low, close, volume, adjus
 
   try
     API.setparent(:ondata)
-    ondata(currentData["Close"], getstate())
+
+    if length(getuniverse()) !=0
+      ondata(currentData["Close"], getstate())
+    end
     API.setparent(:all)
   catch err
     handleexception(err, forward)
@@ -299,7 +302,7 @@ function __toPricesTA(prices, date)
 
   if (currentprices == nothing)
     #Logger.warn("Price Data is missing")
-    names = push!([d.symbol.ticker for d in getuniverse()], API.getbenchmark().ticker)
+    names = push!([d.symbol.ticker for d in getuniverse(validprice=false)], API.getbenchmark().ticker)
     currentprices = TimeArray([date], zeros(1, length(names)), names)
   end
 
@@ -314,7 +317,7 @@ function __toVolumeTA(volume, date)
   if (currentvolume == nothing)
     #Logger.warn("Volume data is missing")
     #Logger.warn("Assuming default volume of 10mn")
-    names = push!([d.symbol.ticker for d in getuniverse()], API.getbenchmark().ticker)
+    names = push!([d.symbol.ticker for d in getuniverse(validprice=false)], API.getbenchmark().ticker)
     currentvolume = TimeArray([date], zeros(1, length(names)), names)
   end
 
