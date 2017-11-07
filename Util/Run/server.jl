@@ -67,7 +67,7 @@ wsh = WebSocketHandler() do req, client
         #setlogmode(:json, :socket, true, client)
         #setlogmode(:json, :console, true)
         Logger.setwebsocketclient(client)
-        Logger.configure(style=:json, modes=[:socket, :db])
+        Logger.configure(style=:json, modes=[:socket])
 
         msg = read(client)
         argsString = decodeMessage(msg)
