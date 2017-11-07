@@ -382,31 +382,31 @@ end
 export setholdingshares
 
 
-function targetportfolio(port::Dict{String, Float64})
-    targetportfolio([(getsecurity(k).symbol.id, v) for (k,v) in port])
+function settargetportfolio(port::Dict{String, Float64})
+    settargetportfolio([(getsecurity(k).symbol.id, v) for (k,v) in port])
 end
 
-function targetportfolio(port::Dict{Int64, Float64})
-    targetportfolio([(k, v) for (k,v) in port])
+function settargetportfolio(port::Dict{Int64, Float64})
+    settargetportfolio([(k, v) for (k,v) in port])
 end
 
-function targetportfolio(port::Dict{SecuritySymbol, Float64})
-    targetportfolio([(k.id, v) for (k,v) in port])
+function settargetportfolio(port::Dict{SecuritySymbol, Float64})
+    settargetportfolio([(k.id, v) for (k,v) in port])
 end
 
-function targetportfolio(port::Vector{Tuple{String, Float64}})
-    targetportfolio([(getsecurity(v[1]).symbol.id, v[2]) for v in port])
+function settargetportfolio(port::Vector{Tuple{String, Float64}})
+    settargetportfolio([(getsecurity(v[1]).symbol.id, v[2]) for v in port])
 end
 
-function targetportfolio(port::Vector{Tuple{SecuritySymbol, Float64}})
-    targetportfolio([(v[1].id, v[2]) for v in port])
+function settargetportfolio(port::Vector{Tuple{SecuritySymbol, Float64}})
+    settargetportfolio([(v[1].id, v[2]) for v in port])
 end
 
-function targetportfolio(port::Vector{Tuple{Security, Float64}})
-    targetportfolio([(v[1].symbol.id, v[2]) for v in port])
+function settargetportfolio(port::Vector{Tuple{Security, Float64}})
+    settargetportfolio([(v[1].symbol.id, v[2]) for v in port])
 end
 
-function targetportfolio(port::Vector{Tuple{Int64, Float64}})
+function settargetportfolio(port::Vector{Tuple{Int64, Float64}})
     currentpositionids = [pos.securitysymbol.id for pos in getallpositions()]
 
     expectedpositionsids = [v[1] for v in port]
@@ -421,7 +421,7 @@ function targetportfolio(port::Vector{Tuple{Int64, Float64}})
         setholdingpct(v[1], v[2])
     end
 end
-export targetportfolio
+export settargetportfolio
 
 function hedgeportfolio()
 end

@@ -3,6 +3,7 @@ using WebSockets
 using HttpServer
 using Logger
 using Mongo
+using JSON
 
 port = 2000
 host = "127.0.0.1"
@@ -12,7 +13,7 @@ try
   host = ARGS[2]
 end
 
-const dir = "/Users/shivkumarchawla/local"
+const dir = "/Users/jp_$(port)/local"
 
 include("../parseArgs.jl")
 include("../processArgs.jl")
