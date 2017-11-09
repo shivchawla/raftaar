@@ -2,6 +2,7 @@
 # Author: Shiv Chawla
 # Email: shiv.chawla@aimsquant.com
 # Organization: AIMSQUANT PVT. LTD.
+include("../Benchmark/benchmark.jl")
 
 function processargs(parsed_args::Dict{String,Any}, dir::String)
   fname = ""
@@ -21,34 +22,48 @@ function processargs(parsed_args::Dict{String,Any}, dir::String)
 
   #When there is serialized data, this is the FIRST step 
   if (parsed_args["serializedData"] != "")
-    _deserializeData(parsed_args["serializedData"])
+        _deserializeData(parsed_args["serializedData"])
   else
       if (parsed_args["capital"] != nothing)
         setcash(parsed_args["capital"])
       end
+      
+      if (parsed_args["benchmark"] != nothing)
+          bs = parsed_args["benchmark"]
+          if typeof(parse(bs)) == Int64
+              setbenchmark(parse(bs))
+          else
+              setbenchmark(bs)  
+          end
+      else
+          setbenchmark("NIFTY_50")
+      end
+      
+      ss = Vector{String}()    
+      if (parsed_args["index"] != nothing)
+          setuniverseindex(parsed_args["index"])
+          ss = getindexconstituents(parsed_args["index"])
+      end
 
       if (parsed_args["universe"] != nothing)
+          ss = [strip(String(ss)) for ss in split(parsed_args["universe"],",")] 
+      end
 
-        ss = split(parsed_args["universe"],",")
+      nss = length(ss)
+      universe = Vector{String}(nss)
 
-        nss = length(ss)
-        universe = Vector{String}(nss)
+      flag = false
+      for str in ss
+          #str = strip(String(ss[i]))
+          if(str != "")
+              parsed = parse(str)
 
-        flag = false
-        for i = 1:nss
-            str = strip(String(ss[i]))
-
-            if(str != "")
-                parsed = parse(str)
-
-                if(typeof(parsed) == Int64)
-                  adduniverse(parsed)
-                elseif (typeof(parsed)==Symbol)
-                  adduniverse(str)
-                end
-            end
-        end
-
+              if(typeof(parsed) == Int64)
+                adduniverse(parsed)
+              elseif (typeof(parsed)==Symbol)
+                adduniverse(replace(str, r"[^a-zA-Z0-9]", "_"))
+              end
+          end
       end
 
       if (parsed_args["investmentplan"] != nothing)

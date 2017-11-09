@@ -34,6 +34,13 @@ function getargparsesettings()
         "--universe","-u"
             help = "Static universe for the backtest"
             arg_type = String
+        "--index", "-i"
+            help = "Universe Index for the backtest"
+            arg_type = String
+        "--benchmark","-b"
+            help = "Benchmark Index for the backtest"
+            arg_type = String
+            default="NIFTY_50"
         "--exclude"
             help = "Exclude from universe"
             arg_type = String

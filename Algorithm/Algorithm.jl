@@ -36,6 +36,7 @@ type Algorithm
 	status::AlgorithmStatus
 	account::Account
 	universe::Universe
+    universeindex::SecuritySymbol
 	tradeenv::TradingEnvironment
 	brokerage::BacktestBrokerage
     accounttracker::AccountTracker
@@ -56,6 +57,7 @@ Algorithm() = Algorithm("","", AlgorithmStatus(Initializing),
                                             Account(),
                                             #Portfolio(),
                                             Universe(),
+                                            SecuritySymbol(),
                                             TradingEnvironment(),
                                             BacktestBrokerage(),
                                             AccountTracker(),
@@ -77,6 +79,7 @@ Algorithm(data::Dict{String,Any}) = Algorithm(data["name"],
                                         Account(data["account"]),
                                         #Portfolio(data["portfolio"]),
                                         Universe(data["universe"]),
+                                        haskey(data, "universeindex") ? SecuritySymbol(data["universeindex"]) : SecuritySymbol(),
                                         TradingEnvironment(data["tradeenv"]),
                                         BacktestBrokerage(data["brokerage"]),
                                         AccountTracker(data["accounttracker"]),
@@ -100,6 +103,7 @@ function resetAlgo(algorithm::Algorithm)
     algorithm.account = Account()
     #algorithm.portfolio = Portfolio()
     algorithm.universe = Universe()
+    algorithm.universeindex = SecuritySymbol()
     algorithm.tradeenv = TradingEnvironment()
     algorithm.brokerage = BacktestBrokerage()
     algorithm.accounttracker = AccountTracker() #To track evolution of account with time
@@ -286,6 +290,7 @@ function serialize(algorithm::Algorithm)
                             "status"  => string(algorithm.status),
                             "account" => serialize(algorithm.account),
                             "universe" => serialize(algorithm.universe),
+                            "universeindex" => serialize(algorithm.universeindex),
                             #"portfolio" => serialize(algorithm.portfolio),
                             "tradeenv" => serialize(algorithm.tradeenv),
                             "brokerage" => serialize(algorithm.brokerage),
@@ -308,6 +313,7 @@ export serialize
                                           algo1.account == algo2.account &&
                                           #algo1.portfolio == algo2.portfolio &&
                                           algo1.universe == algo2.universe &&
+                                          algo1.universeindex == algo2.universeindex &&
                                           algo1.tradeenv == algo2.tradeenv &&
                                           algo1.brokerage == algo2.brokerage &&
                                           algo1.accounttracker == algo2.accounttracker &&

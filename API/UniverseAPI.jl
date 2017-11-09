@@ -248,4 +248,18 @@ function ispartofuniverse(ticker::String)
 end
 export ispartofuniverse
 
+function setuniverseindex(index::String)
+    algorithm.universeindex = getsecurity(index).symbol
+end
+
+function setuniverseindex(index::Int64)
+    algorithm.universeindex = getsecurity(index).symbol
+end
+export setuniverseindex
+
+function getuniverseindex()
+    algorithm.universeindex
+end
+export getuniverseindex
+
 
