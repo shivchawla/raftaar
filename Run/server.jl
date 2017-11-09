@@ -13,12 +13,13 @@ try
   host = ARGS[2]
 end
 
-const dir = "/Users/jp_$(port)/local"
+#const dir = "/home/jp_$(port)/local"
+const dir = "/Users/shivkumarchawla/local"
 
-include("../parseArgs.jl")
-include("../processArgs.jl")
+include("../Util/parseArgs.jl")
+include("../Util/processArgs.jl")
 include("handleErrors.jl")
-include("../dbConnections.jl")
+include("../Util/dbConnections.jl")
 
 #global Dict to store open connections in
 global connections = Dict{Int, Bool}()
