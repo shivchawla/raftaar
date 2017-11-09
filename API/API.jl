@@ -14,6 +14,7 @@ using TimeSeries
 using Logger
 using WebSockets
 using YRead
+using JSON
 
 #Import list of functions to be overloaded
 import Raftaar: getuniverse, getopenorders
@@ -351,9 +352,13 @@ export updatedatastores
 Function to save progress
 """
 function _serializeData()
-  s = JSON.json(Dict("outputtype" => "serializedData",
+    #Logs are saved in Logger
+    #transfer them to alogorithm object for serialization
+    _updatelogtracker() 
+    
+    s = JSON.json(Dict("outputtype" => "serializedData",
                      "algorithm" => Raftaar.serialize(algorithm)))
-  Logger.print(string(s))
+    Logger.print(string(s))
 end
 
 export _serializeData

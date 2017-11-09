@@ -168,23 +168,24 @@ function _logstandard(msg::String, msgtype::MessageType, modes::Vector{Symbol}, 
          datestr = string(datetime)*":"
     end
 
+    dt = Dates.format(now(), "Y-mm-dd HH:MM:SS.sss")
     if (:console in modes)
         if msgtype == MessageType(INFO)
-            print_with_color(:green,  "[INFO]" * "$(datestr)" * msg * "\n")
+            print_with_color(:green,  "[INFO][$(dt)]" * "$(datestr)" * msg * "\n")
         elseif msgtype == MessageType(WARN)
-            print_with_color(:orange, "[WARNING]" * "$(datestr)" * msg * "\n")
+            print_with_color(:orange, "[WARNING][$(dt)]" * "$(datestr)" * msg * "\n")
         else 
-            print_with_color(:red, "[ERROR]" * "$(datestr)" * msg * "\n")
+            print_with_color(:red, "[ERROR][$(dt)]" * "$(datestr)" * msg * "\n")
         end
     end
     
     if (:socket in modes)
         if msgtype == MessageType(INFO)
-            fmsg = "[INFO]"* "$(datestr)" * msg
+            fmsg = "[INFO][$(now())]"* "$(datestr)" * msg
         elseif msgtype == MessageType(WARN)
-            fmsg = "[WARNING]" * "$(datestr)" * msg
+            fmsg = "[WARNING][$(dt)]" * "$(datestr)" * msg
         else
-            fmsg = "[ERROR]" * "$(datestr)" * msg
+            fmsg = "[ERROR][$(dt)]" * "$(datestr)" * msg
         end
 
         write(params["client"], fmsg)
@@ -208,6 +209,7 @@ function _logJSON(msg::String, msgtype::MessageType, modes::Vector{Symbol}, date
     msg_dict = Dict{String, String}("outputtype" => "log",
                                         "messagetype" => string(msgtype),
                                         "message" => msg,
+                                        "dt" => Dates.format(now(), "Y-mm-dd HH:MM:SS.sss"),
                                         "backtestid" => params["backtestid"])
 
     if(datetime != DateTime()) 

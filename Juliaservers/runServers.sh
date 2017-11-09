@@ -1,13 +1,15 @@
 # @Author: Shiv Chawla
 # @Date:   2017-10-04 12:19:26
 # @Last Modified by:   Shiv Chawla
-# @Last Modified time: 2017-10-14 22:09:28
+# @Last Modified time: 2017-11-08 10:45:59
 #!/bin/bash
 base_dir="/home/admin"
 julia='$base_dir/bin/julia'
 PATH=:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/root/julia/bin/
 
 raftaar_dir="$base_dir/raftaar"
+yojak_dir="$base_dir/yojak"
+
 cd "$raftaar_dir/Juliaservers"
 
 if [ ! -d "$PWD/logs/" ]; then
@@ -23,6 +25,8 @@ setfacl -R -m g:julia:r-x $base_dir/.julia
 setfacl -R -m g:julia:r-x $raftaar_dir
 setfacl -R -m g:julia:--x $raftaar_dir/Juliaservers
 setfacl -R -m g:julia:r-x $raftaar_dir/Util
+
+setfacl -R -m g:julia:r-x $yojak_dir
 
 set -- "${1:-6001 6002 6003 6004 7001}" "${2:-0.0.0.0}" 
 
@@ -54,9 +58,9 @@ do
 done
 
 #Sleep before resetting some file permissions
-sleep 200
+#sleep 200
 
-setfacl -R -m g:julia:--x $raftaar_dir    
-setfacl -R -m g:julia:--- $raftaar_dir/Util
-setfacl -m g:julia:r-x $raftaar_dir/Util
-setfacl -R -m g:julia:r-x $raftaar_dir/Util/Run
+#setfacl -R -m g:julia:--x $raftaar_dir    
+#setfacl -R -m g:julia:--- $raftaar_dir/Util
+#setfacl -m g:julia:r-x $raftaar_dir/Util
+#setfacl -R -m g:julia:r-x $raftaar_dir/Util/Run

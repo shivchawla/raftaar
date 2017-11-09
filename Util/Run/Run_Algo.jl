@@ -16,35 +16,25 @@ function run_algo(forward_test::Bool = false)
     # Let's check if we have already saved data or not
 
     if !wasDataFound()
-      # Oh no, no data found
-      # let's call the initialize function
-      
-      println("Initializing")
-      try
-        API.setparent(:initialize)
-        initialize(getstate())
-        API.setparent(:all)
-      catch err
-        handleexception(err, forward_test)
-        return
-      end
-
-      println("Running actual")
-      if _run_algo_internal(forward = forward_test)
+        # Oh no, no data found
+        # let's call the initialize function
+        
+        println("Initializing")
+        try
+          API.setparent(:initialize)
+          initialize(getstate())
+          API.setparent(:all)
+        catch err
+          handleexception(err, forward_test)
           _serializeData()
-      end
-    else
+          return
+        end
+    end  
+    
       # Aww yeah, data found
       # just set the start date from where you want to continue the forward testing
       # and let the fun begin
 
-      # Start simulation for the "next" day where simulation ended
-      # start_date = getenddate() + Base.Dates.Day(1)
-      # end_date = getenddate() + Base.Dates.Day(1)
-
-      # The following dates are the dates for which the simuation will run
-      #start_date = getrunstartdate()
-      #end_date = getrunenddate()
       _run_algo_internal(forward = forward_test)
 
       # Even if the simuation returned nothing (in case of missing security data)
@@ -52,17 +42,9 @@ function run_algo(forward_test::Bool = false)
       # and then pass the previously serialized data itself
       # because this code region means, we already had some deserialized data to begin with
       
-      #setenddate(end_date)
-      _serializeData()
-    end
-
-    #=if _run_algo_internal(start_date, end_date)
-      # Don't forget that we were running a forward test
-      # that is we need to serialize everything back into database
       _serializeData()
 
-    end=#
-  else
+  else  ## Backtest
       # this means we are doing a backtest
       # nothing much to do here except for calling initialize
 
@@ -100,12 +82,17 @@ function _run_algo_internal(startdate::Date = getstartdate(), enddate::Date = ge
       #undo strict policy for rest of the universe
       YRead.setstrict(true)
 
-      # Get all ids for stocks in universe 
-      universeIds = [security.symbol.id  for security in getuniverse(validprice=false)]
-
       if benchmarkdata == nothing
           Logger.warn_static("Benchmark data not available from $(startdate) to $(enddate)")
           Logger.warn_static("Aborting test")
+          return false
+      end
+
+      # Get all ids for stocks in universe 
+      universeIds = [security.symbol.id  for security in getuniverse(validprice=false)]
+
+      if(length(universeIds) == 0) 
+          Logger.error("Empty Universe")
           return false
       end
 
@@ -194,8 +181,6 @@ function _run_algo_internal(startdate::Date = getstartdate(), enddate::Date = ge
           end
           i = i + 1
       end
-
-      _updatelogtracker()
 
       if success
           Logger.info_static("Ending Backtest")
