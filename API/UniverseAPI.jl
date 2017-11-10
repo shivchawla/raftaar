@@ -249,11 +249,11 @@ end
 export ispartofuniverse
 
 function setuniverseindex(index::String)
-    algorithm.universeindex = getsecurity(index).symbol
+    algorithm.universeindex = index #getsecurity(index).symbol
 end
 
 function setuniverseindex(index::Int64)
-    algorithm.universeindex = getsecurity(index).symbol
+    algorithm.universeindex = String(index) #getsecurity(index).symbol
 end
 export setuniverseindex
 

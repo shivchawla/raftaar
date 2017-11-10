@@ -36,7 +36,7 @@ type Algorithm
 	status::AlgorithmStatus
 	account::Account
 	universe::Universe
-    universeindex::SecuritySymbol
+    universeindex::String
 	tradeenv::TradingEnvironment
 	brokerage::BacktestBrokerage
     accounttracker::AccountTracker
@@ -57,7 +57,7 @@ Algorithm() = Algorithm("","", AlgorithmStatus(Initializing),
                                             Account(),
                                             #Portfolio(),
                                             Universe(),
-                                            SecuritySymbol(),
+                                            "Nifty 50",
                                             TradingEnvironment(),
                                             BacktestBrokerage(),
                                             AccountTracker(),
@@ -79,7 +79,7 @@ Algorithm(data::Dict{String,Any}) = Algorithm(data["name"],
                                         Account(data["account"]),
                                         #Portfolio(data["portfolio"]),
                                         Universe(data["universe"]),
-                                        haskey(data, "universeindex") ? SecuritySymbol(data["universeindex"]) : SecuritySymbol(),
+                                        haskey(data, "universeindex") ? data["universeindex"] : "Nifty 50",
                                         TradingEnvironment(data["tradeenv"]),
                                         BacktestBrokerage(data["brokerage"]),
                                         AccountTracker(data["accounttracker"]),
@@ -103,7 +103,7 @@ function resetAlgo(algorithm::Algorithm)
     algorithm.account = Account()
     #algorithm.portfolio = Portfolio()
     algorithm.universe = Universe()
-    algorithm.universeindex = SecuritySymbol()
+    algorithm.universeindex = "Nifty 50"
     algorithm.tradeenv = TradingEnvironment()
     algorithm.brokerage = BacktestBrokerage()
     algorithm.accounttracker = AccountTracker() #To track evolution of account with time
@@ -290,7 +290,7 @@ function serialize(algorithm::Algorithm)
                             "status"  => string(algorithm.status),
                             "account" => serialize(algorithm.account),
                             "universe" => serialize(algorithm.universe),
-                            "universeindex" => serialize(algorithm.universeindex),
+                            "universeindex" => algorithm.universeindex,
                             #"portfolio" => serialize(algorithm.portfolio),
                             "tradeenv" => serialize(algorithm.tradeenv),
                             "brokerage" => serialize(algorithm.brokerage),

@@ -28,40 +28,45 @@ function processargs(parsed_args::Dict{String,Any}, dir::String)
         setcash(parsed_args["capital"])
       end
       
-      if (parsed_args["benchmark"] != nothing)
-          bs = parsed_args["benchmark"]
-          if typeof(parse(bs)) == Int64
-              setbenchmark(parse(bs))
-          else
-              setbenchmark(bs)  
-          end
+      benchmark = get(parsed_args, "benchmark", "NIFTY_50")
+      if typeof(parse(benchmark)) == Int64
+          setbenchmark(parse(benchmark))
       else
-          setbenchmark("NIFTY_50")
+          setbenchmark(benchmark)  
       end
       
-      ss = Vector{String}()    
-      if (parsed_args["index"] != nothing)
-          setuniverseindex(parsed_args["index"])
-          ss = getindexconstituents(parsed_args["index"])
+      universeconstituents = Vector{String}()    
+      
+      universe = get(parsed_args, "universe", "")
+      if (universe!="")
+          universeconstituents = [strip(String(ticker)) for ticker in split(universe,",")] 
       end
 
-      if (parsed_args["universe"] != nothing)
-          ss = [strip(String(ss)) for ss in split(parsed_args["universe"],",")] 
+      println(universe)
+      println(universeconstituents)
+
+
+      if length(universeconstituents) == 0 
+          index = get(parsed_args, "index", "Nifty 50")
+          index = index != "" ? index : "Nifty 50"
+          println(index)
+          setuniverseindex(index)
+          universeconstituents = getindexconstituents(index)
+          println(universeconstituents)
       end
-
-      nss = length(ss)
-      universe = Vector{String}(nss)
-
-      flag = false
-      for str in ss
+     
+      n_universeconstituents = length(universeconstituents)
+    
+      for ticker in universeconstituents
           #str = strip(String(ss[i]))
-          if(str != "")
-              parsed = parse(str)
+          if(ticker != "")
+              parsed = parse(ticker)
 
               if(typeof(parsed) == Int64)
                 adduniverse(parsed)
-              elseif (typeof(parsed)==Symbol)
-                adduniverse(replace(str, r"[^a-zA-Z0-9]", "_"))
+              #Handle M&M like symbols (parse resolves to expression)  
+              elseif (typeof(parsed)==Symbol || typeof(parsed)==Expr) 
+                adduniverse(replace(ticker, r"[^a-zA-Z0-9]", "_"))
               end
           end
       end
