@@ -6,7 +6,8 @@ Functions to expose Universe API
 
 function removeuniverse(ticker::String;securitytype::String="EQ",
                         exchange::String="NSE")
-
+    
+    ticker = replace(ticker, r"[^a-zA-Z0-9]", "_")
     security = getsecurity(ticker, securitytype=securitytype, exchange=exchange)
     removeuniverse!(algorithm.universe, security) 
 end
@@ -27,7 +28,8 @@ end
 function adduniverse(ticker::String;
                         securitytype::String="EQ",
                         exchange::String="NSE")
-      
+    
+    ticker = replace(ticker, r"[^a-zA-Z0-9]", "_")  
     security = getsecurity(ticker, securitytype=securitytype, exchange=exchange)
     adduniverse!(algorithm.universe, security)
 end
@@ -37,7 +39,7 @@ function adduniverse(tickers::Vector{String};
                         securitytype::String="EQ",
                         exchange::String="NSE")
     for ticker in tickers
-        adduniverse(ticker, securitytype = securitytype, exchange = exchange)
+        adduniverse(replace(ticker, r"[^a-zA-Z0-9]", "_"), securitytype = securitytype, exchange = exchange)
     end
 end
 
@@ -81,6 +83,7 @@ function setuniverse(ticker::String;
                         securitytype::String="EQ",
                         exchange::String="NSE")
     
+    ticker = replace(ticker, r"[^a-zA-Z0-9]", "_")
     # Get security id for the ticker before adding to the Raftaar
     security = getsecurity(ticker, securitytype=securitytype, exchange=exchange)
     setuniverse!(algorithm.universe, security)
@@ -94,11 +97,12 @@ function setuniverse(tickers::Vector{String};
     securities = Vector{Security}()
     inuniverse = Dict{String, Bool}()
 
-    for i in 1:length(tickers)
-        if !haskey(inuniverse, tickers[i])
-            security = getsecurity(tickers[i], securitytype = securitytype, exchange = exchange)
+    for ticker in tickers
+        ticker = replace(ticker, r"[^a-zA-Z0-9]", "_")
+        if !haskey(inuniverse, ticker)
+            security = getsecurity(ticker, securitytype = securitytype, exchange = exchange)
             push!(securities, security)
-            inuniverse[tickers[i]] = true
+            inuniverse[ticker] = true
         end    
     end
 

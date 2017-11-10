@@ -42,17 +42,11 @@ function processargs(parsed_args::Dict{String,Any}, dir::String)
           universeconstituents = [strip(String(ticker)) for ticker in split(universe,",")] 
       end
 
-      println(universe)
-      println(universeconstituents)
-
-
       if length(universeconstituents) == 0 
           index = get(parsed_args, "index", "Nifty 50")
           index = index != "" ? index : "Nifty 50"
-          println(index)
           setuniverseindex(index)
           universeconstituents = getindexconstituents(index)
-          println(universeconstituents)
       end
      
       n_universeconstituents = length(universeconstituents)
@@ -66,7 +60,8 @@ function processargs(parsed_args::Dict{String,Any}, dir::String)
                 adduniverse(parsed)
               #Handle M&M like symbols (parse resolves to expression)  
               elseif (typeof(parsed)==Symbol || typeof(parsed)==Expr) 
-                adduniverse(replace(ticker, r"[^a-zA-Z0-9]", "_"))
+                adduniverse(ticker)
+                #replace(ticker, r"[^a-zA-Z0-9]", "_")
               end
           end
       end
