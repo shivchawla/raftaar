@@ -82,6 +82,7 @@ function setbacktestid(backtestid::String)
 end
 
 function update_display(display::Bool)
+    println("Updating display: $(display)")
     global params["display"] = display
 end
 
@@ -93,55 +94,55 @@ end
 """
 Function to record and print log messages
 """
-function info(msg::String, style::Symbol, mode::Symbol; datetime::DateTime = now())
+function info(msg::Any, style::Symbol, mode::Symbol; datetime::DateTime = now())
     _log(msg, MessageType(INFO), [mode], style, datetime)
 end
 
-function warn(msg::String, style::Symbol, mode::Symbol; datetime::DateTime = now())
+function warn(msg::Any, style::Symbol, mode::Symbol; datetime::DateTime = now())
     _log(msg, MessageType(WARN), [mode], style, datetime)
 end
 
-function error(msg::String, style::Symbol, mode::Symbol; datetime::DateTime = now())
+function error(msg::Any, style::Symbol, mode::Symbol; datetime::DateTime = now())
     _log(msg, MessageType(ERROR), [mode], style, datetime)
 end
 
-function info_static(msg::String)
+function info_static(msg::Any)
     _log(msg, MessageType(INFO), params["modes"], params["style"], DateTime())
 end
 
-function error_static(msg::String)
+function error_static(msg::Any)
     _log(msg, MessageType(ERROR), params["modes"], params["style"], DateTime())
 end
 
-function warn_static(msg::String)
+function warn_static(msg::Any)
     _log(msg, MessageType(WARN), params["modes"], params["style"], DateTime())
 end
 
-function info(msg::String; datetime::DateTime = now())
+function info(msg::Any; datetime::DateTime = now())
     _log(msg, MessageType(INFO), params["modes"], params["style"], datetime)
 end
 
-function warn(msg::String; datetime::DateTime = now())
+function warn(msg::Any; datetime::DateTime = now())
     _log(msg, MessageType(WARN), params["modes"], params["style"], datetime)
 end
 
-function error(msg::String; datetime::DateTime = now())
+function error(msg::Any; datetime::DateTime = now())
     _log(msg, MessageType(ERROR), params["modes"], params["style"], DateTime())
 end
 
-function info(msg::String, style::Symbol; datetime::DateTime = now())
+function info(msg::Any, style::Symbol; datetime::DateTime = now())
     _log(msg, MessageType(INFO), params["modes"], style, datetime)
 end
 
-function warn(msg::String, style::Symbol; datetime::DateTime = now())
+function warn(msg::Any, style::Symbol; datetime::DateTime = now())
     _log(msg, MessageType(WARN), params["modes"], style, datetime)
 end
 
-function error(msg::String, style::Symbol; datetime::DateTime = now())
+function error(msg::Any, style::Symbol; datetime::DateTime = now())
     _log(msg, MessageType(ERROR), params["modes"], style, datetime)
 end
 
-function _log(msg::String, msgtype::MessageType, modes::Vector{Symbol}, style::Symbol, datetime::DateTime)
+function _log(msg::Any, msgtype::MessageType, modes::Vector{Symbol}, style::Symbol, datetime::DateTime)
     
     if !get(params, "display", true)
         return
@@ -150,6 +151,9 @@ function _log(msg::String, msgtype::MessageType, modes::Vector{Symbol}, style::S
     if haskey(params, "datetime") && datetime!=DateTime()
         datetime = params["datetime"]
     end
+
+    msg = string(msg)
+    msg = replace(msg, "Raftaar.", "")
 
     if style == :text
         _logstandard(msg, msgtype, modes, datetime)
@@ -204,7 +208,7 @@ todbformat(datetime::DateTime) = Dates.format(datetime, "yyyy-mm-dd HH:MM:SS")
 Function to log message AS JSON (with timestamp) based on message type
 """
 function _logJSON(msg::String, msgtype::MessageType, modes::Vector{Symbol}, datetime::DateTime)
-  
+    
     limit = params["limit"]
     msg_dict = Dict{String, String}("outputtype" => "log",
                                         "messagetype" => string(msgtype),
