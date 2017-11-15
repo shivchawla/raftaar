@@ -75,7 +75,7 @@ function history(tickers::Array{String,1},
     YRead.history(tickers, datatype, frequency, horizon, getcurrentdatetime(),
             securitytype = securitytype,
             exchange = exchange,
-            country = country)[tickers]  
+            country = country, displaylogs=false)[tickers]  
 end
 
 # Period based History
