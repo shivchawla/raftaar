@@ -8,6 +8,9 @@ using JSON
 port = 2000
 host = "127.0.0.1"
 
+SERVER_READY = false
+SERVER_AVAILABLE = false
+
 try
   port = parse(ARGS[1])
   host = ARGS[2]
@@ -25,7 +28,8 @@ include("../Util/dbConnections.jl")
 global connections = Dict{Int, Bool}()
 
 function decodeMessage(msg)
-    String(copy(msg))
+    println(msg)
+    JSON.parse(String(copy(msg)))
 end
 
 global fname = ""
@@ -44,37 +48,67 @@ function remove_files()
 end
 
 function close_connection(client)
-    #remove_files()
+    
+    println("Closing Connection: $client")
     global connections = delete!(connections, client.id)
-    close(client)
-    #API.reset()
+    try
+        close(client)
+    catch
+        println("Error Closing: $client")
+        println("Ready to take messages")
+    end
+end
+
+function isserveravailable()
+    return length(collect(keys(connections))) == 0 && SERVER_READY
 end
 
 wsh = WebSocketHandler() do req, client
-    
-    #check if there are no connections
-    if(length(collect(keys(connections))) > 0)
-       msg = Dict{String, Any}("msg" => "Server Unavailable", "code" => 503, "outputtype" => "internal");
-       write(client, JSON.json(msg))
-       close_connection(client)
-       return #BUG FIX--return after closing connection is necessary 
+
+    connections[client.id] = true
+    println(client)
+
+    msg = ""
+    try
+        
+        msg = decodeMessage(read(client))
+        println(msg)
+
+        requestType = haskey(msg, "requestType") ? msg["requestType"] : ""
+
+        if requestType == "execute" 
+            if isserveravailable()
+                remove_files()
+                #contiue procee
+            else
+                msg = Dict{String, Any}("msg" => "Server Unavailable", "code" => 503, "outputtype" => "internal");
+                write(client, JSON.json(msg))
+                close_connection(client)
+            end 
+        elseif requestType == "setready"
+            println("Setting Server to be ready")
+            global SERVER_READY = true
+            close_connection(client)
+            return
+        else
+            println("Request: $requestType not found")
+            close_connection(client)
+            return
+        end
+
+    catch err
+        println("Error")
+        println(err)
+        close_connection(client)   
+        return 
     end
     
-    remove_files()
-
-    #continue otherewise
-    connections[client.id] = true
-
     try 
-        #setlogmode(:json, :socket, true, client)
-        #setlogmode(:json, :console, true)
         Logger.setwebsocketclient(client)
         Logger.configure(style=:json, modes=[:socket])
 
-        msg = read(client)
-        argsString = decodeMessage(msg)
+        argsString = msg["args"]
         args = [String(ss) for ss in split(argsString,"??##")]
-
 
         info_static("Starting Backtest")
         info_static("Processing parsed arguments from settings panel")

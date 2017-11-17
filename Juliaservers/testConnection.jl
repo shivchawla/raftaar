@@ -1,12 +1,8 @@
 # @Author: Shiv Chawla
-# @Date:   2017-11-17 11:20:21
+# @Date:   2017-11-17 18:20:21
 # @Last Modified by:   Shiv Chawla
-# @Last Modified time: 2017-11-17 15:32:12
+# @Last Modified time: 2017-11-17 16:52:52
 
-using WebSockets
-using JSON
-
-#const base_dir = "/Users/shivkumarchawla"
 const base_dir = "/home"
 raftaar_dir="$base_dir/raftaar"
 yojak_dir="$base_dir/yojak"
@@ -21,7 +17,7 @@ function testConnection()
     println("Testing Connection")
     try
         run(py_cmd)
-        run(secure_permissions_cmd)
+        #run(secure_permissions_cmd)
     catch err
         println(err)
         sleep(20)
@@ -29,17 +25,4 @@ function testConnection()
     end
 end
 
-#=const base_dir="/home/admin"
-const julia="$base_dir/bin/julia"=#
-
-try 
-    mkdir("$(pwd())/logs")
-catch err
-    println("Log directory already exists")
-end
-
-@spawn run(detach(julia testConnection.jl))
-#include("resetPermissions.jl")
-run(`bash runSingleServer.sh jp`)
-
-
+testConnection()
