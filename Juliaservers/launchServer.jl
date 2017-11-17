@@ -6,7 +6,8 @@
 using WebSockets
 using JSON
 
-const base_dir = "/Users/shivkumarchawla"
+#const base_dir = "/Users/shivkumarchawla"
+const base_dir = "/home"
 raftaar_dir="$base_dir/raftaar"
 yojak_dir="$base_dir/yojak"
 

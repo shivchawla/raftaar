@@ -16,7 +16,7 @@ try
   host = ARGS[2]
 end
 
-const dir = "/home/jp_$(port)/local"
+const dir = "/home/jp/local"
 #const dir = "/Users/shivkumarchawla/local"
 
 include("../Util/parseArgs.jl")
