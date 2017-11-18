@@ -2,15 +2,21 @@
 # @Author: Shiv Chawla
 # @Date:   2017-11-17 11:20:21
 # @Last Modified by:   Shiv Chawla
-# @Last Modified time: 2017-11-17 16:52:52
+# @Last Modified time: 2017-11-18 12:24:25
 
 #Using python to creat client side connection from Julia
 from websocket import create_connection
-ws = create_connection("ws://localhost:2000")
-print("Sending Message")
-ws.send('{"requestType":"setready"}')
+import sys
 
+host="127.0.0.1"
+port=8000
 
-#result =  ws.recv()
-#print("Received '%s'" % result)
-#ws.close()
+try:
+	host=sys.argv[1]
+	port=int(sys.arg[2])
+finally:
+	conn="ws://{}:{}".format(host,port)
+	print("Connecting: {}".format(conn))
+	ws = create_connection(conn)
+	print("Sending Message")
+	ws.send('{"requestType":"setready"}')

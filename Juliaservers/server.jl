@@ -7,17 +7,17 @@ using JSON
 
 port = 8000
 host = "127.0.0.1"
+user="jp"
 
 SERVER_READY = false
-SERVER_AVAILABLE = false
 
 try
-  port = parse(ARGS[1])
+  user = ARGS[1]  
   host = ARGS[2]
+  port = parse(ARGS[3])
 end
 
-const dir = "/home/jp/local"
-#const dir = "/Users/shivkumarchawla/local"
+const dir = "/home/$user/local"
 
 include("../Util/parseArgs.jl")
 include("../Util/processArgs.jl")
@@ -46,25 +46,21 @@ function remove_files()
     end
 end
 
-function close_connection(client)
-    
+function close_connection(client)  
     println("Closing Connection: $client")
     global connections = delete!(connections, client.id)
     try
         close(client)
     catch
         println("Error Closing: $client")
-        println("Ready to take messages")
     end
 end
 
 function isserveravailable()
-    return length(collect(keys(connections))) == 0 && SERVER_READY
+    length(collect(keys(connections))) == 0 && SERVER_READY
 end
 
 wsh = WebSocketHandler() do req, client
-
-    connections[client.id] = true
 
     msg = ""
     try
@@ -76,11 +72,12 @@ wsh = WebSocketHandler() do req, client
         if requestType == "execute" 
             if isserveravailable()
                 remove_files()
-                #contiue procee
+                #contiue process
             else
                 msg = Dict{String, Any}("msg" => "Server Unavailable", "code" => 503, "outputtype" => "internal");
                 write(client, JSON.json(msg))
                 close_connection(client)
+                return
             end 
         elseif requestType == "setready"
             println("Setting Server to be ready")
@@ -99,6 +96,8 @@ wsh = WebSocketHandler() do req, client
         return 
     end
     
+    connections[client.id] = true
+
     try 
         Logger.setwebsocketclient(client)
         Logger.configure(style=:json, modes=[:socket])
@@ -148,12 +147,12 @@ wsh = WebSocketHandler() do req, client
         global tf = tf
         close(io)
         
-        cp(Base.source_dir()*"/handleErrors.jl", "$dir/handleErrors.jl", remove_destination=true)
-        cp(Base.source_dir()*"/Run_Algo.jl", "$dir/Run_Algo.jl", remove_destination=true)
+        cp(Base.source_dir()*"/../Run/handleErrors.jl", "$dir/handleErrors.jl", remove_destination=true)
+        cp(Base.source_dir()*"/../Run/Run_Algo.jl", "$dir/Run_Algo.jl", remove_destination=true)
 
         #copy the boilerplate code
         #includes relevant modules and create db connections
-        cp(Base.source_dir()*"/boilerPlate.jl", tf, remove_destination=true)
+        cp(Base.source_dir()*"/../Run/boilerPlate.jl", tf, remove_destination=true)
 
         #Append user source code to the fle
         open(tf, "a") do f
