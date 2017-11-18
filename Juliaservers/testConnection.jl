@@ -9,23 +9,25 @@ yojak_dir="$base_dir/yojak"
 
 cd("$raftaar_dir/Juliaservers")
 
+user="jp"
 host="127.0.0.1"
 port=8000
 
 try
-  host = ARGS[1]
-  port = parse(ARGS[2])
+  user = ARGS[1]  
+  host = ARGS[2]
+  port = parse(ARGS[3])
 end
 
 py_cmd = `python $(pwd())/testConnection.py $host $port`
 relax_permissions_cmd =`bash $(pwd())/relaxPermissions.sh`
-secure_permissions_cmd =`bash $(pwd())/securePermissions.sh`
+secure_permissions_cmd =`bash $(pwd())/securePermissions.sh $user`
 
 function testConnection()
     println("Testing Connection at $host:$port")
     try
         run(py_cmd)
-        #run(secure_permissions_cmd)
+        run(secure_permissions_cmd)
     catch err
         println(err)
         sleep(20)

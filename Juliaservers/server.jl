@@ -1,4 +1,10 @@
 using API
+#Compile all modules
+using HistoryAPI
+using UtilityAPI
+using Raftaar
+using YRead
+
 using WebSockets
 using HttpServer
 using Logger
