@@ -1,7 +1,7 @@
 # @Author: Shiv Chawla
 # @Date:   2017-11-17 11:04:27
 # @Last Modified by:   Shiv Chawla
-# @Last Modified time: 2017-11-19 12:33:32
+# @Last Modified time: 2017-11-19 13:49:53
 
 #!/bin/bash
 user="$1"
@@ -14,9 +14,6 @@ yojak_dir="$base_dir/yojak"
 #Set permissions of folder
 #setfacl -R -m u:$user:r-x $base_dir
 
-setfacl -R -m u:$user:r-x $user_dir
-setfacl -R -m u:$user:rwx $user_dir/local
-
 setfacl -R -m u:$user:--x $raftaar_dir    
 setfacl -R -m u:$user:--- $raftaar_dir/Util
 setfacl -R -m u:$user:r-x $raftaar_dir/Run
@@ -24,3 +21,7 @@ setfacl -R -m u:$user:r-x $raftaar_dir/Benchmark
 #setfacl -R -m u:$user:r-x $raftaar_dir/API
 
 setfacl -R -m u:$user:--x $yojak_dir
+
+# not really required
+#setfacl -R -m u:$user:r-x $user_dir
+#setfacl -R -m u:$user:rwx $user_dir/local
