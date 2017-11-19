@@ -3,7 +3,7 @@
 # Email: shiv.chawla@aimsquant.com
 # Organization: AIMSQUANT PVT. LTD.
 
-import Base: exit, quit
+import Base: exit, quit, run
 using BufferedStreams
 
 #overwriting Base.exit
@@ -13,6 +13,10 @@ end
 
 function quit()
     warn_static("Illegal Action at quit()")
+end
+
+function run(command::Cmd)
+    warn_static("Illegal Action at run()")
 end
 
 function handleexception(err::Any, forward=false)

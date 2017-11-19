@@ -1,19 +1,18 @@
 # @Author: Shiv Chawla
 # @Date:   2017-11-17 11:04:27
 # @Last Modified by:   Shiv Chawla
-# @Last Modified time: 2017-11-18 15:25:56
+# @Last Modified time: 2017-11-19 12:33:32
 
 #!/bin/bash
-
-base_dir="/home"
-raftaar_dir="$base_dir/raftaar"
-yojak_dir="$base_dir/yojak"
-
 user="$1"
 user_dir="/home/$user"
 
+base_dir="$2"
+raftaar_dir="$base_dir/raftaar"
+yojak_dir="$base_dir/yojak"
+
 #Set permissions of folder
-setfacl -R -m u:$user:r-x $base_dir
+#setfacl -R -m u:$user:r-x $base_dir
 
 setfacl -R -m u:$user:r-x $user_dir
 setfacl -R -m u:$user:rwx $user_dir/local
