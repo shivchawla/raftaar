@@ -6,7 +6,7 @@
 user="jp"
 host="127.0.0.1"
 port=8000
-base_dir="/home"
+base_dir="/home/jp"
 
 try
   user = ARGS[1]  
@@ -14,6 +14,8 @@ try
   port = parse(ARGS[3])
   base_dir = ARGS[4]
 end
+
+println(base_dir)
 
 raftaar_dir="$base_dir/raftaar"
 cd("$raftaar_dir/Juliaservers")

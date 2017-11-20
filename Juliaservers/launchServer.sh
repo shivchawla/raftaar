@@ -3,12 +3,12 @@ user="$1"
 host="$2"
 port="$3"
 
-base_dir="/home"
+base_dir="/home/jp"
 if [ -z "$4" ]
   then
     echo "No base directory supplied"
-    echo "Defaulting: /home"
-elif
+    echo "Defaulting: /home/jp"
+else
     base_dir="$4"
 fi
 
@@ -17,7 +17,7 @@ if [ -z "$5" ]
   then
     echo "No Julia executable supplied"
     echo "Defaulting: /usr/local/julia/bin/julia"
-elif
+else
     julia="$5"
 fi
 
