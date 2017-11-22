@@ -59,7 +59,7 @@ function run_algo(forward_test::Bool = false)
       end
 
       if(!_run_algo_internal())
-	Logger.error("Internal Error")
+        Logger.error("Missing Data or Internal Error")
         return
       end
        
