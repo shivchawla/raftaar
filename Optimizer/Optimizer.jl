@@ -27,9 +27,6 @@ function optimize(symbols,
                     initialportfolio::Vector{Float64}=Vector{Float64}(),
                     linearrestrictions::Vector{LinearRestriction}=LinearRestriction[])
                     
-    
-    println("LOL")
-
     if method=="minvol2"
         minimumvolatility_raw(symbols, 
                             window=window, 
@@ -45,14 +42,14 @@ function optimize(symbols,
                             constraints=constraints, 
                             initialportfolio=initialportfolio,
                             linearrestrictions=linearrestrictions)
-    elseif method=="mad"
+    elseif method=="min_mad"
         minimumabsolutedeviation(symbols, 
                                     window=window, 
                                     date=date, 
                                     constraints=constraints, 
                                     initialportfolio=initialportfolio,
                                     linearrestrictions=linearrestrictions)
-    elseif method=="masd"
+    elseif method=="min_msad"
         minimumabsolutesemideviation(symbols, 
                                     window=window, 
                                     date=date, 
@@ -82,7 +79,7 @@ function optimize(symbols,
                         constraints=constraints, 
                         initialportfolio=initialportfolio,
                         linearrestrictions=linearrestrictions)
-    elseif method=="norm"
+    elseif method=="minnorm"
         minimumnorm(symbols,  
                         constraints=constraints, 
                         initialportfolio=initialportfolio,
@@ -91,7 +88,6 @@ function optimize(symbols,
         return (0.0, [(symbol, 0.0) for symbol in symbols], :Unavailable)
     end
 end
-
 
 
 end # end of module
