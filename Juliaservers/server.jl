@@ -2,6 +2,7 @@ using API
 #Compile all modules
 using HistoryAPI
 using UtilityAPI
+using OptimizeAPI
 using Raftaar
 using YRead
 

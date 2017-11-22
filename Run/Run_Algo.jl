@@ -58,7 +58,10 @@ function run_algo(forward_test::Bool = false)
         return
       end
 
-      _run_algo_internal()
+      if(!_run_algo_internal())
+	Logger.error("Internal Error")
+        return
+      end
        
   end
 end
