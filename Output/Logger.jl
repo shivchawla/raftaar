@@ -82,7 +82,6 @@ function setbacktestid(backtestid::String)
 end
 
 function update_display(display::Bool)
-    println("Updating display: $(display)")
     global params["display"] = display
 end
 
