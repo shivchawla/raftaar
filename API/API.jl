@@ -358,7 +358,7 @@ function _serializeData()
     
     s = JSON.json(Dict("outputtype" => "serializedData",
                      "algorithm" => Raftaar.serialize(algorithm)))
-    Logger.print(string(s))
+    Logger.print(string(s), realtime=false)
 end
 
 export _serializeData

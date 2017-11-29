@@ -15,9 +15,9 @@ function quit()
     warn_static("Illegal Action at quit()")
 end
 
-#=function run(command::Cmd)
+function _run(command::Any)
     warn_static("Illegal Action at run()")
-end=#
+end
 
 function handleexception(err::Any, forward=false)
 

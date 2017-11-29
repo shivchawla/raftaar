@@ -21,7 +21,7 @@ end
 
 source_dir = Base.source_dir()
 @eval @everywhere source_dir = $source_dir
-@everywhere include("evalStrategy.jl")
+@everywhere include("$(source_dir)/evalStrategy.jl")
 
 function decodeMessage(msg)
     JSON.parse(String(copy(msg)))

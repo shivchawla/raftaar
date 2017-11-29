@@ -6,9 +6,7 @@
 function run_algo(forward_test::Bool = false)
 
   Logger.info_static("Running User algorithm")
-  #benchmark = "CNX_NIFTY"
-  #setbenchmark(benchmark)
-
+  
   setcurrentdate(getstartdate())
 
   if forward_test

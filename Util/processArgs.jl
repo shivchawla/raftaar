@@ -11,13 +11,15 @@ function processargs(parsed_args::Dict{String,Any})
   if (parsed_args["code"] == nothing)
     fname = parsed_args["file"]
   elseif (parsed_args["file"] == nothing)
-    parsed_args["code"] = replace(parsed_args["code"], "Base.", "")
+    parsed_args["code"] = replace(parsed_args["code"], "Base.", "_")
+    parsed_args["code"] = replace(parsed_args["code"], "run(", "_run(")
   end
 
   #When there is serialized data, this is the FIRST step 
   if (parsed_args["serializedData"] != "")
         _deserializeData(parsed_args["serializedData"])
   else
+
       if (parsed_args["capital"] != nothing)
         setcash(parsed_args["capital"])
       end
@@ -32,13 +34,13 @@ function processargs(parsed_args::Dict{String,Any})
       universeconstituents = Vector{String}()    
       
       universe = get(parsed_args, "universe", "")
-      if (universe!="")
+      if (universe!="" && universe!=nothing)
           universeconstituents = [strip(String(ticker)) for ticker in split(universe,",")] 
       end
 
       if length(universeconstituents) == 0 
           index = get(parsed_args, "index", "Nifty 50")
-          index = index != "" ? index : "Nifty 50"
+          index = index != "" && index!=nothing ? index : "Nifty 50"
           setuniverseindex(index)
           universeconstituents = getindexconstituents(index)
       end
