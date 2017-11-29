@@ -1,3 +1,4 @@
+
 function connect(host::String, port::Int, user::String="", pass::String="")
     usr_pwd_less = user=="" && pass==""
 
@@ -41,7 +42,23 @@ function setloggerconnection(connections)
     end
 end
 
+# Setup logger database connection
+function setredisconnection(connections)
+    try
+        logger_conn = connections["redis"]
+        user = logger_conn["user"]
+        pass = logger_conn["pass"]
+        host = logger_conn["host"]
+        port = logger_conn["port"]
+           
+        Logger.setredisclient(host, port) 
+    catch err
+        println(err)
+    end
+end
+
 connections = JSON.parsefile(Base.source_dir()*"/connection.json")
 setdatastores(connections)
-setloggerconnection(connections)
+#setloggerconnection(connections)
+setredisconnection(connections)
 

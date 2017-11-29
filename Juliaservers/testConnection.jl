@@ -6,7 +6,7 @@
 user="jp"
 host="127.0.0.1"
 port=8000
-base_dir="/home/jp"
+base_dir="/home/$user"
 
 try
   user = ARGS[1]  
@@ -15,12 +15,11 @@ try
   base_dir = ARGS[4]
 end
 
-println(base_dir)
-
 raftaar_dir="$base_dir/raftaar"
 cd("$raftaar_dir/Juliaservers")
 
 py_cmd = `python $(pwd())/testConnection.py $host $port`
+
 secure_permissions_cmd =`bash $(pwd())/securePermissions.sh $user $base_dir`
 
 function testConnection()

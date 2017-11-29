@@ -417,7 +417,8 @@ function settargetportfolio(port::Vector{Tuple{Int64, Float64}})
         setholdingpct(id, 0.0)
     end
 
-    @sync @parallel for v in port
+    #@sync @parallel 
+    for v in port
         setholdingpct(v[1], v[2])
     end
 end

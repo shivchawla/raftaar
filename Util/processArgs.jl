@@ -2,22 +2,16 @@
 # Author: Shiv Chawla
 # Email: shiv.chawla@aimsquant.com
 # Organization: AIMSQUANT PVT. LTD.
+
 include("../Benchmark/benchmark.jl")
 
-function processargs(parsed_args::Dict{String,Any}, dir::String)
-  fname = ""
+function processargs(parsed_args::Dict{String,Any})
+  
   #Include the strategy code
   if (parsed_args["code"] == nothing)
     fname = parsed_args["file"]
   elseif (parsed_args["file"] == nothing)
-
-    (tf, f) = mktemp(dir)
-  
-    #replace Base. with empty String
-    #disallow explicit use of Base. module
-    write(f, replace(parsed_args["code"], "Base.", ""))
-    close(f)
-    fname = tf
+    parsed_args["code"] = replace(parsed_args["code"], "Base.", "")
   end
 
   #When there is serialized data, this is the FIRST step 
@@ -121,5 +115,4 @@ function processargs(parsed_args::Dict{String,Any}, dir::String)
         #, forward_with_serialize_data = (parsed_args["serializedData"] != ""))
   end
 
-  return fname
 end

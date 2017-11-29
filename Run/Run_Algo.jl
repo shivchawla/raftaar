@@ -59,7 +59,10 @@ function run_algo(forward_test::Bool = false)
       end
 
       if(!_run_algo_internal())
-	Logger.error("Internal Error")
+        Logger.error_static("Missing Data or Internal Error")
+        if !forward_test
+            _outputbacktestlogs()
+        end
         return
       end
        
@@ -174,7 +177,7 @@ function _run_algo_internal(startdate::Date = getstartdate(), enddate::Date = ge
       Logger.info_static("Running algorithm for each timestamp")
       success = true
       for (i, date) in enumerate(sort(collect(keys(labels))))
-          println("For Date: $(date)")
+          #println("For Date: $(date)")
           success = mainfnc(Date(date), i, openprices, highprices, lowprices, closeprices, vol, adjustments, forward)
           
           if(!success)

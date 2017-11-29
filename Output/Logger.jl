@@ -7,8 +7,10 @@ __precompile__(true)
 module Logger
 
 import WebSockets: WebSocket
+import Base: run
 using LibBSON
 using Mongo
+#using Redis
 
 type LogBook
     mode::Symbol
@@ -75,6 +77,19 @@ function setmongoclient(coll::MongoCollection)
         global params = delete!(params, "mongo_collection")
     end
     global params["mongo_collection"] = coll
+end
+
+function setredisclient(redis_host::String="127.0.0.1", redis_port::Int=6379)
+    if haskey(params, "redis_host")
+        global params = delete!(params, "redis_host")
+    end
+    global params["redis_host"] = redis_host
+
+    if haskey(params, "redis_port")
+        global params = delete!(params, "redis_port")
+    end
+    global params["redis_port"] = redis_port
+
 end
 
 function setbacktestid(backtestid::String)
@@ -240,6 +255,12 @@ function _logJSON(msg::String, msgtype::MessageType, modes::Vector{Symbol}, date
             println(jsonmsg)
         end
 
+        if (:redis in modes)
+            backtestId = params["backtestid"]
+            cmd = `redis-cli -h $(params["redis_host"]) -p $(params["redis_port"]) PUBLISH "backtest-realtime-$(backtestId)" "$jsonmsg"`
+            Base.run(cmd)
+        end
+
         if (:socket in modes)
             haskey(params, "ws_client") ? 
                     write(params["ws_client"], jsonmsg) : 
@@ -275,7 +296,7 @@ function _logJSON(msg::String, msgtype::MessageType, modes::Vector{Symbol}, date
     end
 end
 
-function print(str)
+function print(str; realtime=true)
     modes = [:console]
 
     if haskey(params, "modes")
@@ -284,6 +305,28 @@ function print(str)
 
     if (:console in modes)
         println(str)
+    end
+
+    if(:redis in modes)
+        backtestId = params["backtestid"]
+        
+        channel = realtime ? "backtest-realtime-$(backtestId)" : "backtest-final-$(backtestId)"
+        if realtime
+            cmd = `redis-cli -h $(params["redis_host"]) -p $(params["redis_port"]) PUBLISH "$channel" "$str"`
+            Base.run(cmd)
+        else
+
+            chunksize = 10000
+            #brek down the string into multiple parts
+            for i=1:chunksize:length(str)
+                chunk = str[i:min(length(str), i+chunksize-1)]
+                cmd = `redis-cli -h $(params["redis_host"]) -p $(params["redis_port"]) PUBLISH $channel $chunk`
+                Base.run(cmd)
+            end
+
+            cmd = `redis-cli -h $(params["redis_host"]) -p $(params["redis_port"]) PUBLISH $channel "backtest-final-output-ready"`
+            Base.run(cmd) 
+        end           
     end
 
     if (:socket in modes)

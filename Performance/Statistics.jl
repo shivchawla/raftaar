@@ -84,7 +84,7 @@ function outputbackteststatistics(accttrkr::AccountTracker,
                                     trsctrkr,
                                     ordrtrkr)
 
-    Logger.print(JSON.json(outputdict))
+    Logger.print(JSON.json(outputdict), realtime = false)
 end
 
 function outputbackteststatistics_full(accttrkr::AccountTracker,
@@ -129,7 +129,7 @@ function outputbackteststatistics_full(accttrkr::AccountTracker,
 
     outputdict["transactions"] = serialize(trsctrkr)
 
-    Logger.print(JSON.json(outputdict))
+    Logger.print(JSON.json(outputdict), realtime = false)
 end
 
 function getaggregatereturns(pft::PerformanceTracker, symbol::Symbol = :All)

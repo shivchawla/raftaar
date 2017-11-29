@@ -1,24 +1,28 @@
 #!/bin/bash
-user="$1"
-host="$2"
-port="$3"
+cores="$1"
+user="$2"
+host="$3"
+port="$4"
 
-base_dir="/home/jp"
-if [ -z "$4" ]
+base_dir="/home/$user"
+#base_dir="/Users/shivkumarchawla" 
+if [ -z "$5" ]
   then
     echo "No base directory supplied"
-    echo "Defaulting: /home/jp"
+    echo "Defaulting: ${base_dir}"
 else
-    base_dir="$4"
+    base_dir="$5"
 fi
 
 julia="/usr/local/julia/bin/julia"
-if [ -z "$5" ]
+#julia="/Applications/Julia-0.6.app/Contents/Resources/julia/bin/julia"
+
+if [ -z "$6" ]
   then
     echo "No Julia executable supplied"
-    echo "Defaulting: /usr/local/julia/bin/julia"
+    echo "Defaulting: ${julia}"
 else
-    julia="$5"
+    julia="$6"
 fi
 
 raftaar_dir="$base_dir/raftaar"
@@ -26,13 +30,6 @@ yojak_dir="$base_dir/yojak"
 
 nohup $julia $raftaar_dir/Juliaservers/testConnection.jl $user $host $port $base_dir &
 
-user_dir="/home/$user"
-
-if [ ! -d "$user_dir/local" ]; then
-        mkdir "$user_dir/local"
-fi
-
-chown $user $user_dir/local
-
 bash $base_dir/raftaar/Juliaservers/relaxPermissions.sh $user $base_dir
-su - $user -c "$julia $base_dir/raftaar/Juliaservers/server.jl $user $host $port 1>&2"
+su - $user -c "$julia -p $cores $base_dir/raftaar/Juliaservers/server.jl $user $host $port 1>&2"
+#$julia -p $cores $base_dir/raftaar/Juliaservers/server.jl $user $host $port 1>&2

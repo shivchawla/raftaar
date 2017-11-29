@@ -1,20 +1,10 @@
-using API
-#Compile all modules
-using HistoryAPI
-using UtilityAPI
-using OptimizeAPI
-using Raftaar
-using YRead
-
 using WebSockets
 using HttpServer
-using Logger
-using Mongo
 using JSON
 
-port = 8000
-host = "127.0.0.1"
 user="jp"
+host = "127.0.0.1"
+port = 8000
 
 SERVER_READY = false
 
@@ -24,38 +14,70 @@ try
   port = parse(ARGS[3])
 end
 
-const dir = "/home/$user/local"
+busy_worker_dict = Dict{Int, Bool}()
+for id in workers()
+    busy_worker_dict[id] = false
+end
 
-include("../Util/parseArgs.jl")
-include("../Util/processArgs.jl")
-include("../Run/handleErrors.jl")
-include("../Util/dbConnections.jl")
-
-#global Dict to store open connections in
-global connections = Dict{Int, Bool}()
+source_dir = Base.source_dir()
+@eval @everywhere source_dir = $source_dir
+@everywhere include("evalStrategy.jl")
 
 function decodeMessage(msg)
     JSON.parse(String(copy(msg)))
 end
 
-global fname = ""
-global tf = ""
-global parsed_args = Dict{String, Any}()
+function isserveravailable()
+    server_available = SERVER_READY
+    println("Server Available: $server_available")
+    server_available
+end
 
-function remove_files()
-    try
-        #remove the tempfile after completion
-        rm(tf)
-        rm(fname)
-        rm("$dir/handleErrors.jl")
-        rm("$dir/Run_Algo.jl")
-        rm("$dir/*")
+backtests_requests = []
+
+function getfreeprocess(totalprocess=5)
+    for (k,v) in busy_worker_dict
+        if v == false
+            return k
+        end 
+    end
+
+    return -1  
+end
+
+function save_backtest(args)
+    push!(backtests_requests, args)
+end
+
+function get_backtest()
+    shift!(backtests_requests)
+end
+
+function hasavailableworkers()
+    getfreeprocess() != -1
+end
+
+function process_backtest()
+    
+    process_number = getfreeprocess() 
+    
+    if process_number != -1
+        busy_worker_dict[process_number] = true
+        try
+            args = get_backtest()
+            r = @spawnat process_number evaluate_strategy(args)
+            f = fetch(r)
+
+            busy_worker_dict[process_number] = false
+            process_backtest()
+        catch err
+            busy_worker_dict[process_number] = false
+        end
     end
 end
 
 function close_connection(client)  
     println("Closing Connection: $client")
-    global connections = delete!(connections, client.id)
     try
         close(client)
     catch
@@ -63,12 +85,9 @@ function close_connection(client)
     end
 end
 
-function isserveravailable()
-    length(collect(keys(connections))) == 0 && SERVER_READY
-end
-
 wsh = WebSocketHandler() do req, client
 
+    println("Got Client: $client")
     msg = ""
     try
         
@@ -77,10 +96,7 @@ wsh = WebSocketHandler() do req, client
         requestType = haskey(msg, "requestType") ? msg["requestType"] : ""
 
         if requestType == "execute" 
-            if isserveravailable()
-                remove_files()
-                #contiue process
-            else
+            if !isserveravailable()
                 msg = Dict{String, Any}("msg" => "Server Unavailable", "code" => 503, "outputtype" => "internal");
                 write(client, JSON.json(msg))
                 close_connection(client)
@@ -103,101 +119,16 @@ wsh = WebSocketHandler() do req, client
         return 
     end
     
-    connections[client.id] = true
-
-    try 
-        Logger.setwebsocketclient(client)
-        Logger.configure(style=:json, modes=[:socket])
-
-        argsString = msg["args"]
-        args = [String(ss) for ss in split(argsString,"??##")]
-
-        info_static("Starting Backtest")
-        info_static("Processing parsed arguments from settings panel")
-        global parsed_args = parse_arguments(args)
-
-        backtestid = haskey(parsed_args, "backtestid") ? parsed_args["backtestid"] : ""
-        Logger.setbacktestid(backtestid)
-
-    catch err
-        println(err)
-        error_static("Internal Error while processing settings")
-        close_connection(client)
-        return
-    end
-    
-    try
-        global fname = processargs(parsed_args, dir)
-    catch err
-        println(err)
-        error_static("Error parsing arguments from settings panel")
-        handleexception(err, parsed_args["forward"])
-        close_connection(client)
-        API.reset()
-        return
-    end
-
-    info_static("Checking user algorithm for errors")
-    try
-        include(fname)
-    catch err
-        handleexception(err, parsed_args["forward"])
-        close_connection(client)
-        API.reset()
-        return
-    end
-   
-    try
-        #create a temporary file to copy all the relevant code required
-        #to run the backtest
-        (tf, io) = mktemp(dir)
-        global tf = tf
-        close(io)
-        
-        cp(Base.source_dir()*"/../Run/handleErrors.jl", "$dir/handleErrors.jl", remove_destination=true)
-        cp(Base.source_dir()*"/../Run/Run_Algo.jl", "$dir/Run_Algo.jl", remove_destination=true)
-
-        #copy the boilerplate code
-        #includes relevant modules and create db connections
-        cp(Base.source_dir()*"/../Run/boilerPlate.jl", tf, remove_destination=true)
-
-        #Append user source code to the fle
-        open(tf, "a") do f
-            open(fname, "r") do ff
-                source_code = readlines(ff)
-                for l in source_code
-                    write(f, "\n$l")
-                end                
-            end
-            
-            #Append the actual backtesting function
-            if parsed_args["forward"] 
-                write(f, "\nrun_algo(true)")
-            else
-                write(f, "\nrun_algo(false)")
-            end
-        end
-    catch err
-        println(err)
-        error_static("Internal Error")
-        if !parsed_args["forward"]
-            _outputbacktestlogs()
-        end
-        close_connection(client)
-        API.reset()
-        return
-    end
-
-    #Run the complete file
-    try
-        evalfile(tf)
-    catch err
-        handleexception(err, parsed_args["forward"])
-    end
-
-    # Finally close the ws client on successful/failed completion
     close_connection(client)
-    API.reset()
+    
+    argsString = msg["args"]
+    args = [String(ss) for ss in split(argsString,"??##")]
+    save_backtest(args)
+    
+    if hasavailableworkers()
+        process_backtest()
+    end
+
 end
 
 try
@@ -207,4 +138,3 @@ catch err
     println(err)
     println("Error while launching WS server")
 end
-

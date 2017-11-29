@@ -7,11 +7,10 @@ function getindexconstituents(index::String)
 
     universe = Vector{String}()
     try
-        universemap = JSON.parsefile(Base.source_dir()*"/../Benchmark/Constituents/universemap.json")
+        universemap = JSON.parsefile(source_dir*"/../Benchmark/Constituents/universemap.json")
         indexfilename = universemap[index]
 
-        #println(Base.source_dir()*"../Benchmark/Files/universemap.json");
-        (column_data, header_data) = readdlm(Base.source_dir()*"/../Benchmark/Constituents/$(indexfilename)", ',', String, header=true)
+        (column_data, header_data) = readdlm(source_dir*"/../Benchmark/Constituents/$(indexfilename)", ',', String, header=true)
         (nrows,ncols) = size(column_data)
         if nrows > 0
             #SYMBOL corresponds to 3rd column    

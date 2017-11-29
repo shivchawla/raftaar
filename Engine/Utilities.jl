@@ -70,7 +70,8 @@ function beta_old(tickers, frequency::Symbol, horizon::Int, enddate::DateTime;
     
     m_ta = merge(rets_benchmark, rets_ts, :outer)
 
-    @sync @parallel for i in 1:nNames
+    #@sync @parallel 
+    for i in 1:nNames
         name = names[i]
         ta = TimeSeries.dropnan(m_ta[benchmark, name], :any)
         df = DataFrame(X = values(ta[benchmark]), Y = values(ta[name]))
