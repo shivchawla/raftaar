@@ -46,7 +46,7 @@ function evaluate_strategy(args)
 
     #Run the complete file
     try
-        eval(parse("""include("../Run/boilerPlate.jl")"""))
+        eval(parse("""include("$(source_dir)/../Run/boilerPlate.jl")"""))
         
         info_static("Checking user algorithm for errors")
         if (parsed_args["code"] == nothing)
