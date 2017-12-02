@@ -1,3 +1,10 @@
+import API
+import HistoryAPI
+import UtilityAPI
+import OptimizeAPI
+import Raftaar
+import YRead
+
 using WebSockets
 using HttpServer
 using JSON
@@ -7,6 +14,7 @@ host = "127.0.0.1"
 port = 8000
 
 SERVER_READY = false
+MAX_PENDING_REQUESTS = 4
 
 try
   user = ARGS[1]  
@@ -28,14 +36,14 @@ function decodeMessage(msg)
 end
 
 function isserveravailable()
-    server_available = SERVER_READY
+    server_available = SERVER_READY && length(backtests_requests) < MAX_PENDING_REQUESTS
     println("Server Available: $server_available")
     server_available
 end
 
 backtests_requests = []
 
-function getfreeprocess(totalprocess=5)
+function getfreeprocess()
     for (k,v) in busy_worker_dict
         if v == false
             return k
@@ -97,8 +105,8 @@ wsh = WebSocketHandler() do req, client
 
         if requestType == "execute" 
             if !isserveravailable()
-                msg = Dict{String, Any}("msg" => "Server Unavailable", "code" => 503, "outputtype" => "internal");
-                write(client, JSON.json(msg))
+                responseMsg = Dict{String, Any}("msg" => "Server Unavailable", "code" => 503, "outputtype" => "internal")
+                write(client, JSON.json(responseMsg))
                 close_connection(client)
                 return
             end 
@@ -119,6 +127,9 @@ wsh = WebSocketHandler() do req, client
         return 
     end
     
+    #Acknowledge the requests by sending code 200
+    responseMsg = Dict{String, Any}("msg" => "Server Available", "code" => 200, "outputtype" => "internal")
+    write(client, JSON.json(responseMsg))
     close_connection(client)
     
     argsString = msg["args"]
