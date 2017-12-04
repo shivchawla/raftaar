@@ -16,7 +16,9 @@ function setdatastores(connections)
         yhost = yojak_conn["host"]
         yport = yojak_conn["port"]
         ydatabase = yojak_conn["database"]
-           
+
+        delete!(connections, "yojak_datastore")
+
         const yclient =  connect(yhost, yport, yuser, ypass)
         YRead.configure(yclient, database = ydatabase, priority = 2)
     catch err
@@ -34,8 +36,9 @@ function setloggerconnection(connections)
         port = logger_conn["port"]
         database = logger_conn["database"]
         collection = logger_conn["collection"]
-           
-        const lclient =  connect(host, port, user, pass)
+        
+        delete!(connections, "logger")   
+        const lclient =  connect(host, port, user, pass)       
         Logger.setmongoclient(MongoCollection(lclient, database, collection)) 
     catch err
         println(err)
@@ -50,8 +53,10 @@ function setredisconnection(connections)
         pass = logger_conn["pass"]
         host = logger_conn["host"]
         port = logger_conn["port"]
+
+        delete!(connections, "redis")
            
-        Logger.setredisclient(host, port) 
+        Logger.setredisclient(host, port, pass) 
     catch err
         println(err)
     end
@@ -59,6 +64,4 @@ end
 
 connections = JSON.parsefile(Base.source_dir()*"/connection.json")
 setdatastores(connections)
-#setloggerconnection(connections)
-setredisconnection(connections)
-
+connections = nothing

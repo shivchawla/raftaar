@@ -35,7 +35,7 @@ const params = Dict{String, Any}("style" => :text,
                                 "limit" => 30,
                                 "counter" => 0,
                                 "display" => true,
-                                "backtestid" => "")
+                                "backtestId" => "")
 
 """
 Function to configure mode of the logger and change the datetime
@@ -79,7 +79,7 @@ function setmongoclient(coll::MongoCollection)
     global params["mongo_collection"] = coll
 end
 
-function setredisclient(redis_host::String="127.0.0.1", redis_port::Int=6379)
+function setredisclient(redis_host::String="127.0.0.1", redis_port::Int=6379, redis_pass::String="")
     if haskey(params, "redis_host")
         global params = delete!(params, "redis_host")
     end
@@ -90,10 +90,16 @@ function setredisclient(redis_host::String="127.0.0.1", redis_port::Int=6379)
     end
     global params["redis_port"] = redis_port
 
+    if haskey(params, "redis_pass")
+        global params = delete!(params, "redis_pass")
+    end
+    
+    global params["redis_pass"] = redis_pass    
+
 end
 
-function setbacktestid(backtestid::String)
-    global params["backtestid"] = backtestid
+function setbacktestid(backtestId::String)
+    global params["backtestId"] = backtestId
 end
 
 function update_display(display::Bool)
@@ -228,7 +234,7 @@ function _logJSON(msg::String, msgtype::MessageType, modes::Vector{Symbol}, date
                                         "messagetype" => string(msgtype),
                                         "message" => msg,
                                         "dt" => Dates.format(now(), "Y-mm-dd HH:MM:SS.sss"),
-                                        "backtestid" => params["backtestid"])
+                                        "backtestId" => params["backtestId"])
 
     if(datetime != DateTime()) 
         datetimestr = todbformat(datetime)
@@ -256,9 +262,13 @@ function _logJSON(msg::String, msgtype::MessageType, modes::Vector{Symbol}, date
         end
 
         if (:redis in modes)
-            backtestId = params["backtestid"]
-            cmd = `redis-cli -h $(params["redis_host"]) -p $(params["redis_port"]) PUBLISH "backtest-realtime-$(backtestId)" "$jsonmsg"`
-            Base.run(cmd)
+            backtestId = params["backtestId"]
+            Base.run(pushQueueCmd("backtest-realtime-$(backtestId)", jsonmsg))
+
+            #Special addition to detect julia exception 
+            if string(msgtype) == "ERROR"
+                Base.run(publishCmd("backtest-realtime-$(backtestId)", jsonmsg))
+            end
         end
 
         if (:socket in modes)
@@ -296,7 +306,21 @@ function _logJSON(msg::String, msgtype::MessageType, modes::Vector{Symbol}, date
     end
 end
 
+function pushQueueCmd(key, str) 
+    `redis-cli -p 13472 RPUSH "$key" "$str"`
+end
+
+function publishCmd(channel, str) 
+    `redis-cli -p 13472 PUBLISH "$channel" "$str"`
+end
+
 function print(str; realtime=true)
+    
+    backtestId = params["backtestId"]
+    data = JSON.parse(str)
+    data["backtestId"] = backtestId;
+    str = JSON.json(data)
+   
     modes = [:console]
 
     if haskey(params, "modes")
@@ -308,24 +332,22 @@ function print(str; realtime=true)
     end
 
     if(:redis in modes)
-        backtestId = params["backtestid"]
         
         channel = realtime ? "backtest-realtime-$(backtestId)" : "backtest-final-$(backtestId)"
         if realtime
-            cmd = `redis-cli -h $(params["redis_host"]) -p $(params["redis_port"]) PUBLISH "$channel" "$str"`
-            Base.run(cmd)
+            Base.run(pushQueueCmd(channel, str))
         else
 
             chunksize = 10000
-            #brek down the string into multiple parts
+            #break down the string into multiple parts
+            idx = 0;
             for i=1:chunksize:length(str)
                 chunk = str[i:min(length(str), i+chunksize-1)]
-                cmd = `redis-cli -h $(params["redis_host"]) -p $(params["redis_port"]) PUBLISH $channel $chunk`
-                Base.run(cmd)
+                Base.run(pushQueueCmd(channel, JSON.json(Dict{String, Any}("data"=>chunk, "index"=>idx))))
+                idx+=1
             end
 
-            cmd = `redis-cli -h $(params["redis_host"]) -p $(params["redis_port"]) PUBLISH $channel "backtest-final-output-ready"`
-            Base.run(cmd) 
+            Base.run(publishCmd(channel, "backtest-final-output-ready")) 
         end           
     end
 
