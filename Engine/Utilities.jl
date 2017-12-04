@@ -30,7 +30,7 @@ function price_returns(tickers, series::String, frequency::Symbol, horizon::Int,
     end
     
     #Fetch prices for horizon    
-    prices = YRead.history(tickers, series, :Day, horizon, enddate)
+    prices = YRead.history(tickers, series, :Day, horizon, enddate, displaylogs=false)
     _compute_returns(prices, rettype, total) 
 end
 export price_returns
@@ -47,14 +47,14 @@ function stddev(tickers, series::String, frequency::Symbol, horizon::Int, enddat
         rets = price_returns(tickers, series, frequency, horizon, enddate, rettype = rettype)
         std(rets)
     else
-        prices = YRead.history(tickers, series, :Day, horizon, enddate)
+        prices = YRead.history(tickers, series, :Day, horizon, enddate, displaylogs=false)
         std(prices)
     end
 end
 export stddev
 
 function beta_old(tickers, frequency::Symbol, horizon::Int, enddate::DateTime; 
-                benchmark="CNX_NIFTY", rettype::Symbol=:log, series::String = "Close")
+                benchmark="NIFTY_50", rettype::Symbol=:log, series::String = "Close")
     
     rets_ts = price_returns(tickers, series, frequency, horizon, enddate, rettype = rettype)
    
