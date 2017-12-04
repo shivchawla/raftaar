@@ -267,7 +267,13 @@ function _logJSON(msg::String, msgtype::MessageType, modes::Vector{Symbol}, date
 
             #Special addition to detect julia exception 
             if string(msgtype) == "ERROR"
-                Base.run(publishCmd("backtest-realtime-$(backtestId)", jsonmsg))
+                try
+                    Base.run(publishCmd("backtest-realtime-$(backtestId)", jsonmsg))
+                catch err
+                    println(err)
+                    println("Error Running Redis command")
+                    error_static("Internal Error") 
+                end
             end
         end
 
@@ -347,7 +353,13 @@ function print(str; realtime=true)
                 idx+=1
             end
 
-            Base.run(publishCmd(channel, "backtest-final-output-ready")) 
+            try
+                Base.run(publishCmd(channel, "backtest-final-output-ready"))
+            catch err
+                println(err)
+                println("Error Running Redis command") 
+                error_static("Internal Error")
+            end
         end           
     end
 

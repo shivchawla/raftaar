@@ -23,6 +23,7 @@ function run_algo(forward_test::Bool = false)
           initialize(getstate())
           API.setparent(:all)
         catch err
+          API.setparent(:all)
           handleexception(err, forward_test)
           _serializeData()
           return
@@ -52,6 +53,7 @@ function run_algo(forward_test::Bool = false)
         initialize(getstate())
         API.setparent(:all)
       catch err
+        API.setparent(:all)
         handleexception(err, forward_test)
         return
       end
@@ -260,6 +262,7 @@ function mainfnc(date::Date, counter::Int, open, high, low, close, volume, adjus
     end
     API.setparent(:all)
   catch err
+    API.setparent(:all)
     handleexception(err, forward)
     return false
   end
