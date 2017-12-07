@@ -324,7 +324,7 @@ function print(str; realtime=true)
     
     backtestId = params["backtestId"]
     data = JSON.parse(str)
-    data["backtestId"] = backtestId;
+    data["backtestId"] = backtestId
     str = JSON.json(data)
    
     modes = [:console]
@@ -347,8 +347,11 @@ function print(str; realtime=true)
             chunksize = 10000
             #break down the string into multiple parts
             idx = 0;
-            for i=1:chunksize:length(str)
-                chunk = str[i:min(length(str), i+chunksize-1)]
+
+            #Using "endof" string and NOT "length" length <= endof. 
+            # Read Julia documentation on strings 
+            for i=1:chunksize:endof(str)
+                chunk = str[i:min(endof(str), i+chunksize-1)]
                 Base.run(pushQueueCmd(channel, JSON.json(Dict{String, Any}("data"=>chunk, "index"=>idx))))
                 idx+=1
             end
