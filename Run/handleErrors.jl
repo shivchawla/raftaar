@@ -15,7 +15,7 @@ function quit()
     warn_static("Illegal Action at quit()")
 end
 
-function run(command::Cmd)
+function _run(command::Any)
     warn_static("Illegal Action at run()")
 end
 
@@ -40,6 +40,7 @@ function handleexception(err::Any, forward=false)
             if fname!="" && !found_in_stack
                 if searchindex(err, fname) > 0 
                     lines = split(err, fname*":")
+                    
                     #special logic to get function and line number
                     stack_msg *="\n\n" * (length(lines) == 2 ? msg*" in "*string(lines[1])*" line:"*string(parse(lines[2]) - 20) : msg)
                     found_in_stack=true

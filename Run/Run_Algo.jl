@@ -6,9 +6,7 @@
 function run_algo(forward_test::Bool = false)
 
   Logger.info_static("Running User algorithm")
-  #benchmark = "CNX_NIFTY"
-  #setbenchmark(benchmark)
-
+  
   setcurrentdate(getstartdate())
 
   if forward_test
@@ -25,6 +23,7 @@ function run_algo(forward_test::Bool = false)
           initialize(getstate())
           API.setparent(:all)
         catch err
+          API.setparent(:all)
           handleexception(err, forward_test)
           _serializeData()
           return
@@ -54,13 +53,16 @@ function run_algo(forward_test::Bool = false)
         initialize(getstate())
         API.setparent(:all)
       catch err
+        API.setparent(:all)
         handleexception(err, forward_test)
         return
       end
 
       if(!_run_algo_internal())
-        Logger.error("Missing Data or Internal Error")
-        return
+        Logger.error_static("Missing Data or Internal Error")
+        if !forward_test
+            _outputbacktestlogs()
+        end
       end
        
   end
@@ -174,7 +176,7 @@ function _run_algo_internal(startdate::Date = getstartdate(), enddate::Date = ge
       Logger.info_static("Running algorithm for each timestamp")
       success = true
       for (i, date) in enumerate(sort(collect(keys(labels))))
-          println("For Date: $(date)")
+          #println("For Date: $(date)")
           success = mainfnc(Date(date), i, openprices, highprices, lowprices, closeprices, vol, adjustments, forward)
           
           if(!success)
@@ -259,6 +261,7 @@ function mainfnc(date::Date, counter::Int, open, high, low, close, volume, adjus
     end
     API.setparent(:all)
   catch err
+    API.setparent(:all)
     handleexception(err, forward)
     return false
   end

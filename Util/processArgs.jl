@@ -2,28 +2,24 @@
 # Author: Shiv Chawla
 # Email: shiv.chawla@aimsquant.com
 # Organization: AIMSQUANT PVT. LTD.
+
 include("../Benchmark/benchmark.jl")
 
-function processargs(parsed_args::Dict{String,Any}, dir::String)
-  fname = ""
+function processargs(parsed_args::Dict{String,Any})
+  
   #Include the strategy code
   if (parsed_args["code"] == nothing)
     fname = parsed_args["file"]
   elseif (parsed_args["file"] == nothing)
-
-    (tf, f) = mktemp(dir)
-  
-    #replace Base. with empty String
-    #disallow explicit use of Base. module
-    write(f, replace(parsed_args["code"], "Base.", ""))
-    close(f)
-    fname = tf
+    parsed_args["code"] = replace(parsed_args["code"], "Base.", "_")
+    parsed_args["code"] = replace(parsed_args["code"], "run(", "_run(")
   end
 
   #When there is serialized data, this is the FIRST step 
   if (parsed_args["serializedData"] != "")
         _deserializeData(parsed_args["serializedData"])
   else
+
       if (parsed_args["capital"] != nothing)
         setcash(parsed_args["capital"])
       end
@@ -38,13 +34,13 @@ function processargs(parsed_args::Dict{String,Any}, dir::String)
       universeconstituents = Vector{String}()    
       
       universe = get(parsed_args, "universe", "")
-      if (universe!="")
+      if (universe!="" && universe!=nothing)
           universeconstituents = [strip(String(ticker)) for ticker in split(universe,",")] 
       end
 
       if length(universeconstituents) == 0 
           index = get(parsed_args, "index", "Nifty 50")
-          index = index != "" ? index : "Nifty 50"
+          index = index != "" && index!=nothing ? index : "Nifty 50"
           setuniverseindex(index)
           universeconstituents = getindexconstituents(index)
       end
@@ -121,5 +117,4 @@ function processargs(parsed_args::Dict{String,Any}, dir::String)
         #, forward_with_serialize_data = (parsed_args["serializedData"] != ""))
   end
 
-  return fname
 end

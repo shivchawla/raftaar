@@ -7,8 +7,10 @@ __precompile__(true)
 module Logger
 
 import WebSockets: WebSocket
+import Base: run
 using LibBSON
 using Mongo
+#using Redis
 
 type LogBook
     mode::Symbol
@@ -33,7 +35,7 @@ const params = Dict{String, Any}("style" => :text,
                                 "limit" => 30,
                                 "counter" => 0,
                                 "display" => true,
-                                "backtestid" => "")
+                                "backtestId" => "")
 
 """
 Function to configure mode of the logger and change the datetime
@@ -77,8 +79,27 @@ function setmongoclient(coll::MongoCollection)
     global params["mongo_collection"] = coll
 end
 
-function setbacktestid(backtestid::String)
-    global params["backtestid"] = backtestid
+function setredisclient(redis_host::String="127.0.0.1", redis_port::Int=6379, redis_pass::String="")
+    if haskey(params, "redis_host")
+        global params = delete!(params, "redis_host")
+    end
+    global params["redis_host"] = redis_host
+
+    if haskey(params, "redis_port")
+        global params = delete!(params, "redis_port")
+    end
+    global params["redis_port"] = redis_port
+
+    if haskey(params, "redis_pass")
+        global params = delete!(params, "redis_pass")
+    end
+    
+    global params["redis_pass"] = redis_pass    
+
+end
+
+function setbacktestid(backtestId::String)
+    global params["backtestId"] = backtestId
 end
 
 function update_display(display::Bool)
@@ -213,7 +234,7 @@ function _logJSON(msg::String, msgtype::MessageType, modes::Vector{Symbol}, date
                                         "messagetype" => string(msgtype),
                                         "message" => msg,
                                         "dt" => Dates.format(now(), "Y-mm-dd HH:MM:SS.sss"),
-                                        "backtestid" => params["backtestid"])
+                                        "backtestId" => params["backtestId"])
 
     if(datetime != DateTime()) 
         datetimestr = todbformat(datetime)
@@ -238,6 +259,22 @@ function _logJSON(msg::String, msgtype::MessageType, modes::Vector{Symbol}, date
 
         if (:console in modes)
             println(jsonmsg)
+        end
+
+        if (:redis in modes)
+            backtestId = params["backtestId"]
+            Base.run(pushQueueCmd("backtest-realtime-$(backtestId)", jsonmsg))
+
+            #Special addition to detect julia exception 
+            if string(msgtype) == "ERROR"
+                try
+                    Base.run(publishCmd("backtest-realtime-$(backtestId)", jsonmsg))
+                catch err
+                    println(err)
+                    println("Error Running Redis command")
+                    error_static("Internal Error") 
+                end
+            end
         end
 
         if (:socket in modes)
@@ -275,7 +312,21 @@ function _logJSON(msg::String, msgtype::MessageType, modes::Vector{Symbol}, date
     end
 end
 
-function print(str)
+function pushQueueCmd(key, str) 
+    `redis-cli -p 13472 RPUSH "$key" "$str"`
+end
+
+function publishCmd(channel, str) 
+    `redis-cli -p 13472 PUBLISH "$channel" "$str"`
+end
+
+function print(str; realtime=true)
+    
+    backtestId = params["backtestId"]
+    data = JSON.parse(str)
+    data["backtestId"] = backtestId
+    str = JSON.json(data)
+   
     modes = [:console]
 
     if haskey(params, "modes")
@@ -284,6 +335,35 @@ function print(str)
 
     if (:console in modes)
         println(str)
+    end
+
+    if(:redis in modes)
+        
+        channel = realtime ? "backtest-realtime-$(backtestId)" : "backtest-final-$(backtestId)"
+        if realtime
+            Base.run(pushQueueCmd(channel, str))
+        else
+
+            chunksize = 10000
+            #break down the string into multiple parts
+            idx = 0;
+
+            #Using "endof" string and NOT "length" length <= endof. 
+            # Read Julia documentation on strings 
+            for i=1:chunksize:endof(str)
+                chunk = str[i:min(endof(str), i+chunksize-1)]
+                Base.run(pushQueueCmd(channel, JSON.json(Dict{String, Any}("data"=>chunk, "index"=>idx))))
+                idx+=1
+            end
+
+            try
+                Base.run(publishCmd(channel, "backtest-final-output-ready"))
+            catch err
+                println(err)
+                println("Error Running Redis command") 
+                error_static("Internal Error")
+            end
+        end           
     end
 
     if (:socket in modes)

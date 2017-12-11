@@ -258,7 +258,7 @@ function outputbacktestlogs(algorithm::Algorithm)
                     "detail" => false,
                     "logs" => Logger.getlogbook())
     
-    Logger.print(JSON.json(outputdict))
+    Logger.print(JSON.json(outputdict), realtime = false)
 end
 export outputbacktestlogs
 
