@@ -64,7 +64,8 @@ function minimumvolatility(symbols;
                             date::DateTime = getcurrentdatetime(), 
                             constraints::Constraints=Constraints(),
                             initialportfolio::Vector{Float64}=Vector{Float64}(),
-                            linearrestrictions::Vector{LinearRestriction}=LinearRestriction[])
+                            linearrestrictions::Vector{LinearRestriction}=LinearRestriction[],
+                            cholesky=false)
     
     #__IllegalDate(date)
     #Retrieve the standard deviation over window
@@ -93,32 +94,48 @@ function minimumvolatility(symbols;
         window = nrows 
     end
     
-    try
-        (r,c) = size(returns)
+    if cholesky
+        try
+            cl = cholfact(Symmetric(cov(returns)), Val{true})
+       
+            L = convert(Array{Float64,2}, cl[:L]) 
+            @variable(m, zeta[1:nstocks])
+            @constraint(m, zeta - L*(x_l + x_s) .== 0)
+            
+            @objective(m, Min, sum(zeta.*zeta))
+        catch err
+            Logger.error("Error in computing cholesky")
+            rethrow(err)
+            return
+        end
+    else
+        try
+            (r,c) = size(returns)
 
-        # method= :cm doesn't work with positive SEMI-definite matrix
-        # so usign mehod = :em, DON'T really know the difference
-        nfactors = min(c-1, nfactors)
-        M = fit(FactorAnalysis, returns'; method=:em, maxoutdim=nfactors) 
+            # method= :cm doesn't work with positive SEMI-definite matrix
+            # so usign mehod = :em, DON'T really know the difference
+            nfactors = min(c-1, nfactors)
+            M = fit(FactorAnalysis, returns'; method=:em, maxoutdim=nfactors) 
 
-        @variable(m, zeta[1:nfactors])
-        L = loadings(M) #(nstocks X nfactors)
-        
-        L[isnan.(L)] = 0.0
-        @constraint(m, zeta - L'*(x_l+x_s) .== 0)
-        
-        diagonal = diag(cov(M))
-        diagonal[isnan.(diagonal)]=0.0
+            @variable(m, zeta[1:nfactors])
+            L = loadings(M) #(nstocks X nfactors)
+            
+            L[isnan.(L)] = 0.0
+            @constraint(m, zeta - L'*(x_l+x_s) .== 0)
+            
+            diagonal = diag(cov(M))
+            diagonal[isnan.(diagonal)]=0.0
 
-        # Minimize sum of systematic + idiosycratic risk
-        # systematic = risk computed using factors
-        # idiosycratic  = risk from error terms variance [cov(M): primarily diagonal]
-        @objective(m, Min, sum(zeta.*zeta) + sum(diagonal.*(x_l+x_s).*(x_l+x_s)))
+            # Minimize sum of systematic + idiosycratic risk
+            # systematic = risk computed using factors
+            # idiosycratic  = risk from error terms variance [cov(M): primarily diagonal]
+            @objective(m, Min, sum(zeta.*zeta) + sum(diagonal.*(x_l+x_s).*(x_l+x_s)))
 
-    catch err
-        println(err)
-        rethrow(err)
-        return
+        catch err
+            println(err)
+            rethrow(err)
+            return
+        end
     end
 
     status = solve(m)

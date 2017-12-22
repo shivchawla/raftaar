@@ -20,12 +20,14 @@ include("minnorm.jl")
 function optimize(symbols, 
                     method::String="minvol", 
                     window::Int=22;
-                    targeret::Float64=0.2,
+                    targetret::Float64=0.2,
                     nfactors::Int=10,
                     date::DateTime=getcurrentdatetime(), 
                     constraints::Constraints=Constraints(),
                     initialportfolio::Vector{Float64}=Vector{Float64}(),
-                    linearrestrictions::Vector{LinearRestriction}=LinearRestriction[])
+                    linearrestrictions::Vector{LinearRestriction}=LinearRestriction[],
+                    cholesky=false,
+                    riskaversion=1.0)
                     
     if method=="minvol2"
         minimumvolatility_raw(symbols, 
@@ -41,7 +43,8 @@ function optimize(symbols,
                             date=date, 
                             constraints=constraints, 
                             initialportfolio=initialportfolio,
-                            linearrestrictions=linearrestrictions)
+                            linearrestrictions=linearrestrictions,
+                            cholesky=cholesky)
     elseif method=="min_mad"
         minimumabsolutedeviation(symbols, 
                                     window=window, 
@@ -65,20 +68,23 @@ function optimize(symbols,
                             linearrestrictions=linearrestrictions)
     elseif method=="meanvar"
         meanvariance(symbols, 
-                        targeret=targeret,
+                        targetret=targetret,
                         window=window, 
                         date=date, 
                         constraints=constraints, 
                         initialportfolio=initialportfolio,
-                        linearrestrictions=linearrestrictions)
+                        linearrestrictions=linearrestrictions,
+                        cholesky=cholesky)
     elseif method=="meanvar2"
         meanvariance2(symbols, 
-                        targeret=targeret,
+                        targetret=targetret,
                         window=window, 
                         date=date, 
                         constraints=constraints, 
                         initialportfolio=initialportfolio,
-                        linearrestrictions=linearrestrictions)
+                        linearrestrictions=linearrestrictions,
+                        cholesky=cholesky,
+                        riskaversion=riskaversion)
     elseif method=="minnorm"
         minimumnorm(symbols,  
                         constraints=constraints, 
