@@ -1,5 +1,6 @@
 #Minimize Loss
-function minimumnorm(symbols; 
+function minimumnorm(symbols,
+                        date::DateTime; 
                         constraints::Constraints=Constraints(),
                         initialportfolio::Vector{Float64}=Vector{Float64}(),
                         linearrestrictions::Vector{LinearRestriction}=LinearRestriction[])

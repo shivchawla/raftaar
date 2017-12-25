@@ -1,7 +1,7 @@
 #Minimize Loss
-function minimumloss(symbols; 
+function minimumloss(symbols, 
+                        date::DateTime;
                         window::Int = 22,
-                        date::DateTime = getcurrentdatetime(), 
                         constraints::Constraints=Constraints(),
                         initialportfolio::Vector{Float64}=Vector{Float64}(),
                         linearrestrictions::Vector{LinearRestriction}=LinearRestriction[])

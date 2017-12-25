@@ -1,7 +1,7 @@
 #Minimize Volatility
-function minimumvolatility_raw(symbols; 
+function minimumvolatility_raw(symbols,
+                            date::DateTime; 
                             window::Int = 22,
-                            date::DateTime = getcurrentdatetime(), 
                             constraints::Constraints=Constraints(),
                             initialportfolio::Vector{Float64}=Vector{Float64}(),
                             linearrestrictions::Vector{LinearRestriction}=LinearRestriction[])
@@ -58,10 +58,10 @@ end
 # Uses Covariance Factorization
 # Cov = LL' (where L is cholesy)
 # Cov = Cov(LF) = L'Cov(F)L where Cov(F) is covariance of factors
-function minimumvolatility(symbols;
+function minimumvolatility(symbols,
+                            date::DateTime;
                             nfactors::Int = 10, 
                             window::Int = 22,
-                            date::DateTime = getcurrentdatetime(), 
                             constraints::Constraints=Constraints(),
                             initialportfolio::Vector{Float64}=Vector{Float64}(),
                             linearrestrictions::Vector{LinearRestriction}=LinearRestriction[],

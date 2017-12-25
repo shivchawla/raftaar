@@ -1,14 +1,16 @@
 
 #Markowitz - 1
-function meanvariance(symbols; 
+function meanvariance(symbols,
+                        date::DateTime;
                         nfactors=10,
                         targetret::Float64 = 0.2,    
                         window::Int = 22,
-                        date::DateTime = getcurrentdatetime(), 
+                        
                         constraints::Constraints=Constraints(),
                         initialportfolio::Vector{Float64}=Vector{Float64}(),
                         linearrestrictions::Vector{LinearRestriction}=LinearRestriction[],
-                        cholesky = false)
+                        returnsforecast::Vector{Float64}=Vector{Float64}(),
+                        cholesky=false)
     
     #Retrieve the standard deviation over window
     nstocks = length(symbols)
@@ -48,8 +50,13 @@ function meanvariance(symbols;
 
             #Add returns constraints
             # 1. Convrt returns to year units
-            returns*= 252/window
-            @constraint(m, sum(returns * (x_l + x_s)) >= targetret)  
+            if(length(returnsforecast) == 0)
+                returns*= 252/window
+                @constraint(m, sum(returns * (x_l + x_s)) >= targetret)
+            else
+                @constraint(m, sum(returnsforecast' * (x_l + x_s)) >= targetret)
+            end 
+
         catch err
             Logger.error("Error in computing cholesky")
             rethrow(err)
@@ -78,10 +85,14 @@ function meanvariance(symbols;
             # idiosycratic  = risk from error terms variance [cov(M): primarily diagonal]
             @objective(m, Min, sum(zeta.*zeta) + sum(diagonal.*(x_l+x_s).*(x_l+x_s)))
             
-               #Add returns constraints
+            #Add returns constraints
             # 1. Convrt returns to year units
-            returns*= 252/window
-            @constraint(m, sum(returns * (x_l + x_s)) >= targetret)
+            if(length(returnsforecast) == 0)
+                returns*= 252/window
+                @constraint(m, sum(returns * (x_l + x_s)) >= targetret)
+            else
+                @constraint(m, sum(returnsforecast' * (x_l + x_s)) >= targetret)
+            end
 
         catch err
             println(err)
@@ -96,14 +107,14 @@ function meanvariance(symbols;
 end
 
 #Markowitz - 1
-function meanvariance2(symbols;
+function meanvariance2(symbols,
+                        date::DateTime; 
                         nfactors=10, 
-                        targetret::Float64 = 0.2,    
                         window::Int = 22,
-                        date::DateTime = getcurrentdatetime(), 
                         constraints::Constraints=Constraints(),
                         initialportfolio::Vector{Float64}=Vector{Float64}(),
                         linearrestrictions::Vector{LinearRestriction}=LinearRestriction[],
+                        returnsforecast::Vector{Float64}=Vector{Float64}(),
                         cholesky = false,
                         riskaversion = 1.0)
     
@@ -118,7 +129,10 @@ function meanvariance2(symbols;
     
     (m, x_l, x_s) = __setupmodel(constraints, nstocks, initialportfolio, linearrestrictions)
     returns = values(price_returns(symbols, "Close", :Day, window, date))
-    returns[isnan(returns)] = 0.0  
+    returns[isnan(returns)] = 0.0
+
+    #Annualized returns
+    returns*=252/window  
 
     (nrows, ncols) = size(returns)
 
@@ -143,7 +157,11 @@ function meanvariance2(symbols;
             @variable(m, zeta[1:nstocks])
             @constraint(m, zeta - L*(x_l + x_s) .== 0)
             
-            @objective(m, Max, sum(returns * (x_l + x_s)) - 0.5*riskaversion*sum(zeta.*zeta))
+            if(length(returnsforecast) == 0)
+                @objective(m, Max, sum(returns * (x_l + x_s)) - 0.5*riskaversion*sum(zeta.*zeta))    
+            else
+                @objective(m, Max, sum(returnsforecast' * (x_l + x_s)) - 0.5*riskaversion*sum(zeta.*zeta))    
+            end
            
         catch err
             Logger.error("Error in computing cholesky")
@@ -171,7 +189,12 @@ function meanvariance2(symbols;
             # Minimize sum of systematic + idiosycratic risk
             # systematic = risk computed using factors
             # idiosycratic  = risk from error terms variance [cov(M): primarily diagonal]
-            @objective(m, Max, sum(returns * (x_l + x_s)) - 0.5*riskaversion*(sum(zeta.*zeta) - sum(diagonal.*(x_l+x_s).*(x_l+x_s))))
+            if(length(returnsforecast) == 0)
+                @objective(m, Max, sum(returns * (x_l + x_s)) - 0.5*riskaversion*(sum(zeta.*zeta) - sum(diagonal.*(x_l+x_s).*(x_l+x_s))))
+            else
+                @objective(m, Max, sum(returnsforecast' * (x_l + x_s)) - 0.5*riskaversion*(sum(zeta.*zeta) - sum(diagonal.*(x_l+x_s).*(x_l+x_s))))
+            end
+
         catch err
             println(err)
             rethrow(err)

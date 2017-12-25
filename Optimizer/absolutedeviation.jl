@@ -1,7 +1,7 @@
 #Minimize Absolute Deviation
-function minimumabsolutedeviation(symbols;
+function minimumabsolutedeviation(symbols,
+                                    date::DateTime; 
                                     window::Int = 22,
-                                    date::DateTime = getcurrentdatetime(), 
                                     constraints::Constraints = Constraints(),
                                     initialportfolio::Vector{Float64}=Vector{Float64}(),
                                     linearrestrictions::Vector{LinearRestriction}=LinearRestriction[])
@@ -15,7 +15,7 @@ function minimumabsolutedeviation(symbols;
         initialportfolio = zeros(nstocks)
     end
     
-    (m, x_l, x_s) = __setupmodel(constraints, nstocks, initialportfolio)
+    (m, x_l, x_s) = __setupmodel(constraints, nstocks, initialportfolio, linearrestrictions)
 
     returns = price_returns(symbols, "Close", :Day, window, date)
     returns = values(returns)
@@ -56,9 +56,9 @@ end
 
 
 #Minimize Absolute Semi-Deviation
-function minimumabsolutesemideviation(symbols; 
+function minimumabsolutesemideviation(symbols,
+                                        date::DateTime;
                                         window::Int = 22,
-                                        date::DateTime = getcurrentdatetime(), 
                                         constraints::Constraints=Constraints(),
                                         initialportfolio::Vector{Float64}=Vector{Float64}(),
                                         linearrestrictions::Vector{LinearRestriction}=LinearRestriction[])
