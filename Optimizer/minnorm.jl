@@ -3,7 +3,8 @@ function minimumnorm(symbols,
                         date::DateTime; 
                         constraints::Constraints=Constraints(),
                         initialportfolio::Vector{Float64}=Vector{Float64}(),
-                        linearrestrictions::Vector{LinearRestriction}=LinearRestriction[])
+                        linearrestrictions::Vector{LinearRestriction}=LinearRestriction[],
+                        roundbelow::Float64=0.0)
 
     #__IllegalDate(date)
 
@@ -24,5 +25,5 @@ function minimumnorm(symbols,
         println("Restriction Value: $(sum(restriction.coeff.*(getvalue(x_l) + getvalue(x_s))))")
     end
 
-    __handleoutput(symbols, (m,x_l,x_s), status, (0.0, initialportfolio))     
+    __handleoutput(symbols, (m,x_l,x_s), status, (0.0, initialportfolio), roundbelow)     
 end

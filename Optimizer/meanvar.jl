@@ -5,12 +5,12 @@ function meanvariance(symbols,
                         nfactors=10,
                         targetret::Float64 = 0.2,    
                         window::Int = 22,
-                        
                         constraints::Constraints=Constraints(),
                         initialportfolio::Vector{Float64}=Vector{Float64}(),
                         linearrestrictions::Vector{LinearRestriction}=LinearRestriction[],
                         returnsforecast::Vector{Float64}=Vector{Float64}(),
-                        cholesky=false)
+                        cholesky=false,
+                        roundbelow::Float64=0.0)
     
     #Retrieve the standard deviation over window
     nstocks = length(symbols)
@@ -103,7 +103,7 @@ function meanvariance(symbols,
 
     status = solve(m)
 
-    __handleoutput(symbols, (m,x_l,x_s), status, (0.0, initialportfolio))     
+    __handleoutput(symbols, (m,x_l,x_s), status, (0.0, initialportfolio), roundbelow)     
 end
 
 #Markowitz - 1
@@ -116,7 +116,8 @@ function meanvariance2(symbols,
                         linearrestrictions::Vector{LinearRestriction}=LinearRestriction[],
                         returnsforecast::Vector{Float64}=Vector{Float64}(),
                         cholesky = false,
-                        riskaversion = 1.0)
+                        riskaversion = 1.0,
+                        roundbelow::Float64=0.0)
     
     #__IllegalDate(date)
 
@@ -204,5 +205,5 @@ function meanvariance2(symbols,
 
     status = solve(m)
 
-    __handleoutput(symbols, (m,x_l,x_s), status, (0.0, initialportfolio))     
+    __handleoutput(symbols, (m,x_l,x_s), status, (0.0, initialportfolio), roundbelow)     
 end

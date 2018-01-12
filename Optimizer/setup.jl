@@ -229,7 +229,7 @@ function __setupmodel(constraints::Constraints, nstocks::Int, initialportfolio::
     return (m, x_l, x_s)
 end
 
-function __handleoutput(symbols, t, status, default)
+function __handleoutput(symbols, t, status, default, roundbelow)
     
     m=t[1]
     x_l=t[2]
@@ -238,8 +238,13 @@ function __handleoutput(symbols, t, status, default)
     nstocks = length(symbols)
 
     if status == :Optimal
-        println("Problem solved successfully")
         wts = getvalue(x_l) + getvalue(x_s)
+
+        if (roundbelow != 0.0)
+            wts[abs(wts).<=roundbelow] = 0.0
+            s = sum(abs(wts))
+            wts = wts./s
+        end
 
         port = [(symbols[i], wts[i]) for i = 1:nstocks]
         return (getobjectivevalue(m), port, status)
