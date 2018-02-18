@@ -167,8 +167,10 @@ function updateposition_fill!(position::Position, fill::OrderFill)
   #Update the average price
   updateaverageprice!(position, fill)
 
-  #calculate cash generated
-  cashgenerated = -(fill.fillquantity*fill.fillprice) - fill.orderfee
+  #calculate cash generated (if orderfill is cashlinked)
+  #By default cash linked, 
+  #Cashlining introduced to support MktPlace portfolios/transactions
+  cashgenerated = fill.cashlinked ? -(fill.fillquantity*fill.fillprice) - fill.orderfee : 0.0
 
   return round(cashgenerated, 2)
 

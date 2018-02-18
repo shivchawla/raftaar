@@ -170,15 +170,19 @@ function calculateperformance(algorithmreturns::Vector{Float64}, benchmarkreturn
     if(size(df, 1) > 2)
         OLS = fit(LinearModel, @formula(Y ~ X), df)
         coefficients = coef(OLS)
-        ps.ratios.beta = coefficients[2]
-        ps.ratios.alpha = coefficients[1]
-        ps.ratios.stability = r2(OLS)
+
+        ps.ratios.beta = round(coefficients[2], 2)
+        ps.ratios.alpha = round(coefficients[1] * 252.0, 4)
+        ps.ratios.stability = round(r2(OLS), 3)
     end
 
+    println("T6")
     trkerr = sqrt(252) * std(algorithmreturns - benchmarkreturns)
+    println("T7")
     excessret = calculateannualreturns(algorithmreturns - benchmarkreturns)
 
-    ps.ratios.informationratio = trkerr > 0.0 ? excessret/trkerr : 0.0
+    println("T8")
+    ps.ratios.informationratio = round(trkerr > 0.0 ? excessret/trkerr : 0.0, 2)
 
     ps.period = length(algorithmreturns)
 
@@ -352,22 +356,30 @@ end
 Function to compute annual returns
 """
 function calculateannualreturns(returns::Vector{Float64})
-    round((calculatetotalreturn(returns)/sum(length(returns))) * 252.0, 2)
+    round((calculatetotalreturn(returns)/sum(length(returns))) * 252.0, 4)
+end
+
+"""
+Function to compute peak return
+"""
+function calculatepeakreturn(returns::Vector{Float64})
+    round(maximum(cumprod(1.0 + returns)) - 1.0, 4) 
 end
 
 """
 Function to compute total return
 """
 function calculatetotalreturn(returns::Vector{Float64})
-    round((cumprod(1.0 + returns))[end], 2)
+    round((cumprod(1.0 + returns))[end] - 1.0, 4)
 end
 
 function aggregatereturns(rets::Vector{Float64})
     returns = Returns()
     totalreturn = calculatetotalreturn(rets)
-    returns.averagedailyreturn = round((totalreturn - 1)/length(rets), 2)
+    returns.averagedailyreturn = round(totalreturn/length(rets), 4)
     returns.totalreturn = totalreturn
-    returns.annualreturn = round(returns.averagedailyreturn*252, 2)
+    returns.annualreturn = calculateannualreturns(rets)
+    returns.peaktotalreturn = calculatepeakreturn(rets)
     return returns
 end
 
@@ -385,12 +397,12 @@ end
 
 function calculatestandarddeviation(returns::Vector{Float64})
     sdev = std(returns) * sqrt(252.0)
-    return sdev, sdev*sdev
+    return round(sdev, 4), round(sdev*sdev, 4)
 end
 
 function calculatesemideviation(returns::Vector{Float64})
     sdev = std(returns .< 0) * sqrt(252.0)
-    return sdev, sdev*sdev
+    return round(sdev, 4), round(sdev*sdev, 4)
 end
 
 """
@@ -419,8 +431,8 @@ function calculatedrawdown(returns::Vector{Float64})
       end
     end
 
-    drawdown.currentdrawdown = currentdrawdown[end]
-    drawdown.maxdrawdown  = maxdrawdown[end]
+    drawdown.currentdrawdown = round(currentdrawdown[end], 4)
+    drawdown.maxdrawdown  = round(maxdrawdown[end], 4)
 
     return drawdown
 end
@@ -433,9 +445,9 @@ Function to compute risk measuring ratios
 """
 function calculateratios(returns::Returns, deviation::Deviation, drawdown::Drawdown)
     ratios = Ratios()
-    ratios.sharperatio = deviation.annualstandarddeviation > 0.0 ? (returns.annualreturn - 0.065) / deviation.annualstandarddeviation : 0.0
-    ratios.sortinoratio = deviation.annualsemideviation > 0.0 ? returns.annualreturn / deviation.annualsemideviation : 0.0
-    ratios.calmarratio = drawdown.maxdrawdown > 0.0 ? returns.totalreturn/drawdown.maxdrawdown : 0.0
+    ratios.sharperatio = round(deviation.annualstandarddeviation > 0.0 ? (returns.annualreturn - 0.065) / deviation.annualstandarddeviation : 0.0, 2)
+    ratios.sortinoratio = round(deviation.annualsemideviation > 0.0 ? returns.annualreturn / deviation.annualsemideviation : 0.0, 2)
+    ratios.calmarratio = round(drawdown.maxdrawdown > 0.0 ? returns.totalreturn/drawdown.maxdrawdown : 0.0, 2)
     return ratios
 end
 

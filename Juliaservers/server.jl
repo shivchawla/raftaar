@@ -2,6 +2,7 @@ import API
 import HistoryAPI
 import UtilityAPI
 import OptimizeAPI
+import TechnicalAPI
 import Raftaar
 import YRead
 
