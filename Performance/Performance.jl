@@ -176,14 +176,9 @@ function calculateperformance(algorithmreturns::Vector{Float64}, benchmarkreturn
         ps.ratios.stability = round(r2(OLS), 3)
     end
 
-    println("T6")
     trkerr = sqrt(252) * std(algorithmreturns - benchmarkreturns)
-    println("T7")
     excessret = calculateannualreturns(algorithmreturns - benchmarkreturns)
-
-    println("T8")
     ps.ratios.informationratio = round(trkerr > 0.0 ? excessret/trkerr : 0.0, 2)
-
     ps.period = length(algorithmreturns)
 
     return ps
