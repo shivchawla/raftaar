@@ -48,7 +48,7 @@ type Ratios
     stability::Float64
 end
 
-Ratios() = Ratios(0.0,0.0,0.0,0.0,0.0,1.0,0.0,1.0)
+Ratios() = Ratios(0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0)
 
 Ratios(data::Dict{String, Any}) = Ratios(data["sharperatio"],
                                   data["informationratio"],
@@ -68,7 +68,7 @@ type Returns
     peaktotalreturn::Float64
 end
 
-Returns() = Returns(0.0,0.0,0.0,0.0,1.0,1.0)
+Returns() = Returns(0.0,0.0,0.0,0.0,0.0,0.0)
 
 Returns(data::Dict{String, Any}) = Returns(data["dailyreturn"],
                                     data["dailyreturn_benchmark"],
