@@ -19,6 +19,7 @@ type Position
   lasttradepnl::Float64
   realizedpnl::Float64
   totaltradedvolume::Float64
+  advice::String
 end
 
 export Position
@@ -35,17 +36,18 @@ Position(data::Dict{String, Any}) = Position(SecuritySymbol(data["securitysymbol
                                       data["lastprice"],
                                       data["lasttradepnl"],
                                       data["realizedpnl"],
-                                      data["totaltradedvolume"])
+                                      data["totaltradedvolume"],
+                                      data["advice"])
 
-Position(securitysymbol::SecuritySymbol) = Position(securitysymbol, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+Position(securitysymbol::SecuritySymbol) = Position(securitysymbol, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, "")
 
 Position(fill::OrderFill) = Position(fill.securitysymbol, fill.fillquantity, fill.fillprice, fill.orderfee)
 
-Position(symbol::SecuritySymbol, quantity::Int64, averageprice::Float64, totalfees::Float64) = Position(symbol, quantity, averageprice, totalfees, 0.0,0.0,0.0,0.0)
+Position(symbol::SecuritySymbol, quantity::Int64, averageprice::Float64, totalfees::Float64, advice::String="") = Position(symbol, quantity, averageprice, totalfees, 0.0, 0.0, 0.0, 0.0, advice)
 
-Position(symbol::SecuritySymbol, quantity::Int64, averageprice::Float64) = Position(symbol, quantity, averageprice, 0.0, 0.0,0.0,0.0,0.0)
+Position(symbol::SecuritySymbol, quantity::Int64, averageprice::Float64, advice::String="") = Position(symbol, quantity, averageprice, 0.0, 0.0, 0.0, 0.0, 0.0, advice)
 
-Position(symbol::SecuritySymbol, quantity::Int64) = Position(symbol, quantity, 0.0, 0.0, 0.0,0.0,0.0,0.0)
+Position(symbol::SecuritySymbol, quantity::Int64, advice::String="") = Position(symbol, quantity, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, advice)
 
 empty(position::Position) = empty(position.securitysymbol) && position.quantity == 0 && position.averageprice==0.0
 

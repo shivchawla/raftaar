@@ -157,6 +157,10 @@ function calculateperformance(algorithmreturns::Vector{Float64}, benchmarkreturn
     algorithmreturns[isnan.(algorithmreturns)] = 0.0
     benchmarkreturns[isnan.(benchmarkreturns)] = 0.0
     
+    # replace Inf with zeros (this is tricky and debatable) 
+    algorithmreturns[isinf.(algorithmreturns)] = 0.0
+    benchmarkreturns[isinf.(benchmarkreturns)] = 0.0
+        
     ps = Performance()
 
     ps.returns = aggregatereturns(algorithmreturns)
@@ -246,7 +250,6 @@ end
 """
 Function to compute performance for all periods like 1/2/5/10/ytd/mtd based on vector of returns
 """
-
 function calculateperformance_rollingperiods(returns::TimeArray) 
 
     performances = Dict{String, Performance}()
