@@ -55,19 +55,28 @@ type Security
   securitytype::String
   startdate::DateTime
   enddate::DateTime
+  detail::Dict{String,Any}
   #currency::Symbol
 end
 
 empty(security::Security) = empty(security.symbol)
 
-Security() = Security(SecuritySymbol(),"","","","", DateTime(), DateTime())
+Security() = Security(SecuritySymbol(),"","","","", DateTime(), DateTime(), Dict{String,Any}())
 Security(ticker::String; securitytype::String = "EQ", exchange::String="NSE", country::String="IN") =
                   Security(SecuritySymbol(0,ticker), "",
                             exchange, securitytype,
-                            DateTime(), DateTime())
+                            DateTime(), DateTime(), Dict{String,Any}())
+
+Security(ticker::String, detail::Dict{Any,Any}; securitytype::String = "EQ", exchange::String="NSE", country::String="IN") =
+                  Security(SecuritySymbol(0,ticker), "",
+                            exchange, securitytype,
+                            DateTime(), DateTime(), todict(detail))
 
 Security(id::Int64, ticker::String, name::String; exchange::String="NSE", country::String = "IN", securitytype::String = "EQ") =
-          Security(SecuritySymbol(id, ticker), name, exchange, country, securitytype, DateTime(), DateTime())
+          Security(SecuritySymbol(id, ticker), name, exchange, country, securitytype, DateTime(), DateTime(), Dict{String,Any}())
+
+Security(id::Int64, ticker::String, name::String, detail::Dict{Any,Any}; exchange::String="NSE", country::String = "IN", securitytype::String = "EQ") =
+          Security(SecuritySymbol(id, ticker), name, exchange, country, securitytype, DateTime(), DateTime(), todict(detail))
 
 #==(sec_one::Security, sec_two::Security) = sec_one.symbol == sec_two.symbol=#
 
@@ -100,7 +109,7 @@ end
 
 
 Security(data::Dict{String, Any}) = Security(SecuritySymbol(data["symbol"]["id"], data["symbol"]["ticker"]),
-                                      data["name"], data["exchange"], data["country"], data["securitytype"], DateTime(data["startdate"]), DateTime(data["enddate"]))
+                                      data["name"], data["exchange"], data["country"], data["securitytype"], DateTime(data["startdate"]), DateTime(data["enddate"]), Dict{String,Any}())
 
 
 """
@@ -133,4 +142,15 @@ Function to check whether security is active
 """
 function cantrade(security::Security, datetime::DateTime)
   return datetime >= security.startdate && datetime <= security.enddate
+end
+
+
+function todict(x::Dict{Any,Any})
+  y = Dict{String, Any}()
+  
+  for (k,v) in x
+    y[string(k)] = v
+  end
+
+  return y
 end
