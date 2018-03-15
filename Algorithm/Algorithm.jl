@@ -121,6 +121,7 @@ end
 """
 Function to track the orders at each time step
 """
+#NOT IN USE CURRENTLY
 function updateordertracker!(algorithm::Algorithm, order::Order)
     currentdate = getcurrentdate(algorithm.tradeenv)
     if haskey(algorithm.ordertracker, currentdate)

@@ -26,8 +26,8 @@ OrderFill(order::Order, datetime::DateTime, orderfee::Float64, message = "", cas
 
 OrderFill(order::Order, datetime::DateTime) = OrderFill(order, datetime, 0.0)
 
-OrderFill(securitysymbol::SecuritySymbol, fillprice::Float64, fillquantity::Int, fee::Float64 = 0.0, cashlinked = true) =
-    OrderFill(convert(UInt64, now()), securitysymbol, DateTime(), fee, fillprice, fillquantity, "", cashlinked)
+OrderFill(securitysymbol::SecuritySymbol, fillprice::Float64, fillquantity::Int, fee::Float64 = 0.0, cashlinked = true, datetime::DateTime = DateTime()) =
+    OrderFill(convert(UInt64, now()), securitysymbol, datetime, fee, fillprice, fillquantity, "", cashlinked)
 
 OrderFill(data::Dict{String, Any}) = OrderFill(parse(UInt64, data["orderid"]),
 										SecuritySymbol(data["securitysymbol"]["id"], data["securitysymbol"]["ticker"]),

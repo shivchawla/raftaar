@@ -218,9 +218,6 @@ function updatependingorders!(brokerage::BacktestBrokerage, universe::Universe, 
 			push!(fills, fill)
 		end
 
-		#Also, update blotter with fill history
-		#addtransaction!(blotter, fill)
-
 		#Here create a signal to up ....
 
 		fillquantity = fill.fillquantity
@@ -241,6 +238,7 @@ function updatependingorders!(brokerage::BacktestBrokerage, universe::Universe, 
 	end
 
 	#update transaction tracker
+	#This is not the right location
 	for orderfill in fills
 		if haskey(trnsctrkr, Date(orderfill.datetime))
 			push!(trnsctrkr[Date(orderfill.datetime)], orderfill)

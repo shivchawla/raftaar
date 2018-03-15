@@ -202,15 +202,16 @@ function computereturns(accounttracker, cashtracker)
 
     if !isempty(sortedkeys)
         firstdate = sortedkeys[1]
-        startingcaptital = accounttracker[firstdate].cash
-        netvalue = startingcaptital
+        #startingcaptital = accounttracker[firstdate].cash
+        #netvalue = startingcaptital
+        netvalue = accounttracker[firstdate].netvalue
 
         for i in 2:length(sortedkeys)
             date = sortedkeys[i]
             oldnetvalue = netvalue
 
             netvalue = accounttracker[date].netvalue
-            newfunds = haskey(cashtracker, date) ? cashtracker[date] : 0.0
+            newfunds = get(cashtracker, date, 0.0)
             adjustednetvalue = netvalue - newfunds
 
             rt = oldnetvalue > 0.0 ? (netvalue - newfunds - oldnetvalue)/ oldnetvalue : 0.0
@@ -218,13 +219,6 @@ function computereturns(accounttracker, cashtracker)
 
         end
     end
-
-    lastdate = sortedkeys[end]
-    newfunds = haskey(cashtracker, lastdate) ? cashtracker[lastdate] : 0.0
-    
-    #netvalue = accounttracker[lastdate].netvalue
-    #leverage = accounttracker[lastdate].leverage
-    #adjustednetvalue = netvalue - newfunds    
 
     return returns[end] #, netvalue, newfunds, leverage
 end

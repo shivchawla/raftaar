@@ -168,16 +168,6 @@ function _updateaccounttracker()
 end
 export _updateaccounttracker
 
-# NOT IN USE
-# NOT IN USE
-function _calculateperformance()
-    calculateperformance(algorithm.accounttracker, algorithm.cashtracker)
-    Raftaar.resetAlgo(algorithm)
-end
-export _calculateperformance
-# NOT IN USE
-# NOT IN USE
-
 function _updatedailyperformance()
     updateaccounttracker!(algorithm)
     updateperformancetracker!(algorithm)

@@ -14,12 +14,6 @@ const OrderTracker = Dict{Date, Vector{Order}}
 const TransactionTracker = Dict{Date, Vector{OrderFill}}
 const Blotter = Dict{SecuritySymbol, Vector{Order}}
 
-#type Blotter
-#	openorders::Dict{SecuritySymbol, Vector{Order}}
-	#ordertracker::OrderTracker
-	#transactiontracker::TransactionTracker
-#end
-
 """
 Empty blotter construction
 """
@@ -40,22 +34,6 @@ function addorder!(blotter::Blotter, order::Order)
 
     push!(blotter[order.securitysymbol], order)
 
-    #=ordertracker = blotter.ordertracker
-
-    dateoforder = Date(order.datetime)
-    if !haskey(ordertracker, dateoforder)
-        ordertracker[dateoforder] = [order]
-    end
-
-    push!(ordertracker[dateoforder], order)=#
-
-end
-
-"""
-Function to get all the transactions
-"""
-function gettransactions(blotter::Blotter)
-    blotter.transactiontracker
 end
 
 """
@@ -147,22 +125,6 @@ function getorderfill(order::Order, slippage::Slippage, commission::Commission, 
     end
 
     return fill
-end
-
-
-"""
-Function to record fill history
-"""
-function addtransaction!(blotter::Blotter, fill::OrderFill)
-
-    dateoffill = Date(fill.datetime)
-
-    if haskey(blotter.transactiontracker, dateoffill)
-        push!(blotter.transactiontracker[dateoffill], fill)
-    else
-        blotter.transactiontracker[dateoffill] = [fill]
-    end
-
 end
 
 function serialize(blotter::Blotter)
