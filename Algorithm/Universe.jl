@@ -18,6 +18,7 @@ immutable TradeBar
   low::Float64
   close::Float64
   volume::Int64
+  change::Float64
   #bidPrice::Float64
   #askPrice::Float64
   #bidSize::Int64
@@ -27,16 +28,20 @@ end
 
 empty(tradebar::TradeBar) = tradebar.datetime == DateTime() && tradebar.open == 0.0 && tradebar.high == 0.0 && tradebar.low == 0.0 && tradebar.close == 0.0 && tradebar.volume == 0
 TradeBar(datetime::DateTime, open::Float64, high::Float64, low::Float64, close::Float64) =
-				TradeBar(datetime, open, high, low, close, 0)
+				TradeBar(datetime, open, high, low, close, 0, 0.0)
 
-TradeBar() = TradeBar(DateTime(), 0.0, 0.0, 0.0, 0.0, 0)
+TradeBar(datetime::DateTime, open::Float64, high::Float64, low::Float64, close::Float64, volume::Int64) =
+        TradeBar(datetime, open, high, low, close, volume, 0.0)
+
+TradeBar() = TradeBar(DateTime(), 0.0, 0.0, 0.0, 0.0, 0, 0.0)
 
 TradeBar(data::Dict{String, Any}) = TradeBar(DateTime(data["datetime"]),
                                       data["open"],
                                       data["high"],
                                       data["low"],
                                       data["close"],
-                                      data["volume"])
+                                      data["volume"],
+                                      get(data, "change", 0.0))
 
 """
 type to encapuslate securities and latest prices of the securities

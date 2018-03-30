@@ -81,11 +81,7 @@ function _run_algo_internal(startdate::Date = getstartdate(), enddate::Date = ge
       benchmark = API.getbenchmark()
 
       #Let's download new data now
-      #Set strict policy to FALSE for benchmark
-      YRead.setstrict(false)
-      benchmarkdata = YRead.history([benchmark.id], "Close", :Day, DateTime(startdate), DateTime(enddate), displaylogs = false)
-      #undo strict policy for rest of the universe
-      YRead.setstrict(true)
+      benchmarkdata = YRead.history([benchmark.id], "Close", :Day, DateTime(startdate), DateTime(enddate), displaylogs = false, strict = false)
 
       if benchmarkdata == nothing
           Logger.warn_static("Benchmark data not available from $(startdate) to $(enddate)")
