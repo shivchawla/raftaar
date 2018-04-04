@@ -37,17 +37,20 @@ Type to encapsulate positions and aggregated metrics
 type Portfolio
   positions::Dict{SecuritySymbol, Position}
   metrics::PortfolioMetrics
+  cash::Float64
 end
 
-Portfolio() = Portfolio(Dict(), PortfolioMetrics())
-==(p1::Portfolio, p2::Portfolio) = (p1.positions == p2.positions && p1.metrics == p2.metrics)
+Portfolio() = Portfolio(Dict(), PortfolioMetrics(), 0.0)
+==(p1::Portfolio, p2::Portfolio) = (p1.positions == p2.positions && p1.metrics == p2.metrics && p1.cash == p2.cash)
 
 
 Portfolio(data::Dict{String, Any}) = Portfolio(
                                 Dict(
                                   [(SecuritySymbol(sym), Position(pos)) for (sym, pos) in data["positions"]]
                                 ),
-                                PortfolioMetrics(data["metrics"])
+                                PortfolioMetrics(data["metrics"]),
+                                get(data, "cash", 0.0)
+
                               )
 
 """
@@ -136,6 +139,11 @@ function totalabsoluteholdingscost(portfolio::Portfolio)
   return tahc
 end
 
+
+function updateportfolio_forcash!(portfolio::Portfolio, cash::Float64)
+  portfolio.cash += cash
+end
+
 """
 function to update portfolio with multiple fills
 """
@@ -145,9 +153,9 @@ function updateportfolio_fills!(portfolio::Portfolio, fills::Vector{OrderFill})
     cash += updateportfolio_fill!(portfolio, fill)
   end
 
+  updateportfolio_forcash!(portfolio, cash)
   updateportfoliometrics!(portfolio::Portfolio)
-
-  return cash
+  
 end
 
 """
@@ -181,7 +189,7 @@ function updateportfolioforsplit!(portfolio::Portfolio, split::Split)
       #we'll model this as a cash adjustment
       leftOver = quantity - (Int64)quantity
       extraCash = leftOver*split.ReferencePrice
-      addcash!(portfolio, extraCash);
+      updateportfolio_forcash!(portfolio, extraCash);
       setposition!(portfolio, split.symbol, avgprice, (int)quantity)
     end
 end
@@ -203,14 +211,18 @@ end
 
 function updateportfolio_splits_dividends!(portfolio::Portfolio, adjustments::Dict{SecuritySymbol, Adjustment})
     for (symbol, adjustment) in adjustments
-
         if (adjustment.adjustmenttype != "17.0" && portfolio[symbol].quantity != 0)
             updateposition_splits_dividends!(portfolio[symbol], adjustment)
         end
-
     end
 
-    updateportfoliometrics!(portfolio::Portfolio)
+    cashfromdividends = 0.0
+    for (symbol, adjustment) in adjustments
+        cashfromdividends += (adjustment.adjustmenttype == "17.0") ? account.portfolio[symbol].quantity * adjustment.adjustmentfactor : 0.0
+    end
+
+    updateportfolio_forcash!(portfolio, cashfromdividends)
+    updateportfoliometrics!(portfolio)
 end
 
 """
@@ -246,7 +258,8 @@ end
 
 function serialize(portfolio::Portfolio)
   temp = Dict{String, Any}("metrics"   => serialize(portfolio.metrics),
-                            "positions" => Dict{String, Any}())
+                            "positions" => Dict{String, Any}(),
+                            "cash" => portfolio.cash)
   for (symbol, pos) in portfolio.positions
     #Removing the position with zero quantity before serialization
     if(abs(pos.quantity) != 0)
