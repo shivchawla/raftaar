@@ -354,11 +354,11 @@ end
 Function to compute annual returns
 """
 function calculateannualreturns(returns::Vector{Float64})
-    tr = calculatetotalreturn(returns)
+    tr = (cumprod(1.0 + returns))[end]
     adr = exp(log(tr)/length(returns)) - 1
     ayr = (1 + adr)^252 - 1
-
     return round(ayr, 4)
+    
     #round((/sum(length(returns))) * 252.0, 4)
 end
 
