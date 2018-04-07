@@ -218,7 +218,7 @@ function updateportfolio_splits_dividends!(portfolio::Portfolio, adjustments::Di
 
     cashfromdividends = 0.0
     for (symbol, adjustment) in adjustments
-        cashfromdividends += (adjustment.adjustmenttype == "17.0") ? account.portfolio[symbol].quantity * adjustment.adjustmentfactor : 0.0
+        cashfromdividends += (adjustment.adjustmenttype == "17.0") ? portfolio[symbol].quantity * adjustment.adjustmentfactor : 0.0
     end
 
     updateportfolio_forcash!(portfolio, cashfromdividends)

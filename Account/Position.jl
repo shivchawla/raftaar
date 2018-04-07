@@ -274,6 +274,7 @@ Function to update position for corporate adjustment (not cash dividend)
 function updateposition_splits_dividends!(position::Position, adjustment::Adjustment)
     if(adjustment.adjustmenttype != "17.0")
         position.averageprice = round(position.averageprice * adjustment.adjustmentfactor,2)
+        position.lastprice = round(position.lastprice * adjustment.adjustmentfactor,2)
         position.quantity = Int(round(position.quantity * (1.0/adjustment.adjustmentfactor)))
     end
 end
