@@ -20,6 +20,7 @@ type Position
   realizedpnl::Float64
   totaltradedvolume::Float64
   advice::String
+  dividendcash::Float64
 end
 
 export Position
@@ -37,17 +38,18 @@ Position(data::Dict{String, Any}) = Position(SecuritySymbol(data["securitysymbol
                                       data["lasttradepnl"],
                                       data["realizedpnl"],
                                       data["totaltradedvolume"],
-                                      data["advice"])
+                                      get(data, "advice", ""),
+                                      get(data, "dividendcash", 0.0))
 
-Position(securitysymbol::SecuritySymbol) = Position(securitysymbol, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, "")
+Position(securitysymbol::SecuritySymbol) = Position(securitysymbol, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, "", 0.0)
 
 Position(fill::OrderFill) = Position(fill.securitysymbol, fill.fillquantity, fill.fillprice, fill.orderfee)
 
-Position(symbol::SecuritySymbol, quantity::Int64, averageprice::Float64, totalfees::Float64, advice::String="") = Position(symbol, quantity, averageprice, totalfees, 0.0, 0.0, 0.0, 0.0, advice)
+Position(symbol::SecuritySymbol, quantity::Int64, averageprice::Float64, totalfees::Float64, advice::String="", dividendcash::Float64=0.0) = Position(symbol, quantity, averageprice, totalfees, 0.0, 0.0, 0.0, 0.0, advice, dividendcash)
 
-Position(symbol::SecuritySymbol, quantity::Int64, averageprice::Float64, advice::String="") = Position(symbol, quantity, averageprice, 0.0, 0.0, 0.0, 0.0, 0.0, advice)
+Position(symbol::SecuritySymbol, quantity::Int64, averageprice::Float64, advice::String="", dividendcash::Float64=0.0) = Position(symbol, quantity, averageprice, 0.0, 0.0, 0.0, 0.0, 0.0, advice, dividendcash)
 
-Position(symbol::SecuritySymbol, quantity::Int64, advice::String="") = Position(symbol, quantity, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, advice)
+Position(symbol::SecuritySymbol, quantity::Int64, advice::String="") = Position(symbol, quantity, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, advice, 0.0)
 
 empty(position::Position) = empty(position.securitysymbol) && position.quantity == 0 && position.averageprice==0.0
 
@@ -63,7 +65,9 @@ function serialize(position::Position)
                           "lastprice"         => position.lastprice,
                           "lasttradepnl"      => position.lasttradepnl,
                           "realizedpnl"       => position.realizedpnl,
-                          "totaltradedvolume" => position.totaltradedvolume)
+                          "totaltradedvolume" => position.totaltradedvolume,
+                          "advice"            => position.advice,
+                          "dividendcash"      => position.dividendcash)
 end
 
 ==(pos1::Position, pos2::Position) = pos1.securitysymbol == pos2.securitysymbol &&
@@ -73,7 +77,9 @@ end
                                       pos1.lastprice == pos2.lastprice &&
                                       pos1.lasttradepnl == pos2.lasttradepnl &&
                                       pos1.realizedpnl == pos2.realizedpnl &&
-                                      pos1.totaltradedvolume == pos2.totaltradedvolume
+                                      pos1.totaltradedvolume == pos2.totaltradedvolume &&
+                                      pos1.advice == pos2.advice &&
+                                      pos1.dividendcash == pos2.dividendcash
 
 
 
@@ -272,10 +278,16 @@ end
 Function to update position for corporate adjustment (not cash dividend)
 """
 function updateposition_splits_dividends!(position::Position, adjustment::Adjustment)
+    cash = 0.0
     if(adjustment.adjustmenttype != "17.0")
         position.averageprice = round(position.averageprice * adjustment.adjustmentfactor,2)
         position.lastprice = round(position.lastprice * adjustment.adjustmentfactor,2)
         position.quantity = Int(round(position.quantity * (1.0/adjustment.adjustmentfactor)))
+    else
+        cash = position.quantity*adjustment.adjustmentfactor
+        position.dividendcash += cash
     end
+
+    return cash
 end
 

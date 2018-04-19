@@ -210,15 +210,11 @@ function updateportfolio_price!(portfolio::Portfolio, tradebars::Dict{SecuritySy
 end
 
 function updateportfolio_splits_dividends!(portfolio::Portfolio, adjustments::Dict{SecuritySymbol, Adjustment})
-    for (symbol, adjustment) in adjustments
-        if (adjustment.adjustmenttype != "17.0" && portfolio[symbol].quantity != 0)
-            updateposition_splits_dividends!(portfolio[symbol], adjustment)
-        end
-    end
-
     cashfromdividends = 0.0
     for (symbol, adjustment) in adjustments
-        cashfromdividends += (adjustment.adjustmenttype == "17.0") ? portfolio[symbol].quantity * adjustment.adjustmentfactor : 0.0
+        if (portfolio[symbol].quantity != 0)
+            cashfromdividends += updateposition_splits_dividends!(portfolio[symbol], adjustment)
+        end
     end
 
     updateportfolio_forcash!(portfolio, cashfromdividends)
