@@ -427,7 +427,9 @@ function calculatedrawdown(returns::Vector{Float64})
       end
       currentdrawdown[i] = (peak - netvalue[i]) / peak
       # Same idea as peak variable, MDD keeps track of the maximum drawdown so far. Only get updated when higher DD is seen.
-      if (currentdrawdown[i] > maxdrawdown[i])
+      if i == 1
+        maxdrawdown[i] = currentdrawdown[i]
+      elseif (currentdrawdown[i] > maxdrawdown[i-1])
         maxdrawdown[i] = currentdrawdown[i]
       elseif i > 1
         maxdrawdown[i] = maxdrawdown[i-1]
