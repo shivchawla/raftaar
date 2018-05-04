@@ -354,9 +354,9 @@ end
 Function to compute annual returns
 """
 function calculateannualreturns(returns::Vector{Float64})
-    tr = (cumprod(1.0 + returns))[end]
-    adr = exp(log(tr)/length(returns)) - 1
-    ayr = (1 + adr)^252 - 1
+    tr = (cumprod(1.0 + returns))[end] - 1
+    adr = (1+tr)^(1/length(returns)) - 1
+    ayr = (1 + adr)^(252) - 1
     return round(ayr, 4)
     
     #round((/sum(length(returns))) * 252.0, 4)
@@ -393,8 +393,11 @@ for all returns and just negative returns
 """
 function calculatedeviation(returns::Vector{Float64})
     deviation = Deviation()
-    deviation.annualstandarddeviation, deviation.annualvariance = calculatestandarddeviation(returns)
-    deviation.annualsemideviation, deviation.annualsemivariance = calculatesemideviation(returns)
+    if length(returns) > 1
+        deviation.annualstandarddeviation, deviation.annualvariance = calculatestandarddeviation(returns)
+        deviation.annualsemideviation, deviation.annualsemivariance = calculatesemideviation(returns)
+    end
+
     return deviation
 end
 
