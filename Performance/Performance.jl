@@ -151,7 +151,7 @@ end
 """
 Function to compute performance based on vector of returns
 """
-function calculateperformance(algorithmreturns::Vector{Float64}, benchmarkreturns::Vector{Float64})
+function calculateperformance(algorithmreturns::Vector{Float64}, benchmarkreturns::Vector{Float64}; scale::Int = 252, period::Int=0)
    
     # replace NaN with zeros
     algorithmreturns[isnan.(algorithmreturns)] = 0.0
@@ -163,7 +163,7 @@ function calculateperformance(algorithmreturns::Vector{Float64}, benchmarkreturn
         
     ps = Performance()
 
-    ps.returns = aggregatereturns(algorithmreturns)
+    ps.returns = aggregatereturns(algorithmreturns, scale, period)
     ps.deviation = calculatedeviation(algorithmreturns)
     ps.drawdown = calculatedrawdown(algorithmreturns)
 
@@ -181,7 +181,7 @@ function calculateperformance(algorithmreturns::Vector{Float64}, benchmarkreturn
     end
 
     trkerr = sqrt(252) * std(algorithmreturns - benchmarkreturns)
-    excessret = calculateannualreturns(algorithmreturns - benchmarkreturns)
+    excessret = calculateannualreturns(algorithmreturns - benchmarkreturns, scale, period)
     ps.ratios.informationratio = round(trkerr > 0.0 ? excessret/trkerr : 0.0, 2)
     ps.period = length(algorithmreturns)
 
@@ -262,7 +262,7 @@ function calculateperformance_rollingperiods(returns::TimeArray)
     if(size(past_returns.values,1) > 0)
         algo_returns = past_returns["algorithm"].values
         benchmark_returns = past_returns["benchmark"].values
-        performances["1y"] = calculateperformance(algo_returns, benchmark_returns)
+        performances["1y"] = calculateperformance(algo_returns, benchmark_returns, scale=365, period=Int(Dates.value(dates[end] - dates[1])))
     end
 
     # Last 2 year data
@@ -272,7 +272,7 @@ function calculateperformance_rollingperiods(returns::TimeArray)
     if(size(past_returns.values,1) > 0)
         algo_returns = past_returns["algorithm"].values
         benchmark_returns = past_returns["benchmark"].values
-        performances["2y"] = calculateperformance(algo_returns, benchmark_returns)
+        performances["2y"] = calculateperformance(algo_returns, benchmark_returns, scale=365, period=Int(Dates.value(dates[end] - dates[1])))
     end    
 
     # Last 5 year data
@@ -281,7 +281,7 @@ function calculateperformance_rollingperiods(returns::TimeArray)
     if(size(past_returns.values,1) > 0)
         algo_returns = past_returns["algorithm"].values
         benchmark_returns = past_returns["benchmark"].values
-        performances["5y"] = calculateperformance(algo_returns, benchmark_returns)
+        performances["5y"] = calculateperformance(algo_returns, benchmark_returns, scale=365, period=Int(Dates.value(dates[end] - dates[1])))
     end
 
     # Last 10 year data
@@ -291,7 +291,7 @@ function calculateperformance_rollingperiods(returns::TimeArray)
     if(size(past_returns.values,1) > 0)
         algo_returns = past_returns["algorithm"].values
         benchmark_returns = past_returns["benchmark"].values
-        performances["10y"] = calculateperformance(algo_returns, benchmark_returns)
+        performances["10y"] = calculateperformance(algo_returns, benchmark_returns, scale=365, period=Int(Dates.value(dates[end] - dates[1])))
     end
        
     # YTD 
@@ -299,7 +299,7 @@ function calculateperformance_rollingperiods(returns::TimeArray)
     if(size(past_returns.values,1) > 0)
         algo_returns = past_returns["algorithm"].values
         benchmark_returns = past_returns["benchmark"].values
-        performances["ytd"] = calculateperformance(algo_returns, benchmark_returns)
+        performances["ytd"] = calculateperformance(algo_returns, benchmark_returns, scale=365, period=Int(Dates.value(dates[end] - dates[1])))
     end    
 
     # MTD   
@@ -308,7 +308,7 @@ function calculateperformance_rollingperiods(returns::TimeArray)
     if(size(past_returns.values,1) > 0)
         algo_returns = past_returns["algorithm"].values
         benchmark_returns = past_returns["benchmark"].values
-        performances["mtd"] = calculateperformance(algo_returns, benchmark_returns)
+        performances["mtd"] = calculateperformance(algo_returns, benchmark_returns, scale=365, period=Int(Dates.value(dates[end] - dates[1])))
     end
 
     return performances
@@ -330,7 +330,7 @@ function calculateperformance_staticperiods(returns::TimeArray)
         if(size(past_returns.values,1) > 0)
             algo_returns = past_returns["algorithm"].values
             benchmark_returns = past_returns["benchmark"].values
-            performance["yearly"][string(y)] = calculateperformance(algo_returns, benchmark_returns)
+            performance["yearly"][string(y)] = calculateperformance(algo_returns, benchmark_returns, scale=365, period=Int(Dates.value(dates[end] - dates[1])))
         end
 
         for m = 1:12
@@ -338,7 +338,7 @@ function calculateperformance_staticperiods(returns::TimeArray)
             if(size(past_monthly_returns.values,1) > 0)
                 algo_returns = past_monthly_returns["algorithm"].values
                 benchmark_returns = past_monthly_returns["benchmark"].values
-                performance["monthly"][string(y)*"_"string(m)] = calculateperformance(algo_returns, benchmark_returns)
+                performance["monthly"][string(y)*"_"string(m)] = calculateperformance(algo_returns, benchmark_returns, scale=365, period=Int(Dates.value(dates[end] - dates[1])))
             end
         end
     end
@@ -353,10 +353,14 @@ end
 """
 Function to compute annual returns
 """
-function calculateannualreturns(returns::Vector{Float64})
+function calculateannualreturns(returns::Vector{Float64}, scale::Int=252, period::Int=0)
     tr = (cumprod(1.0 + returns))[end] - 1
-    adr = (1+tr)^(1/length(returns)) - 1
-    ayr = (1 + adr)^(252) - 1
+
+    #Use scale and period to scale daily returns to annual returns
+    len = period == 0 ? length(returns) : period
+    
+    adr = (1+tr)^(1/len) - 1
+    ayr = (1 + adr)^(scale) - 1
     return round(ayr, 4)
     
     #round((/sum(length(returns))) * 252.0, 4)
@@ -376,12 +380,12 @@ function calculatetotalreturn(returns::Vector{Float64})
     round((cumprod(1.0 + returns))[end] - 1.0, 4)
 end
 
-function aggregatereturns(rets::Vector{Float64})
+function aggregatereturns(rets::Vector{Float64}, scale::Int=252, period::Int=0)
     returns = Returns()
     totalreturn = calculatetotalreturn(rets)
     returns.averagedailyreturn = round(totalreturn/length(rets), 4)
     returns.totalreturn = totalreturn
-    returns.annualreturn = calculateannualreturns(rets)
+    returns.annualreturn = calculateannualreturns(rets, scale, period)
     returns.peaktotalreturn = calculatepeakreturn(rets)
     return returns
 end
