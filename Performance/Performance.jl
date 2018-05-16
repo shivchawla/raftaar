@@ -452,7 +452,7 @@ function calculatedrawdown(returns::Vector{Float64})
     netvalue = 100000.0 * cumprod(1.0 + returns)
     currentdrawdown = zeros(length(returns))
     maxdrawdown = zeros(length(returns))
-    peak = -9999.0
+    peak = 100000.0
     len = length(returns)
 
     for i in 1:len
