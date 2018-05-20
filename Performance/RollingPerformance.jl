@@ -27,7 +27,7 @@ function updatelatestperformance_algorithm(accounttracker::AccountTracker, casht
 
     else
         actkeys = sort(collect(keys(accounttracker)))
-        currentperformance = _intializepeformance(accounttracker[actkeys[1]].cash)    
+        currentperformance = _intializepeformance(accounttracker[actkeys[1]].portfolio.cash)    
     end
    
     #update netvalue and leverage here
