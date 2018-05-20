@@ -297,7 +297,7 @@ function updatedatastores(date::Date, ohlcv::Dict{String, TimeArray}, adjustment
         volume = __getvolume(volumenames, volumes, colname)
         
         #check if price is DataArray NA
-        tradebar =  TradeBar(datetime, open, high, low, close, volume)
+        tradebar =  TradeBar(datetime, open, high, low, close, Int(volume))
 
         ss = security.symbol
         tradebars[ss] = tradebar
