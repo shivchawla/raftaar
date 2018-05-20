@@ -44,13 +44,12 @@ Portfolio() = Portfolio(Dict(), PortfolioMetrics(), 0.0)
 ==(p1::Portfolio, p2::Portfolio) = (p1.positions == p2.positions && p1.metrics == p2.metrics && p1.cash == p2.cash)
 
 
-Portfolio(data::Dict{String, Any}) = Portfolio(
+Portfolio(data::Dict{String, Any}; cash::Float64=0.0) = Portfolio(
                                 Dict(
                                   [(SecuritySymbol(sym), Position(pos)) for (sym, pos) in data["positions"]]
                                 ),
                                 PortfolioMetrics(data["metrics"]),
-                                get(data, "cash", 0.0)
-
+                                cash !=0.0 ? cash : get(data, "cash", 0.0)
                               )
 
 """

@@ -18,7 +18,11 @@ end
 
 Account() = Account(0.0, 0.0, 0.0, Portfolio())
 
-Account(data::Dict{String, Any}) = Account(data["seedcash"], data["netvalue"], data["leverage"], Portfolio(data["portfolio"]))
+Account(data::Dict{String, Any}) = Account(data["seedcash"], 
+                                    data["netvalue"], 
+                                    data["leverage"], 
+                                    Portfolio(data["portfolio"], cash = get(data, "cash",0.0))) 
+                                    #adding backward compatibility for cash (cash was part of account)
 
 """
 function to reset the cash position of the account
@@ -46,10 +50,9 @@ end
 function to update the account with cash generated from orderfills
 """
 function updateaccount_forcash!(account::Account, cash::Float64 = 0.0)
-    #account.cash += cash
-    account.netvalue = account.portfolio.metrics.netexposure + account.cash
-    account.leverage = account.portfolio.metrics.grossexposure / account.netvalue
     updateportfolio_forcash!(account.portfolio, cash)
+    account.netvalue = account.portfolio.metrics.netexposure + account.portfolio.cash
+    account.leverage = account.portfolio.metrics.grossexposure / account.netvalue
 end
 
 """
@@ -57,7 +60,7 @@ function to update the account portfolio with latest prices
 """
 function updateaccount_price!(account::Account, tradebars::Dict{SecuritySymbol, Vector{TradeBar}}, datetime::DateTime)
     updateportfolio_price!(account.portfolio, tradebars, datetime)
-    account.netvalue = account.portfolio.metrics.netexposure + account.cash
+    account.netvalue = account.portfolio.metrics.netexposure + account.portfolio.cash
     account.leverage = account.portfolio.metrics.grossexposure / account.netvalue
 end
 
