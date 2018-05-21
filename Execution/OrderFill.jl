@@ -9,7 +9,7 @@
 """
 Encapsulate the characteristics of the order fill
 """
-#BUGFIX: orderid type was Int64(mdoified to UInt64)
+#BUGFIX: orderid type was Int64(modified to UInt64)
 type OrderFill
 	orderid::UInt64
 	securitysymbol::SecuritySymbol
@@ -18,15 +18,16 @@ type OrderFill
 	fillprice::Float64
 	fillquantity::Int
 	message::String
+	cashlinked::Bool
 end
 
-OrderFill(order::Order, datetime::DateTime, orderfee::Float64, message = "") =
-	OrderFill(order.id, order.securitysymbol, datetime, orderfee, 0.0, 0, message)
+OrderFill(order::Order, datetime::DateTime, orderfee::Float64, message = "", cashlinked = true) =
+	OrderFill(order.id, order.securitysymbol, datetime, orderfee, 0.0, 0, message, cashlinked)
 
 OrderFill(order::Order, datetime::DateTime) = OrderFill(order, datetime, 0.0)
 
-OrderFill(securitysymbol::SecuritySymbol, fillprice::Float64, fillquantity::Int, fee::Float64 = 0.0) =
-    OrderFill(convert(UInt64, now()), securitysymbol, DateTime(), fee, fillprice, fillquantity, "")
+OrderFill(securitysymbol::SecuritySymbol, fillprice::Float64, fillquantity::Int, fee::Float64 = 0.0, cashlinked = true, datetime::DateTime = DateTime()) =
+    OrderFill(Dates.value(now()), securitysymbol, datetime, fee, fillprice, fillquantity, "", cashlinked)
 
 OrderFill(data::Dict{String, Any}) = OrderFill(parse(UInt64, data["orderid"]),
 										SecuritySymbol(data["securitysymbol"]["id"], data["securitysymbol"]["ticker"]),
@@ -34,7 +35,8 @@ OrderFill(data::Dict{String, Any}) = OrderFill(parse(UInt64, data["orderid"]),
 										data["orderfee"],
 										data["fillprice"],
 										data["fillquantity"],
-										data["message"])
+										data["message"],
+										get(data, "cashlinked", true))
 
 """
 Function to check if order fill is complete
@@ -53,7 +55,8 @@ function serialize(orderfill::OrderFill)
                             "orderfee" => orderfill.orderfee,
                             "fillprice" => orderfill.fillprice,
                             "fillquantity" => orderfill.fillquantity,
-                            "message" => orderfill.message)
+                            "message" => orderfill.message,
+                            "cashlinked" => orderfill.cashlinked)
 end
 
 ==(of1::OrderFill, of2::OrderFill) = of1.orderid == of2.orderid &&
@@ -62,4 +65,5 @@ end
 									of1.orderfee == of2.orderfee &&
 									of1.fillprice == of2.fillprice &&
 									of1.fillquantity == of2.fillquantity &&
-									of1.message == of2.message
+									of1.message == of2.message &&
+									of2.cashlinked == of2.cashlinked

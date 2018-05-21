@@ -23,14 +23,14 @@ function _compute_returns(prices::TimeArray, rettype::Symbol, total::Bool)
 end
 
 function price_returns(tickers, series::String, frequency::Symbol, horizon::Int, enddate::DateTime; 
-                        total::Bool=false, rettype::Symbol=:log)
+                        total::Bool=false, rettype::Symbol=:log, strict::Bool=true)
     
     if(length(tickers) == 0) 
         return nothing
     end
     
     #Fetch prices for horizon    
-    prices = YRead.history(tickers, series, :Day, horizon, enddate, displaylogs=false)
+    prices = YRead.history(tickers, series, :Day, horizon, enddate, displaylogs=false, strict=strict)
     _compute_returns(prices, rettype, total) 
 end
 export price_returns
@@ -57,10 +57,7 @@ function beta_old(tickers, frequency::Symbol, horizon::Int, enddate::DateTime;
                 benchmark="NIFTY_50", rettype::Symbol=:log, series::String = "Close")
     
     rets_ts = price_returns(tickers, series, frequency, horizon, enddate, rettype = rettype)
-   
-    YRead.setstrict(false)
-    rets_benchmark = price_returns([benchmark], series, frequency, horizon, enddate, rettype = rettype)
-    YRead.setstrict(true)
+    rets_benchmark = price_returns([benchmark], series, frequency, horizon, enddate, rettype = rettype, strict = false)
  
     names = colnames(rets_ts)
     nNames = length(names)
@@ -111,11 +108,7 @@ function beta(tickers, frequency::Symbol, horizon::Int, enddate::DateTime;
     end
 
     rets_ts = price_returns(tickers, series, frequency, horizon, enddate, rettype = rettype)
-   
-    YRead.setstrict(false)
-    rets_benchmark = price_returns([benchmark], series, frequency, horizon, enddate, rettype = rettype)
-    YRead.setstrict(true)
- 
+    rets_benchmark = price_returns([benchmark], series, frequency, horizon, enddate, rettype = rettype, strict = false)
     names = colnames(rets_ts)
     nNames = length(names)
   

@@ -5,9 +5,9 @@ using API
 using Utilities
 import Utilities: price_returns, stddev, beta
 
-function price_returns(tickers, series::String, frequency::Symbol; window::Int=22, total::Bool=false, rettype::Symbol=:log)
+function price_returns(tickers, series::String, frequency::Symbol; window::Int=22, total::Bool=false, rettype::Symbol=:log, strict::Bool = true)
     
-    Utilities.price_returns(tickers, series, frequency, window, getcurrentdatetime(), total=total, rettype=rettype)
+    Utilities.price_returns(tickers, series, frequency, window, getcurrentdatetime(), total=total, rettype=rettype, strict=strict)
      
 end
 

@@ -48,7 +48,7 @@ type Ratios
     stability::Float64
 end
 
-Ratios() = Ratios(0.0,0.0,0.0,0.0,0.0,1.0,0.0,1.0)
+Ratios() = Ratios(0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0)
 
 Ratios(data::Dict{String, Any}) = Ratios(data["sharperatio"],
                                   data["informationratio"],
@@ -68,7 +68,7 @@ type Returns
     peaktotalreturn::Float64
 end
 
-Returns() = Returns(0.0,0.0,0.0,0.0,1.0,1.0)
+Returns() = Returns(0.0,0.0,0.0,0.0,0.0,0.0)
 
 Returns(data::Dict{String, Any}) = Returns(data["dailyreturn"],
                                     data["dailyreturn_benchmark"],
@@ -151,15 +151,19 @@ end
 """
 Function to compute performance based on vector of returns
 """
-function calculateperformance(algorithmreturns::Vector{Float64}, benchmarkreturns::Vector{Float64})
+function calculateperformance(algorithmreturns::Vector{Float64}, benchmarkreturns::Vector{Float64}; scale::Int = 252, period::Int=0)
    
     # replace NaN with zeros
     algorithmreturns[isnan.(algorithmreturns)] = 0.0
     benchmarkreturns[isnan.(benchmarkreturns)] = 0.0
     
+    # replace Inf with zeros (this is tricky and debatable) 
+    algorithmreturns[isinf.(algorithmreturns)] = 0.0
+    benchmarkreturns[isinf.(benchmarkreturns)] = 0.0
+        
     ps = Performance()
 
-    ps.returns = aggregatereturns(algorithmreturns)
+    ps.returns = aggregatereturns(algorithmreturns, scale, period)
     ps.deviation = calculatedeviation(algorithmreturns)
     ps.drawdown = calculatedrawdown(algorithmreturns)
 
@@ -170,16 +174,15 @@ function calculateperformance(algorithmreturns::Vector{Float64}, benchmarkreturn
     if(size(df, 1) > 2)
         OLS = fit(LinearModel, @formula(Y ~ X), df)
         coefficients = coef(OLS)
-        ps.ratios.beta = coefficients[2]
-        ps.ratios.alpha = coefficients[1]
-        ps.ratios.stability = r2(OLS)
+
+        ps.ratios.beta = round(coefficients[2], 2)
+        ps.ratios.alpha = round(coefficients[1] * 252.0, 4)
+        ps.ratios.stability = round(r2(OLS), 3)
     end
 
     trkerr = sqrt(252) * std(algorithmreturns - benchmarkreturns)
-    excessret = calculateannualreturns(algorithmreturns - benchmarkreturns)
-
-    ps.ratios.informationratio = trkerr > 0.0 ? excessret/trkerr : 0.0
-
+    excessret = calculateannualreturns(algorithmreturns - benchmarkreturns, scale, period)
+    ps.ratios.informationratio = round(trkerr > 0.0 ? excessret/trkerr : 0.0, 2)
     ps.period = length(algorithmreturns)
 
     return ps
@@ -247,7 +250,6 @@ end
 """
 Function to compute performance for all periods like 1/2/5/10/ytd/mtd based on vector of returns
 """
-
 function calculateperformance_rollingperiods(returns::TimeArray) 
 
     performances = Dict{String, Performance}()
@@ -260,7 +262,11 @@ function calculateperformance_rollingperiods(returns::TimeArray)
     if(size(past_returns.values,1) > 0)
         algo_returns = past_returns["algorithm"].values
         benchmark_returns = past_returns["benchmark"].values
-        performances["1y"] = calculateperformance(algo_returns, benchmark_returns)
+
+        ts = past_returns.timestamp;
+        ndays = Int(Dates.value(ts[end] - ts[1]))
+
+        performances["1y"] = calculateperformance(algo_returns, benchmark_returns, scale=365, period=ndays)
     end
 
     # Last 2 year data
@@ -270,7 +276,11 @@ function calculateperformance_rollingperiods(returns::TimeArray)
     if(size(past_returns.values,1) > 0)
         algo_returns = past_returns["algorithm"].values
         benchmark_returns = past_returns["benchmark"].values
-        performances["2y"] = calculateperformance(algo_returns, benchmark_returns)
+
+        ts = past_returns.timestamp;
+        ndays = Int(Dates.value(ts[end] - ts[1]))
+
+        performances["2y"] = calculateperformance(algo_returns, benchmark_returns, scale=365, period=ndays)
     end    
 
     # Last 5 year data
@@ -279,7 +289,11 @@ function calculateperformance_rollingperiods(returns::TimeArray)
     if(size(past_returns.values,1) > 0)
         algo_returns = past_returns["algorithm"].values
         benchmark_returns = past_returns["benchmark"].values
-        performances["5y"] = calculateperformance(algo_returns, benchmark_returns)
+
+        ts = past_returns.timestamp;
+        ndays = Int(Dates.value(ts[end] - ts[1]))
+
+        performances["5y"] = calculateperformance(algo_returns, benchmark_returns, scale=365, period=ndays)
     end
 
     # Last 10 year data
@@ -289,7 +303,11 @@ function calculateperformance_rollingperiods(returns::TimeArray)
     if(size(past_returns.values,1) > 0)
         algo_returns = past_returns["algorithm"].values
         benchmark_returns = past_returns["benchmark"].values
-        performances["10y"] = calculateperformance(algo_returns, benchmark_returns)
+
+        ts = past_returns.timestamp;
+        ndays = Int(Dates.value(ts[end] - ts[1]))
+
+        performances["10y"] = calculateperformance(algo_returns, benchmark_returns, scale=365, period=ndays)
     end
        
     # YTD 
@@ -297,7 +315,11 @@ function calculateperformance_rollingperiods(returns::TimeArray)
     if(size(past_returns.values,1) > 0)
         algo_returns = past_returns["algorithm"].values
         benchmark_returns = past_returns["benchmark"].values
-        performances["ytd"] = calculateperformance(algo_returns, benchmark_returns)
+
+        ts = past_returns.timestamp;
+        ndays = Int(Dates.value(ts[end] - ts[1]))
+
+        performances["ytd"] = calculateperformance(algo_returns, benchmark_returns, scale=365, period=ndays)
     end    
 
     # MTD   
@@ -306,7 +328,11 @@ function calculateperformance_rollingperiods(returns::TimeArray)
     if(size(past_returns.values,1) > 0)
         algo_returns = past_returns["algorithm"].values
         benchmark_returns = past_returns["benchmark"].values
-        performances["mtd"] = calculateperformance(algo_returns, benchmark_returns)
+
+        ts = past_returns.timestamp;
+        ndays = Int(Dates.value(ts[end] - ts[1]))
+
+        performances["mtd"] = calculateperformance(algo_returns, benchmark_returns, scale=365, period=ndays)
     end
 
     return performances
@@ -328,7 +354,11 @@ function calculateperformance_staticperiods(returns::TimeArray)
         if(size(past_returns.values,1) > 0)
             algo_returns = past_returns["algorithm"].values
             benchmark_returns = past_returns["benchmark"].values
-            performance["yearly"][string(y)] = calculateperformance(algo_returns, benchmark_returns)
+
+            ts = past_returns.timestamp;
+            ndays = Int(Dates.value(ts[end] - ts[1]))
+
+            performance["yearly"][string(y)] = calculateperformance(algo_returns, benchmark_returns, scale=365, period=ndays)
         end
 
         for m = 1:12
@@ -336,7 +366,7 @@ function calculateperformance_staticperiods(returns::TimeArray)
             if(size(past_monthly_returns.values,1) > 0)
                 algo_returns = past_monthly_returns["algorithm"].values
                 benchmark_returns = past_monthly_returns["benchmark"].values
-                performance["monthly"][string(y)*"_"string(m)] = calculateperformance(algo_returns, benchmark_returns)
+                performance["monthly"][string(y)*"_"string(m)] = calculateperformance(algo_returns, benchmark_returns, scale=365, period=ndays)
             end
         end
     end
@@ -351,23 +381,40 @@ end
 """
 Function to compute annual returns
 """
-function calculateannualreturns(returns::Vector{Float64})
-    round((calculatetotalreturn(returns)/sum(length(returns))) * 252.0, 2)
+function calculateannualreturns(returns::Vector{Float64}, scale::Int=252, period::Int=0)
+    tr = (cumprod(1.0 + returns))[end] - 1
+
+    #Use scale and period to scale daily returns to annual returns
+    len = period == 0 ? length(returns) : period
+    
+    adr = (1+tr)^(1/len) - 1
+    ayr = (1 + adr)^(scale) - 1
+    return round(ayr, 4)
+    
+    #round((/sum(length(returns))) * 252.0, 4)
+end
+
+"""
+Function to compute peak return
+"""
+function calculatepeakreturn(returns::Vector{Float64})
+    round(maximum(cumprod(1.0 + returns)) - 1.0, 4) 
 end
 
 """
 Function to compute total return
 """
 function calculatetotalreturn(returns::Vector{Float64})
-    round((cumprod(1.0 + returns))[end], 2)
+    round((cumprod(1.0 + returns))[end] - 1.0, 4)
 end
 
-function aggregatereturns(rets::Vector{Float64})
+function aggregatereturns(rets::Vector{Float64}, scale::Int=252, period::Int=0)
     returns = Returns()
     totalreturn = calculatetotalreturn(rets)
-    returns.averagedailyreturn = round((totalreturn - 1)/length(rets), 2)
+    returns.averagedailyreturn = round(totalreturn/length(rets), 4)
     returns.totalreturn = totalreturn
-    returns.annualreturn = round(returns.averagedailyreturn*252, 2)
+    returns.annualreturn = calculateannualreturns(rets, scale, period)
+    returns.peaktotalreturn = calculatepeakreturn(rets)
     return returns
 end
 
@@ -378,19 +425,22 @@ for all returns and just negative returns
 """
 function calculatedeviation(returns::Vector{Float64})
     deviation = Deviation()
-    deviation.annualstandarddeviation, deviation.annualvariance = calculatestandarddeviation(returns)
-    deviation.annualsemideviation, deviation.annualsemivariance = calculatesemideviation(returns)
+    if length(returns) > 1
+        deviation.annualstandarddeviation, deviation.annualvariance = calculatestandarddeviation(returns)
+        deviation.annualsemideviation, deviation.annualsemivariance = calculatesemideviation(returns)
+    end
+
     return deviation
 end
 
 function calculatestandarddeviation(returns::Vector{Float64})
     sdev = std(returns) * sqrt(252.0)
-    return sdev, sdev*sdev
+    return round(sdev, 4), round(sdev*sdev, 4)
 end
 
 function calculatesemideviation(returns::Vector{Float64})
     sdev = std(returns .< 0) * sqrt(252.0)
-    return sdev, sdev*sdev
+    return round(sdev, 4), round(sdev*sdev, 4)
 end
 
 """
@@ -402,7 +452,7 @@ function calculatedrawdown(returns::Vector{Float64})
     netvalue = 100000.0 * cumprod(1.0 + returns)
     currentdrawdown = zeros(length(returns))
     maxdrawdown = zeros(length(returns))
-    peak = -9999.0
+    peak = 100000.0
     len = length(returns)
 
     for i in 1:len
@@ -412,15 +462,17 @@ function calculatedrawdown(returns::Vector{Float64})
       end
       currentdrawdown[i] = (peak - netvalue[i]) / peak
       # Same idea as peak variable, MDD keeps track of the maximum drawdown so far. Only get updated when higher DD is seen.
-      if (currentdrawdown[i] > maxdrawdown[i])
+      if i == 1
+        maxdrawdown[i] = currentdrawdown[i]
+      elseif (currentdrawdown[i] > maxdrawdown[i-1])
         maxdrawdown[i] = currentdrawdown[i]
       elseif i > 1
         maxdrawdown[i] = maxdrawdown[i-1]
       end
     end
 
-    drawdown.currentdrawdown = currentdrawdown[end]
-    drawdown.maxdrawdown  = maxdrawdown[end]
+    drawdown.currentdrawdown = round(currentdrawdown[end], 4)
+    drawdown.maxdrawdown  = round(maxdrawdown[end], 4)
 
     return drawdown
 end
@@ -433,9 +485,9 @@ Function to compute risk measuring ratios
 """
 function calculateratios(returns::Returns, deviation::Deviation, drawdown::Drawdown)
     ratios = Ratios()
-    ratios.sharperatio = deviation.annualstandarddeviation > 0.0 ? (returns.annualreturn - 0.065) / deviation.annualstandarddeviation : 0.0
-    ratios.sortinoratio = deviation.annualsemideviation > 0.0 ? returns.annualreturn / deviation.annualsemideviation : 0.0
-    ratios.calmarratio = drawdown.maxdrawdown > 0.0 ? returns.totalreturn/drawdown.maxdrawdown : 0.0
+    ratios.sharperatio = round(deviation.annualstandarddeviation > 0.0 ? (returns.annualreturn - 0.065) / deviation.annualstandarddeviation : 0.0, 2)
+    ratios.sortinoratio = round(deviation.annualsemideviation > 0.0 ? returns.annualreturn / deviation.annualsemideviation : 0.0, 2)
+    ratios.calmarratio = round(drawdown.maxdrawdown > 0.0 ? returns.totalreturn/drawdown.maxdrawdown : 0.0, 2)
     return ratios
 end
 

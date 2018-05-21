@@ -28,7 +28,8 @@ function optimize(symbols,
                     linearrestrictions::Vector{LinearRestriction}=LinearRestriction[],
                     cholesky=false,
                     riskaversion=1.0,
-                    returnsforecast::Vector{Float64}=Vector{Float64})
+                    returnsforecast::Vector{Float64}=Vector{Float64}(),
+                    roundbelow::Float64=0.0)
                     
     if method=="minvol2"
         minimumvolatility_raw(symbols,
@@ -36,7 +37,8 @@ function optimize(symbols,
                             window=window, 
                             constraints=constraints, 
                             initialportfolio=initialportfolio,
-                            linearrestrictions=linearrestrictions)
+                            linearrestrictions=linearrestrictions,
+                            roundbelow=roundbelow)
     elseif method=="minvol"
         minimumvolatility(symbols,
                             date,  
@@ -45,54 +47,63 @@ function optimize(symbols,
                             constraints=constraints, 
                             initialportfolio=initialportfolio,
                             linearrestrictions=linearrestrictions,
-                            cholesky=cholesky)
+                            cholesky=cholesky,
+                            roundbelow=roundbelow)
     elseif method=="min_mad"
         minimumabsolutedeviation(symbols,
                                     date, 
                                     window=window, 
                                     constraints=constraints, 
                                     initialportfolio=initialportfolio,
-                                    linearrestrictions=linearrestrictions)
+                                    linearrestrictions=linearrestrictions,
+                                    roundbelow=roundbelow)
     elseif method=="min_msad"
         minimumabsolutesemideviation(symbols,
                                     date, 
                                     window=window, 
                                     constraints=constraints, 
                                     initialportfolio=initialportfolio,
-                                    linearrestrictions=linearrestrictions)
+                                    linearrestrictions=linearrestrictions,
+                                    roundbelow=roundbelow)
     elseif method=="minloss"
         minimumloss(symbols, 
                     date,
                     window=window, 
                     constraints=constraints, 
                     initialportfolio=initialportfolio,
-                    linearrestrictions=linearrestrictions)
+                    linearrestrictions=linearrestrictions,
+                    roundbelow=roundbelow)
     elseif method=="meanvar"
         meanvariance(symbols, 
                         date,
                         targetret=targetret,
-                        window=window, 
-                        constraints=constraints, 
-                        initialportfolio=initialportfolio,
-                        linearrestrictions=linearrestrictions,
-                        returnsforecast=returnsforecast,
-                        cholesky=cholesky)
-    elseif method=="meanvar2"
-        meanvariance2(symbols,
-                        date, 
-                        window=window, 
+                        window=window,
+                        nfactors=nfactors, 
                         constraints=constraints, 
                         initialportfolio=initialportfolio,
                         linearrestrictions=linearrestrictions,
                         returnsforecast=returnsforecast,
                         cholesky=cholesky,
-                        riskaversion=riskaversion)
+                        roundbelow=roundbelow)
+    elseif method=="meanvar2"
+        meanvariance2(symbols,
+                        date, 
+                        window=window,
+                        nfactors=nfactors, 
+                        constraints=constraints, 
+                        initialportfolio=initialportfolio,
+                        linearrestrictions=linearrestrictions,
+                        returnsforecast=returnsforecast,
+                        cholesky=cholesky,
+                        riskaversion=riskaversion,
+                        roundbelow=roundbelow)
     elseif method=="minnorm"
         minimumnorm(symbols,
                         date,  
                         constraints=constraints, 
                         initialportfolio=initialportfolio,
-                        linearrestrictions=linearrestrictions)
+                        linearrestrictions=linearrestrictions,
+                        roundbelow=roundbelow)
     else 
         return (0.0, [(symbol, 0.0) for symbol in symbols], :Unavailable)
     end

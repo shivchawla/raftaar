@@ -80,11 +80,7 @@ function _run_algo_internal(startdate::Date = getstartdate(), enddate::Date = ge
       benchmark = API.getbenchmark()
 
       #Let's download new data now
-      #Set strict policy to FALSE for benchmark
-      YRead.setstrict(false)
-      benchmarkdata = YRead.history([benchmark.id], "Close", :Day, DateTime(startdate), DateTime(enddate), displaylogs = false)
-      #undo strict policy for rest of the universe
-      YRead.setstrict(true)
+      benchmarkdata = YRead.history_unadj([benchmark.id], "Close", :Day, DateTime(startdate), DateTime(enddate), displaylogs = false, strict = false)
 
       if benchmarkdata == nothing
           Logger.warn_static("Benchmark data not available from $(startdate) to $(enddate)")
@@ -157,8 +153,8 @@ function _run_algo_internal(startdate::Date = getstartdate(), enddate::Date = ge
       # Global data stores
       #Get Adjusted history once for the full universe (from start to end date)
       #THis will be used for any history calls in user algorithm
-      allsecurities_includingbenchmark = push!(universeIds, benchmark.id)
-      adjustedcloseprices = YRead.history(allsecurities_includingbenchmark, "Close", :Day, DateTime(startdate), DateTime(enddate), displaylogs = false)
+      #allsecurities_includingbenchmark = push!(universeIds, benchmark.id)
+      #adjustedcloseprices = YRead.history(allsecurities_includingbenchmark, "Close", :Day, DateTime(startdate), DateTime(enddate), displaylogs = false)
 
       #Set benchmark value and Output labels from graphs
       setbenchmarkvalues(labels)

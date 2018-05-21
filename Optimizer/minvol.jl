@@ -4,7 +4,8 @@ function minimumvolatility_raw(symbols,
                             window::Int = 22,
                             constraints::Constraints=Constraints(),
                             initialportfolio::Vector{Float64}=Vector{Float64}(),
-                            linearrestrictions::Vector{LinearRestriction}=LinearRestriction[])
+                            linearrestrictions::Vector{LinearRestriction}=LinearRestriction[],
+                            roundbelow::Float64=0.0)
     
     #__IllegalDate(date)
     #Retrieve the standard deviation over window
@@ -49,7 +50,7 @@ function minimumvolatility_raw(symbols,
 
     status = solve(m)
 
-    __handleoutput(symbols, (m,x_l,x_s), status, (0.0, initialportfolio))     
+    __handleoutput(symbols, (m,x_l,x_s), status, (0.0, initialportfolio), roundbelow)     
 end
 
 
@@ -65,7 +66,8 @@ function minimumvolatility(symbols,
                             constraints::Constraints=Constraints(),
                             initialportfolio::Vector{Float64}=Vector{Float64}(),
                             linearrestrictions::Vector{LinearRestriction}=LinearRestriction[],
-                            cholesky=false)
+                            cholesky=false,
+                            roundbelow::Float64=0.0)
     
     #__IllegalDate(date)
     #Retrieve the standard deviation over window
@@ -144,5 +146,5 @@ function minimumvolatility(symbols,
         println("Restriction Value: $(sum(restriction.coeff.*(getvalue(x_l) + getvalue(x_s))))")
     end
 
-    __handleoutput(symbols, (m,x_l,x_s), status, (0.0, initialportfolio))     
+    __handleoutput(symbols, (m,x_l,x_s), status, (0.0, initialportfolio), roundbelow)     
 end

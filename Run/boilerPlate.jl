@@ -18,3 +18,6 @@ const PATH = Base.source_dir()
 
 include(PATH*"/handleErrors.jl")
 include(PATH*"/Run_Algo.jl")
+ #Reset the initialize/ondata
+include(PATH*"/reset.jl")
+

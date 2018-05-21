@@ -4,7 +4,8 @@ function minimumloss(symbols,
                         window::Int = 22,
                         constraints::Constraints=Constraints(),
                         initialportfolio::Vector{Float64}=Vector{Float64}(),
-                        linearrestrictions::Vector{LinearRestriction}=LinearRestriction[])
+                        linearrestrictions::Vector{LinearRestriction}=LinearRestriction[],
+                        roundbelow::Float64=0.0)
 
     #__IllegalDate(date)
 
@@ -43,5 +44,5 @@ function minimumloss(symbols,
     
     status = solve(m)
 
-    __handleoutput(symbols, (m,x_l,x_s), status, (0.0, initialportfolio))     
+    __handleoutput(symbols, (m,x_l,x_s), status, (0.0, initialportfolio), roundbelow)     
 end

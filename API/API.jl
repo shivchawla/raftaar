@@ -168,16 +168,6 @@ function _updateaccounttracker()
 end
 export _updateaccounttracker
 
-# NOT IN USE
-# NOT IN USE
-function _calculateperformance()
-    calculateperformance(algorithm.accounttracker, algorithm.cashtracker)
-    Raftaar.resetAlgo(algorithm)
-end
-export _calculateperformance
-# NOT IN USE
-# NOT IN USE
-
 function _updatedailyperformance()
     updateaccounttracker!(algorithm)
     updateperformancetracker!(algorithm)
@@ -307,7 +297,7 @@ function updatedatastores(date::Date, ohlcv::Dict{String, TimeArray}, adjustment
         volume = __getvolume(volumenames, volumes, colname)
         
         #check if price is DataArray NA
-        tradebar =  TradeBar(datetime, open, high, low, close, volume)
+        tradebar =  TradeBar(datetime, open, high, low, close, Int(volume))
 
         ss = security.symbol
         tradebars[ss] = tradebar
