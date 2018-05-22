@@ -102,19 +102,20 @@ function _computecurrentperformance(firstperformance::Performance, lastperforman
 end
 
 
-function _computecurrentperformance(firstperformance::Performance, lastperformance::Performance, latestreturn::Float64)
+#Annual RETURN cacualtion is wrong....It should use calendar period!!!
+function _computecurrentperformance(c::Performance, lastperformance::Performance, latestreturn::Float64)
     performance = Performance()
     performance.returns.dailyreturn = latestreturn
-    performance.returns.totalreturn = lastperformance.returns.totalreturn * (1 + performance.returns.dailyreturn)
+    performance.returns.totalreturn =  (1 + lastperformance.returns.totalreturn) * (1 + performance.returns.dailyreturn) - 1
     
-    if (performance.returns.totalreturn > lastperformance.returns.peaktotalreturn)
-        performance.returns.peaktotalreturn = performance.returns.totalreturn
+    if ( 1 + performance.returns.totalreturn > lastperformance.returns.peaktotalreturn)
+        performance.returns.peaktotalreturn =  1 + performance.returns.totalreturn
     else 
         performance.returns.peaktotalreturn = lastperformance.returns.peaktotalreturn
     end
 
     performance.deviation.squareddailyreturn =  performance.returns.dailyreturn * performance.returns.dailyreturn
-    performance.drawdown.currentdrawdown = (performance.returns.peaktotalreturn - performance.returns.totalreturn) / performance.returns.peaktotalreturn
+    performance.drawdown.currentdrawdown = (performance.returns.peaktotalreturn - (1+ performance.returns.totalreturn)) / performance.returns.peaktotalreturn
     if (performance.drawdown.currentdrawdown > lastperformance.drawdown.maxdrawdown) 
         performance.drawdown.maxdrawdown = performance.drawdown.currentdrawdown
     else
