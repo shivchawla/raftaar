@@ -29,8 +29,8 @@ function outputbackteststatistics_partial(accttrkr::AccountTracker,
 
     for i = 1:length(sorteddates)
         equity[string(sorteddates[i])] = round(pftrkr[sorteddates[i]].portfoliostats.netvalue,2)
-        totalreturn_algorithm[string(sorteddates[i])] = round(100.0 * (pftrkr[sorteddates[i]].returns.totalreturn - 1.0),2)
-        totalreturn_benchmark[string(sorteddates[i])] = round(100.0 * (bnchtrkr[sorteddates[i]].returns.totalreturn - 1.0),2)
+        totalreturn_algorithm[string(sorteddates[i])] = round(100.0 * pftrkr[sorteddates[i]].returns.totalreturn, 2)
+        totalreturn_benchmark[string(sorteddates[i])] = round(100.0 * bnchtrkr[sorteddates[i]].returns.totalreturn, 2)
     end
 
     lastperformance = pftrkr[sorteddates[end]]
@@ -230,7 +230,7 @@ end
 
 function convert(::Type{Dict}, performance::Performance)
     Dict{String, Any}(  "annualreturn" => round(100.0 * performance.returns.annualreturn, 2),
-                        "totalreturn" => round(100.0 * (performance.returns.totalreturn - 1.0), 2),
+                        "totalreturn" => round(100.0 * performance.returns.totalreturn, 2),
                         "annualstandarddeviation" => round(100.0 * performance.deviation.annualstandarddeviation, 2),
                         #"annualvariance" => round(100.0 * 100.0 * performance.annualvariance,2),
                         "sharperatio" => round(performance.ratios.sharperatio, 2),
@@ -334,8 +334,8 @@ function outputperformanceJSON(performancetracker::PerformanceTracker, benchmark
                                 "dailyreturn" => round(100.0*performance.returns.dailyreturn,2),
                                 "netvalue" => round(performance.portfoliostats.netvalue,2),
                                 "annualreturn" => round(100.0*performance.returns.annualreturn,2),
-                                "totalreturn" => round(100.0*(performance.returns.totalreturn - 1.0),2),
-                                "totalreturn_benchmark" => round(100.0*(btperformance.returns.totalreturn - 1.0),2),
+                                "totalreturn" => round(100.0*performance.returns.totalreturn, 2),
+                                "totalreturn_benchmark" => round(100.0*btperformance.returns.totalreturn, 2),
                                 "annualstandarddeviation" => round(100.0*performance.deviation.annualstandarddeviation,2),
                                 #"annualvariance" => round(100.0*100.0*performance.annualvariance,2),
                                 "sharperatio" => round(performance.ratios.sharperatio,2),
