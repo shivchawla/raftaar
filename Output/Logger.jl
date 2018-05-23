@@ -114,15 +114,15 @@ end
 """
 Function to record and print log messages
 """
-function info(msg::Any, style::Symbol, mode::Symbol; datetime::DateTime = unix2datetime(time()))
+function info(msg::Any, style::Symbol, mode::Symbol; datetime::DateTime = Dates.unix2datetime(time()))
     _log(msg, MessageType(INFO), [mode], style, datetime)
 end
 
-function warn(msg::Any, style::Symbol, mode::Symbol; datetime::DateTime = unix2datetime(time()))
+function warn(msg::Any, style::Symbol, mode::Symbol; datetime::DateTime = Dates.unix2datetime(time()))
     _log(msg, MessageType(WARN), [mode], style, datetime)
 end
 
-function error(msg::Any, style::Symbol, mode::Symbol; datetime::DateTime = unix2datetime(time()))
+function error(msg::Any, style::Symbol, mode::Symbol; datetime::DateTime = Dates.unix2datetime(time()))
     _log(msg, MessageType(ERROR), [mode], style, datetime)
 end
 
@@ -138,27 +138,27 @@ function warn_static(msg::Any)
     _log(msg, MessageType(WARN), params["modes"], params["style"], DateTime())
 end
 
-function info(msg::Any; datetime::DateTime = unix2datetime(time()))
+function info(msg::Any; datetime::DateTime = Dates.unix2datetime(time()))
     _log(msg, MessageType(INFO), params["modes"], params["style"], datetime)
 end
 
-function warn(msg::Any; datetime::DateTime = unix2datetime(time()))
+function warn(msg::Any; datetime::DateTime = Dates.unix2datetime(time()))
     _log(msg, MessageType(WARN), params["modes"], params["style"], datetime)
 end
 
-function error(msg::Any; datetime::DateTime = unix2datetime(time()))
+function error(msg::Any; datetime::DateTime = Dates.unix2datetime(time()))
     _log(msg, MessageType(ERROR), params["modes"], params["style"], DateTime())
 end
 
-function info(msg::Any, style::Symbol; datetime::DateTime = unix2datetime(time()))
+function info(msg::Any, style::Symbol; datetime::DateTime = Dates.unix2datetime(time()))
     _log(msg, MessageType(INFO), params["modes"], style, datetime)
 end
 
-function warn(msg::Any, style::Symbol; datetime::DateTime = unix2datetime(time()))
+function warn(msg::Any, style::Symbol; datetime::DateTime = Dates.unix2datetime(time()))
     _log(msg, MessageType(WARN), params["modes"], style, datetime)
 end
 
-function error(msg::Any, style::Symbol; datetime::DateTime = unix2datetime(time()))
+function error(msg::Any, style::Symbol; datetime::DateTime = Dates.unix2datetime(time()))
     _log(msg, MessageType(ERROR), params["modes"], style, datetime)
 end
 
@@ -192,7 +192,7 @@ function _logstandard(msg::String, msgtype::MessageType, modes::Vector{Symbol}, 
          datestr = string(datetime)*":"
     end
 
-    dt = Dates.format(unix2datetime(time()), "Y-mm-dd HH:MM:SS.sss")
+    dt = Dates.format(Dates.unix2datetime(time()), "Y-mm-dd HH:MM:SS.sss")
     if (:console in modes)
         if msgtype == MessageType(INFO)
             print_with_color(:green,  "[INFO][$(dt)]" * "$(datestr)" * msg * "\n")
@@ -205,7 +205,7 @@ function _logstandard(msg::String, msgtype::MessageType, modes::Vector{Symbol}, 
     
     if (:socket in modes)
         if msgtype == MessageType(INFO)
-            fmsg = "[INFO][$(unix2datetime(time()))]"* "$(datestr)" * msg
+            fmsg = "[INFO][$(Dates.unix2datetime(time()))]"* "$(datestr)" * msg
         elseif msgtype == MessageType(WARN)
             fmsg = "[WARNING][$(dt)]" * "$(datestr)" * msg
         else
@@ -233,7 +233,7 @@ function _logJSON(msg::String, msgtype::MessageType, modes::Vector{Symbol}, date
     msg_dict = Dict{String, String}("outputtype" => "log",
                                         "messagetype" => string(msgtype),
                                         "message" => msg,
-                                        "dt" => Dates.format(unix2datetime(time()), "Y-mm-dd HH:MM:SS.sss"),
+                                        "dt" => Dates.format(Dates.unix2datetime(time()), "Y-mm-dd HH:MM:SS.sss"),
                                         "backtestId" => params["backtestId"])
 
     if(datetime != DateTime()) 
@@ -243,7 +243,7 @@ function _logJSON(msg::String, msgtype::MessageType, modes::Vector{Symbol}, date
 
     jsonmsg = JSON.json(msg_dict)
 
-    entry_datetime = todbformat(unix2datetime(time()))
+    entry_datetime = todbformat(Dates.unix2datetime(time()))
     if !haskey(logbook.container, entry_datetime)
         logbook.container[entry_datetime] = Dict{String, Vector{String}}()
     end
