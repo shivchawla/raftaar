@@ -233,7 +233,7 @@ function _logJSON(msg::String, msgtype::MessageType, modes::Vector{Symbol}, date
     msg_dict = Dict{String, String}("outputtype" => "log",
                                         "messagetype" => string(msgtype),
                                         "message" => msg,
-                                        "dt" => Dates.format(now(Dates.UTC), "Y-mm-dd HH:MM:SS.sss"),
+                                        "dt" => now(Dates.UTC),
                                         "backtestId" => params["backtestId"])
 
     if(datetime != DateTime()) 
