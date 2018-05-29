@@ -21,7 +21,7 @@ Account() = Account(0.0, 0.0, 0.0, Portfolio())
 Account(data::Dict{String, Any}) = Account(data["seedcash"], 
                                     data["netvalue"], 
                                     data["leverage"], 
-                                    Portfolio(data["portfolio"], cash = get(data, "cash",0.0))) 
+                                    Portfolio(data["portfolio"], cash = Float64(get(data, "cash",0.0)))) 
                                     #adding backward compatibility for cash (cash was part of account)
 
 """
