@@ -183,7 +183,7 @@ function calculateperformance(algorithmreturns::Vector{Float64}, benchmarkreturn
     trkerr = sqrt(252) * std(algorithmreturns - benchmarkreturns)
     excessret = calculateannualreturns(algorithmreturns - benchmarkreturns, scale, period)
     ps.ratios.informationratio = round(trkerr > 0.0 ? excessret/trkerr : 0.0, 2)
-    ps.period = length(algorithmreturns)
+    ps.period = period == 0 ? length(algorithmreturns) : period
 
     return ps
 end
