@@ -183,7 +183,7 @@ function calculateperformance(algorithmreturns::Vector{Float64}, benchmarkreturn
     trkerr = sqrt(252) * std(algorithmreturns - benchmarkreturns)
     excessret = calculateannualreturns(algorithmreturns - benchmarkreturns, scale, period)
     ps.ratios.informationratio = round(trkerr > 0.0 ? excessret/trkerr : 0.0, 2)
-    ps.period = length(algorithmreturns)
+    ps.period = period == 0 ? length(algorithmreturns) : period
 
     return ps
 end
@@ -191,7 +191,7 @@ end
 """
 Function to compute performance for all periods like 1/2/5/10/ytd/mtd based on vector of returns
 """
-function calculateperformance_allperiods(algorithmreturns::Vector{Float64}, benchmarkreturns::Vector{Float64}, dates::Vector{Date}) 
+function calculateperformance_rollingperiods(algorithmreturns::Vector{Float64}, benchmarkreturns::Vector{Float64}, dates::Vector{Date}) 
 
     performances = Dict{String, Performance}()
     
@@ -204,7 +204,7 @@ function calculateperformance_allperiods(algorithmreturns::Vector{Float64}, benc
     sd = dates[end] - Dates.Year(1) + Dates.Day(1)
     past_returns = from(returns, sd)
     if(size(past_returns.values,1) > 0)
-        performances["1y"] = calculateperformance(past_returns["algorithm"].values, past_returns["benchmark"].values)
+        performances["1y"] = calculateperformance(past_returns["algorithm"].values, past_returns["benchmark"].values, scale=365, period=ndays)
     end
 
     # Last 2 year data
@@ -212,14 +212,14 @@ function calculateperformance_allperiods(algorithmreturns::Vector{Float64}, benc
     past_returns = from(returns, sd)
     
     if(size(past_returns.values,1) > 0)
-        performances["2y"] = calculateperformance(past_returns["algorithm"].values, past_returns["benchmark"].values)
+        performances["2y"] = calculateperformance(past_returns["algorithm"].values, past_returns["benchmark"].values, scale=365, period=ndays)
     end    
 
     # Last 5 year data
     sd = dates[end] - Dates.Year(5) + Dates.Day(1)
     past_returns = from(returns, sd)
     if(size(past_returns.values,1) > 0)
-        performances["5y"] = calculateperformance(past_returns["algorithm"].values, past_returns["benchmark"].values)
+        performances["5y"] = calculateperformance(past_returns["algorithm"].values, past_returns["benchmark"].values, scale=365, period=ndays)
     end
 
     # Last 10 year data
@@ -227,20 +227,20 @@ function calculateperformance_allperiods(algorithmreturns::Vector{Float64}, benc
     past_returns = from(returns, sd)
     
     if(size(past_returns.values,1) > 0)
-        performances["10y"] = calculateperformance(past_returns["algorithm"].values, past_returns["benchmark"].values)
+        performances["10y"] = calculateperformance(past_returns["algorithm"].values, past_returns["benchmark"].values, scale=365, period=ndays)
     end
        
     # YTD 
     past_returns = when(returns, year, Dates.year(dates[end]))
     if(size(past_returns.values,1) > 0)
-        performances["ytd"] = calculateperformance(past_returns["algorithm"].values, past_returns["benchmark"].values)
+        performances["ytd"] = calculateperformance(past_returns["algorithm"].values, past_returns["benchmark"].values, scale=365, period=ndays)
     end    
 
     # MTD   
     sd = Date(Dates.year(dates[end]), Dates.month(dates[end]), 1)
     past_returns = from(returns, sd)
     if(size(past_returns.values,1) > 0)
-        performances["mtd"] = calculateperformance(past_returns["algorithm"].values, past_returns["benchmark"].values)
+        performances["mtd"] = calculateperformance(past_returns["algorithm"].values, past_returns["benchmark"].values, scale=365, period=ndays)
     end
 
     return performances
@@ -487,7 +487,7 @@ function calculateratios(returns::Returns, deviation::Deviation, drawdown::Drawd
     ratios = Ratios()
     ratios.sharperatio = round(deviation.annualstandarddeviation > 0.0 ? (returns.annualreturn - 0.065) / deviation.annualstandarddeviation : 0.0, 2)
     ratios.sortinoratio = round(deviation.annualsemideviation > 0.0 ? returns.annualreturn / deviation.annualsemideviation : 0.0, 2)
-    ratios.calmarratio = round(drawdown.maxdrawdown > 0.0 ? returns.totalreturn/drawdown.maxdrawdown : 0.0, 2)
+    ratios.calmarratio = round(drawdown.maxdrawdown > 0.0 ? returns.totalreturn/drawdown.maxdrawdown : Inf, 2)
     return ratios
 end
 
@@ -571,6 +571,15 @@ function serialize(performance::Performance)
                             "ratios" => serialize(performance.ratios),
                             "drawdown" => serialize(performance.drawdown),
                             "portfoliostats" => serialize(performance.portfoliostats))
+end
+
+#Function to serialize rolling performance
+function serialize(performanceDict::Dict{String,Performance})
+    temp = Dict{String, Any}()
+    for (k,v) in performanceDict
+        temp[k] = serialize(v)
+    end
+    return temp
 end
 
 ==(dw1::Drawdown, dw2::Drawdown) = dw1.currentdrawdown == dw2.currentdrawdown &&
