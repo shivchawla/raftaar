@@ -27,7 +27,7 @@ type Deviation
     sumdailyreturn::Float64
 end
 
-Deviation() = Deviation(0.0,0.0,0.0,0.0,0.0,0.0,0.0)
+Deviation() = Deviation(NaN,NaN,NaN,NaN,NaN,NaN,NaN)
 
 Deviation(data::Dict{String, Any}) = Deviation(data["annualstandarddeviation"],
                                         data["annualvariance"],
@@ -48,7 +48,7 @@ type Ratios
     stability::Float64
 end
 
-Ratios() = Ratios(0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0)
+Ratios() = Ratios(NaN,NaN,NaN,0.0,0.0,1.0,0.0,1.0)
 
 Ratios(data::Dict{String, Any}) = Ratios(data["sharperatio"],
                                   data["informationratio"],
