@@ -27,7 +27,7 @@ type Deviation
     sumdailyreturn::Float64
 end
 
-Deviation() = Deviation(0.0,0.0,0.0,0.0,0.0,0.0,0.0)
+Deviation() = Deviation(NaN,NaN,NaN,NaN,NaN,NaN,NaN)
 
 Deviation(data::Dict{String, Any}) = Deviation(data["annualstandarddeviation"],
                                         data["annualvariance"],
@@ -48,7 +48,7 @@ type Ratios
     stability::Float64
 end
 
-Ratios() = Ratios(0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0)
+Ratios() = Ratios(NaN,NaN,NaN,0.0,0.0,1.0,0.0,1.0)
 
 Ratios(data::Dict{String, Any}) = Ratios(data["sharperatio"],
                                   data["informationratio"],
@@ -343,7 +343,7 @@ Function to compute performance for all static periods 2015/2014/etc
 """
 function calculateperformance_staticperiods(returns::TimeArray) 
 
-    performance = Dict{String, Any}()
+    performance = Dict{String, Dict{String, Performance}}()
 
     dates = returns.timestamp    
 
@@ -580,6 +580,22 @@ function serialize(performanceDict::Dict{String,Performance})
         temp[k] = serialize(v)
     end
     return temp
+end
+
+#Function to serialize rolling performance
+function serialize(staticperformance::Dict{String, Dict{String, Performance}})
+    output = Dict{String, Dict{String, Any}}()
+    for (k,v) in staticperformance
+
+        temp = Dict{String,Any}()
+
+        for (k2, v2) in v
+            temp[k2] = serialize(v2)
+        end
+
+        output[k] = temp
+    end
+    return output
 end
 
 ==(dw1::Drawdown, dw2::Drawdown) = dw1.currentdrawdown == dw2.currentdrawdown &&
