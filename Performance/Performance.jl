@@ -593,7 +593,7 @@ function serialize(staticperformance::Dict{String, Dict{String, Performance}})
             temp[k2] = serialize(v2)
         end
 
-        output[k] = serialize(temp)
+        output[k] = temp
     end
     return output
 end
