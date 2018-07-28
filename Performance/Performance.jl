@@ -343,7 +343,7 @@ Function to compute performance for all static periods 2015/2014/etc
 """
 function calculateperformance_staticperiods(returns::TimeArray) 
 
-    performance = Dict{String, Any}()
+    performance = Dict{String, Dict{String, Performance}}()
 
     dates = returns.timestamp    
 
