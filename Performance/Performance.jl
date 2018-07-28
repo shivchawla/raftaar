@@ -582,6 +582,22 @@ function serialize(performanceDict::Dict{String,Performance})
     return temp
 end
 
+#Function to serialize rolling performance
+function serialize(staticperformance::Dict{String, Dict{String, Performance}})
+    output = Dict{String, Dict{String, Any}}()
+    for (k,v) in staticperformance
+
+        temp = Dict{String,Any}()
+
+        for (k2, v2) in v
+            temp[k2] = serialize(v2)
+        end
+
+        output[k] = serialize(temp)
+    end
+    return output
+end
+
 ==(dw1::Drawdown, dw2::Drawdown) = dw1.currentdrawdown == dw2.currentdrawdown &&
                                     dw1.maxdrawdown == dw2.maxdrawdown
 
