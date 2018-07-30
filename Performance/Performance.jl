@@ -13,7 +13,7 @@ type Drawdown
     maxdrawdown:: Float64
 end
 
-Drawdown() = Drawdown(0.0,0.0)
+Drawdown() = Drawdown(NaN,NaN)
 
 Drawdown(data::Dict{String, Any}) = Drawdown(data["currentdrawdown"], data["maxdrawdown"])
 
@@ -68,7 +68,7 @@ type Returns
     peaktotalreturn::Float64
 end
 
-Returns() = Returns(0.0,0.0,0.0,0.0,0.0,0.0)
+Returns() = Returns(NaN,NaN,NaN,NaN,NaN,NaN)
 
 Returns(data::Dict{String, Any}) = Returns(data["dailyreturn"],
                                     data["dailyreturn_benchmark"],
@@ -485,9 +485,9 @@ Function to compute risk measuring ratios
 """
 function calculateratios(returns::Returns, deviation::Deviation, drawdown::Drawdown)
     ratios = Ratios()
-    ratios.sharperatio = round(deviation.annualstandarddeviation > 0.0 ? (returns.annualreturn - 0.065) / deviation.annualstandarddeviation : 0.0, 2)
-    ratios.sortinoratio = round(deviation.annualsemideviation > 0.0 ? returns.annualreturn / deviation.annualsemideviation : 0.0, 2)
-    ratios.calmarratio = round(drawdown.maxdrawdown > 0.0 ? returns.totalreturn/drawdown.maxdrawdown : Inf, 2)
+    ratios.sharperatio = round(deviation.annualstandarddeviation > 0.0 ? (returns.annualreturn - 0.065) / deviation.annualstandarddeviation : NaN, 2)
+    ratios.sortinoratio = round(deviation.annualsemideviation > 0.0 ? returns.annualreturn / deviation.annualsemideviation : NaN, 2)
+    ratios.calmarratio = round(length(returns) > 0 ? (drawdown.maxdrawdown > 0.0 ? returns.totalreturn/drawdown.maxdrawdown : Inf) : NaN, 2)
     return ratios
 end
 
