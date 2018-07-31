@@ -487,7 +487,7 @@ function calculateratios(returns::Returns, deviation::Deviation, drawdown::Drawd
     ratios = Ratios()
     ratios.sharperatio = round(deviation.annualstandarddeviation > 0.0 ? (returns.annualreturn - 0.065) / deviation.annualstandarddeviation : NaN, 2)
     ratios.sortinoratio = round(deviation.annualsemideviation > 0.0 ? returns.annualreturn / deviation.annualsemideviation : NaN, 2)
-    ratios.calmarratio = round(length(returns) > 0 ? (drawdown.maxdrawdown > 0.0 ? returns.totalreturn/drawdown.maxdrawdown : Inf) : NaN, 2)
+    ratios.calmarratio = round(drawdown.maxdrawdown > 0.0 ? returns.totalreturn/drawdown.maxdrawdown : Inf, 2)
     return ratios
 end
 
