@@ -203,7 +203,7 @@ function calculateperformance_rollingperiods(algorithmreturns::Vector{Float64}, 
 
     # WTD
     sd_wtd = lastdate - Dates.Day(Dates.dayofweek(lastdate))
-    past_returns = from(returns, sd)
+    past_returns = from(returns, sd_wtd)
     if(size(past_returns.values,1) > 0)
         ts = past_returns.timestamp;
         ndays = Int(Dates.value(ts[end] - ts[1]))
@@ -213,7 +213,7 @@ function calculateperformance_rollingperiods(algorithmreturns::Vector{Float64}, 
 
     # 1wk 
     sd_1wk = lastdate - Dates.Week(1)
-    past_returns = from(returns, sd)
+    past_returns = from(returns, sd_1wk)
     if(size(past_returns.values,1) > 0 && sd_1wk < sd_wtd)
         ts = past_returns.timestamp;
         ndays = Int(Dates.value(ts[end] - ts[1]))
@@ -223,7 +223,7 @@ function calculateperformance_rollingperiods(algorithmreturns::Vector{Float64}, 
 
     # MTD   
     sd_mtd = Date(Dates.year(lastdate), Dates.month(lastdate), 1)
-    past_returns = from(returns, sd)
+    past_returns = from(returns, sd_mtd)
     if(size(past_returns.values,1) > 0)
         ts = past_returns.timestamp;
         ndays = Int(Dates.value(ts[end] - ts[1]))
@@ -233,7 +233,7 @@ function calculateperformance_rollingperiods(algorithmreturns::Vector{Float64}, 
 
     # 1m
     sd_1m = lastdate - Dates.Month(1)
-    past_returns = from(returns, sd)
+    past_returns = from(returns, sd_1m)
     if(size(past_returns.values,1) > 0 && sd_1m < sd_mtd)
         ts = past_returns.timestamp;
         ndays = Int(Dates.value(ts[end] - ts[1]))
@@ -243,7 +243,7 @@ function calculateperformance_rollingperiods(algorithmreturns::Vector{Float64}, 
 
     # 2m
     sd_2m = lastdate - Dates.Month(2)
-    past_returns = from(returns, sd)
+    past_returns = from(returns, sd_6m)
     if(size(past_returns.values,1) > 0 && sd_2m < sd_1m)
         ts = past_returns.timestamp;
         ndays = Int(Dates.value(ts[end] - ts[1]))
@@ -252,8 +252,8 @@ function calculateperformance_rollingperiods(algorithmreturns::Vector{Float64}, 
     end
 
     # 6m
-    sd = lastdate - Dates.Month(6)
-    past_returns = from(returns, sd)
+    sd_6m = lastdate - Dates.Month(6)
+    past_returns = from(returns, sd_6m)
     if(size(past_returns.values,1) > 0 && sd_6m < sd_2m)
         ts = past_returns.timestamp;
         ndays = Int(Dates.value(ts[end] - ts[1]))
@@ -273,7 +273,7 @@ function calculateperformance_rollingperiods(algorithmreturns::Vector{Float64}, 
 
     # Last 1 year data
     sd_1y = lastdate - Dates.Year(1) + Dates.Day(1)
-    past_returns = from(returns, sd)
+    past_returns = from(returns, sd_1y)
     if(size(past_returns.values,1) > 0 && sd_1y < sd_ytd)
         ts = past_returns.timestamp;
         ndays = Int(Dates.value(ts[end] - ts[1]))
@@ -283,7 +283,7 @@ function calculateperformance_rollingperiods(algorithmreturns::Vector{Float64}, 
 
     # Last 2 year data
     sd_2y = lastdate - Dates.Year(2) + Dates.Day(1)
-    past_returns = from(returns, sd)
+    past_returns = from(returns, sd_2y)
     if(size(past_returns.values,1) > 0 && sd_2y < sd_1y)
         ts = past_returns.timestamp;
         ndays = Int(Dates.value(ts[end] - ts[1]))
@@ -293,7 +293,7 @@ function calculateperformance_rollingperiods(algorithmreturns::Vector{Float64}, 
 
     # Last 5 year data
     sd_5y = lastdate - Dates.Year(5) + Dates.Day(1)
-    past_returns = from(returns, sd)
+    past_returns = from(returns, sd_5y)
     if(size(past_returns.values,1) > 0 && sd_5y < sd_2y)
         ts = past_returns.timestamp;
         ndays = Int(Dates.value(ts[end] - ts[1]))
@@ -303,7 +303,7 @@ function calculateperformance_rollingperiods(algorithmreturns::Vector{Float64}, 
 
     # Last 10 year data
     sd_10y = lastdate - Dates.Year(10) + Dates.Day(1)
-    past_returns = from(returns, sd)
+    past_returns = from(returns, sd_10y)
     
     if(size(past_returns.values,1) > 0 && sd_10y < sd_5y)
         ts = past_returns.timestamp;
@@ -446,7 +446,7 @@ function calculateperformance_rollingperiods(returns::TimeArray)
 
     # Last 1 year data
     sd_1y = lastdate - Dates.Year(1) + Dates.Day(1)
-    past_returns = from(returns, sd)
+    past_returns = from(returns, sd_1y)
     if(size(past_returns.values,1) > 0 && sd_1y < sd_ytd)
         algo_returns = past_returns["algorithm"].values
         benchmark_returns = past_returns["benchmark"].values
@@ -459,7 +459,7 @@ function calculateperformance_rollingperiods(returns::TimeArray)
 
     # Last 2 year data
     sd_2y = lastdate - Dates.Year(2) + Dates.Day(1)
-    past_returns = from(returns, sd)
+    past_returns = from(returns, sd_2y)
     
     if(size(past_returns.values,1) > 0 && sd_2y < sd_1y)
         algo_returns = past_returns["algorithm"].values
@@ -473,7 +473,7 @@ function calculateperformance_rollingperiods(returns::TimeArray)
 
     # Last 5 year data
     sd_5y = lastdate - Dates.Year(5) + Dates.Day(1)
-    past_returns = from(returns, sd)
+    past_returns = from(returns, sd_5y)
     if(size(past_returns.values,1) > 0 && sd_5y < sd_2y)
         algo_returns = past_returns["algorithm"].values
         benchmark_returns = past_returns["benchmark"].values
@@ -486,7 +486,7 @@ function calculateperformance_rollingperiods(returns::TimeArray)
 
     # Last 10 year data
     sd_10y = lastdate - Dates.Year(10) + Dates.Day(1)
-    past_returns = from(returns, sd)
+    past_returns = from(returns, sd_10y)
     
     if(size(past_returns.values,1) > 0 && sd_10y < sd_5y)
         algo_returns = past_returns["algorithm"].values
