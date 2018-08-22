@@ -207,7 +207,7 @@ function calculateperformance_rollingperiods(algorithmreturns::Vector{Float64}, 
     sd_wtd = past_returns.timestamp[1]
     if(size(past_returns.values,1) > 0)
         ts = past_returns.timestamp;
-        ndays = Int(Dates.value(ts[end] - ts[1]))
+        ndays = Int(Dates.value(ts[end] - ts[1])) + 1
 
         performances["wtd"] = calculateperformance(past_returns["algorithm"].values, past_returns["benchmark"].values, scale=365, period=ndays)
     end
@@ -218,7 +218,7 @@ function calculateperformance_rollingperiods(algorithmreturns::Vector{Float64}, 
     sd_1wk = past_returns.timestamp[1]
     if(size(past_returns.values,1) > 0 && sd_1wk < sd_wtd)
         ts = past_returns.timestamp;
-        ndays = Int(Dates.value(ts[end] - ts[1]))
+        ndays = Int(Dates.value(ts[end] - ts[1])) + 1
 
         performances["1wk"] = calculateperformance(past_returns["algorithm"].values, past_returns["benchmark"].values, scale=365, period=ndays)
     end
@@ -229,7 +229,7 @@ function calculateperformance_rollingperiods(algorithmreturns::Vector{Float64}, 
     sd_mtd = past_returns.timestamp[1]
     if(size(past_returns.values,1) > 0)
         ts = past_returns.timestamp;
-        ndays = Int(Dates.value(ts[end] - ts[1]))
+        ndays = Int(Dates.value(ts[end] - ts[1])) + 1
 
         performances["mtd"] = calculateperformance(past_returns["algorithm"].values, past_returns["benchmark"].values, scale=365, period=ndays)
     end
@@ -240,7 +240,7 @@ function calculateperformance_rollingperiods(algorithmreturns::Vector{Float64}, 
     sd_1m = past_returns.timestamp[1]
     if(size(past_returns.values,1) > 0 && sd_1m < sd_mtd)
         ts = past_returns.timestamp;
-        ndays = Int(Dates.value(ts[end] - ts[1]))
+        ndays = Int(Dates.value(ts[end] - ts[1])) + 1
 
         performances["1m"] = calculateperformance(past_returns["algorithm"].values, past_returns["benchmark"].values, scale=365, period=ndays)
     end
@@ -251,7 +251,7 @@ function calculateperformance_rollingperiods(algorithmreturns::Vector{Float64}, 
     sd_2m = past_returns.timestamp[1]
     if(size(past_returns.values,1) > 0 && sd_2m < sd_1m)
         ts = past_returns.timestamp;
-        ndays = Int(Dates.value(ts[end] - ts[1]))
+        ndays = Int(Dates.value(ts[end] - ts[1])) + 1
 
         performances["2m"] = calculateperformance(past_returns["algorithm"].values, past_returns["benchmark"].values, scale=365, period=ndays)
     end
@@ -262,7 +262,7 @@ function calculateperformance_rollingperiods(algorithmreturns::Vector{Float64}, 
     sd_6m = past_returns.timestamp[1]
     if(size(past_returns.values,1) > 0 && sd_6m < sd_2m)
         ts = past_returns.timestamp;
-        ndays = Int(Dates.value(ts[end] - ts[1]))
+        ndays = Int(Dates.value(ts[end] - ts[1])) + 1
 
         performances["6m"] = calculateperformance(past_returns["algorithm"].values, past_returns["benchmark"].values, scale=365, period=ndays)
     end
@@ -272,7 +272,7 @@ function calculateperformance_rollingperiods(algorithmreturns::Vector{Float64}, 
     sd_ytd = past_returns.timestamp[1]
     if(size(past_returns.values,1) > 0)
         ts = past_returns.timestamp;
-        ndays = Int(Dates.value(ts[end] - ts[1]))
+        ndays = Int(Dates.value(ts[end] - ts[1])) + 1
 
         performances["ytd"] = calculateperformance(past_returns["algorithm"].values, past_returns["benchmark"].values, scale=365, period=ndays)
     end    
@@ -283,7 +283,7 @@ function calculateperformance_rollingperiods(algorithmreturns::Vector{Float64}, 
     sd_1y = past_returns.timestamp[1]
     if(size(past_returns.values,1) > 0 && sd_1y < sd_ytd)
         ts = past_returns.timestamp;
-        ndays = Int(Dates.value(ts[end] - ts[1]))
+        ndays = Int(Dates.value(ts[end] - ts[1])) + 1
 
         performances["1y"] = calculateperformance(past_returns["algorithm"].values, past_returns["benchmark"].values, scale=365, period=ndays)
     end
@@ -294,7 +294,7 @@ function calculateperformance_rollingperiods(algorithmreturns::Vector{Float64}, 
     sd_2y = past_returns.timestamp[1]
     if(size(past_returns.values,1) > 0 && sd_2y < sd_1y)
         ts = past_returns.timestamp;
-        ndays = Int(Dates.value(ts[end] - ts[1]))
+        ndays = Int(Dates.value(ts[end] - ts[1])) + 1
 
         performances["2y"] = calculateperformance(past_returns["algorithm"].values, past_returns["benchmark"].values, scale=365, period=ndays)
     end    
@@ -305,7 +305,7 @@ function calculateperformance_rollingperiods(algorithmreturns::Vector{Float64}, 
     sd_5y = past_returns.timestamp[1]
     if(size(past_returns.values,1) > 0 && sd_5y < sd_2y)
         ts = past_returns.timestamp;
-        ndays = Int(Dates.value(ts[end] - ts[1]))
+        ndays = Int(Dates.value(ts[end] - ts[1])) + 1
 
         performances["5y"] = calculateperformance(past_returns["algorithm"].values, past_returns["benchmark"].values, scale=365, period=ndays)
     end
@@ -316,7 +316,7 @@ function calculateperformance_rollingperiods(algorithmreturns::Vector{Float64}, 
     sd_10y = past_returns.timestamp[1]
     if(size(past_returns.values,1) > 0 && sd_10y < sd_5y)
         ts = past_returns.timestamp;
-        ndays = Int(Dates.value(ts[end] - ts[1]))
+        ndays = Int(Dates.value(ts[end] - ts[1])) + 1
 
         performances["10y"] = calculateperformance(past_returns["algorithm"].values, past_returns["benchmark"].values, scale=365, period=ndays)
     end
@@ -326,7 +326,7 @@ function calculateperformance_rollingperiods(algorithmreturns::Vector{Float64}, 
     
     if(size(past_returns.values,1) > 0)
         ts = past_returns.timestamp;
-        ndays = Int(Dates.value(ts[end] - ts[1]))
+        ndays = Int(Dates.value(ts[end] - ts[1])) + 1
         performances["inception"] = calculateperformance(past_returns["algorithm"].values, past_returns["benchmark"].values, scale=365, period=ndays)
     end
 
@@ -355,7 +355,7 @@ function calculateperformance_rollingperiods(returns::TimeArray)
         benchmark_returns = past_returns["benchmark"].values
 
         ts = past_returns.timestamp;
-        ndays = Int(Dates.value(ts[end] - ts[1]))
+        ndays = Int(Dates.value(ts[end] - ts[1])) + 1
 
         performances["wtd"] = calculateperformance(algo_returns, benchmark_returns, scale=365, period=ndays)
     end
@@ -370,7 +370,7 @@ function calculateperformance_rollingperiods(returns::TimeArray)
         benchmark_returns = past_returns["benchmark"].values
 
         ts = past_returns.timestamp;
-        ndays = Int(Dates.value(ts[end] - ts[1]))
+        ndays = Int(Dates.value(ts[end] - ts[1])) + 1
 
         performances["1wk"] = calculateperformance(algo_returns, benchmark_returns, scale=365, period=ndays)
     end
@@ -384,7 +384,7 @@ function calculateperformance_rollingperiods(returns::TimeArray)
         benchmark_returns = past_returns["benchmark"].values
 
         ts = past_returns.timestamp;
-        ndays = Int(Dates.value(ts[end] - ts[1]))
+        ndays = Int(Dates.value(ts[end] - ts[1])) + 1
 
         performances["mtd"] = calculateperformance(algo_returns, benchmark_returns, scale=365, period=ndays)
     end
@@ -399,7 +399,7 @@ function calculateperformance_rollingperiods(returns::TimeArray)
         benchmark_returns = past_returns["benchmark"].values
 
         ts = past_returns.timestamp;
-        ndays = Int(Dates.value(ts[end] - ts[1]))
+        ndays = Int(Dates.value(ts[end] - ts[1])) + 1
 
         performances["1m"] = calculateperformance(algo_returns, benchmark_returns, scale=365, period=ndays)
     end
@@ -413,7 +413,7 @@ function calculateperformance_rollingperiods(returns::TimeArray)
         benchmark_returns = past_returns["benchmark"].values
 
         ts = past_returns.timestamp;
-        ndays = Int(Dates.value(ts[end] - ts[1]))
+        ndays = Int(Dates.value(ts[end] - ts[1])) + 1
 
         performances["2m"] = calculateperformance(algo_returns, benchmark_returns, scale=365, period=ndays)
     end
@@ -427,7 +427,7 @@ function calculateperformance_rollingperiods(returns::TimeArray)
         benchmark_returns = past_returns["benchmark"].values
 
         ts = past_returns.timestamp;
-        ndays = Int(Dates.value(ts[end] - ts[1]))
+        ndays = Int(Dates.value(ts[end] - ts[1])) + 1
 
         performances["3m"] = calculateperformance(algo_returns, benchmark_returns, scale=365, period=ndays)
     end
@@ -441,7 +441,7 @@ function calculateperformance_rollingperiods(returns::TimeArray)
         benchmark_returns = past_returns["benchmark"].values
 
         ts = past_returns.timestamp;
-        ndays = Int(Dates.value(ts[end] - ts[1]))
+        ndays = Int(Dates.value(ts[end] - ts[1])) + 1
 
         performances["6m"] = calculateperformance(algo_returns, benchmark_returns, scale=365, period=ndays)
     end
@@ -455,7 +455,7 @@ function calculateperformance_rollingperiods(returns::TimeArray)
         benchmark_returns = past_returns["benchmark"].values
 
         ts = past_returns.timestamp;
-        ndays = Int(Dates.value(ts[end] - ts[1]))
+        ndays = Int(Dates.value(ts[end] - ts[1])) + 1
 
         performances["ytd"] = calculateperformance(algo_returns, benchmark_returns, scale=365, period=ndays)
     end    
@@ -469,7 +469,7 @@ function calculateperformance_rollingperiods(returns::TimeArray)
         benchmark_returns = past_returns["benchmark"].values
 
         ts = past_returns.timestamp;
-        ndays = Int(Dates.value(ts[end] - ts[1]))
+        ndays = Int(Dates.value(ts[end] - ts[1])) + 1
 
         performances["1y"] = calculateperformance(algo_returns, benchmark_returns, scale=365, period=ndays)
     end
@@ -483,7 +483,7 @@ function calculateperformance_rollingperiods(returns::TimeArray)
         benchmark_returns = past_returns["benchmark"].values
 
         ts = past_returns.timestamp;
-        ndays = Int(Dates.value(ts[end] - ts[1]))
+        ndays = Int(Dates.value(ts[end] - ts[1])) + 1
 
         performances["2y"] = calculateperformance(algo_returns, benchmark_returns, scale=365, period=ndays)
     end    
@@ -497,7 +497,7 @@ function calculateperformance_rollingperiods(returns::TimeArray)
         benchmark_returns = past_returns["benchmark"].values
 
         ts = past_returns.timestamp;
-        ndays = Int(Dates.value(ts[end] - ts[1]))
+        ndays = Int(Dates.value(ts[end] - ts[1])) + 1
 
         performances["5y"] = calculateperformance(algo_returns, benchmark_returns, scale=365, period=ndays)
     end
@@ -511,7 +511,7 @@ function calculateperformance_rollingperiods(returns::TimeArray)
         benchmark_returns = past_returns["benchmark"].values
 
         ts = past_returns.timestamp;
-        ndays = Int(Dates.value(ts[end] - ts[1]))
+        ndays = Int(Dates.value(ts[end] - ts[1])) + 1
 
         performances["10y"] = calculateperformance(algo_returns, benchmark_returns, scale=365, period=ndays)
     end
@@ -524,7 +524,7 @@ function calculateperformance_rollingperiods(returns::TimeArray)
         benchmark_returns = past_returns["benchmark"].values
 
         ts = past_returns.timestamp;
-        ndays = Int(Dates.value(ts[end] - ts[1]))
+        ndays = Int(Dates.value(ts[end] - ts[1])) + 1
 
         performances["inception"] = calculateperformance(algo_returns, benchmark_returns, scale=365, period=ndays)
     end   
@@ -550,7 +550,7 @@ function calculateperformance_staticperiods(returns::TimeArray)
             benchmark_returns = past_returns["benchmark"].values
 
             ts = past_returns.timestamp;
-            ndays = Int(Dates.value(ts[end] - ts[1]))
+            ndays = Int(Dates.value(ts[end] - ts[1])) + 1
 
             performance["yearly"][string(y)] = calculateperformance(algo_returns, benchmark_returns, scale=365, period=ndays)
         end
@@ -562,7 +562,7 @@ function calculateperformance_staticperiods(returns::TimeArray)
                 benchmark_returns = past_monthly_returns["benchmark"].values
                 
                 ts = past_monthly_returns.timestamp;
-                ndays = Int(Dates.value(ts[end] - ts[1]))
+                ndays = Int(Dates.value(ts[end] - ts[1])) + 1
 
                 performance["monthly"][string(y)*"_"string(m)] = calculateperformance(algo_returns, benchmark_returns, scale=365, period=ndays)
             end
