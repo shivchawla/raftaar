@@ -6,10 +6,9 @@ end
 
 AlgorithmState() = AlgorithmState(Account(), Performance(), Dict{String,Any}())
 
-AlgorithmState(data::Dict{String, Any}) = AlgorithmState(Account(data["account"]),
-                                                  #Portfolio(data["portfolio"]),
-                                                  Performance(data["performance"]),
-                                                  Dict(data["params"]))
+AlgorithmState(data::Dict{String, Any}) = AlgorithmState(haskey(data, "account") ? Account(data["account"]) : Account(),
+                                                  haskey(data, "performance") ? Performance(data["performance"]) : Performance(),
+                                                  haskey(data, "params") ? Dict(data["params"]) : Dict())
 
 getindex(algorithmstate::AlgorithmState, key::String) = get(algorithmstate.params, key, "")
 setindex!(algorithmstate::AlgorithmState, value::Any, key::String) = setindex!(algorithmstate.params, value, key)

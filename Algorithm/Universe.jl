@@ -60,18 +60,18 @@ Empty constructor
 Universe() = Universe(Dict(), Dict(), Dict(), Dict())
 
 Universe(data::Dict{String, Any}) = Universe(
-                                        Dict(
-                                          [(str, [SecuritySymbol(symbol) for symbol in vectorSymbols]) for (str, vectorSymbols) in data["tickertosymbol"]]
-                                        ),
-                                        Dict(
-                                          [(SecuritySymbol(sym), Security(security)) for (sym, security) in data["securities"]]
-                                        ),
-                                        Dict(
-                                          [(SecuritySymbol(sym), [TradeBar(tradebar) for tradebar in vectorTradebar]) for (sym, vectorTradebar) in data["tradebars"]]
-                                        ),
-                                        Dict(
-                                          [(SecuritySymbol(sym), Adjustment(adj)) for (sym, adj) in data["adjustments"]]
-                                        )
+                                        haskey(data, "tickertosymbol") ? 
+                                            Dict([(str, [SecuritySymbol(symbol) for symbol in vectorSymbols]) for (str, vectorSymbols) in data["tickertosymbol"]]) : 
+                                            Dict(),
+                                        haskey(data, "securities") ? 
+                                            Dict([(SecuritySymbol(sym), Security(security)) for (sym, security) in data["securities"]]) : 
+                                            Dict(),
+                                        haskey(data, "tradebars") ? 
+                                            Dict([(SecuritySymbol(sym), [TradeBar(tradebar) for tradebar in vectorTradebar]) for (sym, vectorTradebar) in data["tradebars"]]) : 
+                                            Dict(),
+                                        haskey(data, "adjustments") ? 
+                                            Dict([(SecuritySymbol(sym), Adjustment(adj)) for (sym, adj) in data["adjustments"]]) : 
+                                            Dict()
                                       )
 
 """
