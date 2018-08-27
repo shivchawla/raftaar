@@ -1,6 +1,5 @@
 type AlgorithmState
     account::Account
-    #portfolio::Portfolio
     performance::Performance
     params::Dict{String, Any}
 end
