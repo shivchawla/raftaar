@@ -25,13 +25,15 @@ Empty brokerage constructor
 BacktestBrokerage() = BacktestBrokerage(Blotter(), Commission(), Margin(),
 							Slippage(), CancelPolicy(EOD), ExecutionPolicy(EP_Close), 0.05)
 
-BacktestBrokerage(data::Dict{String, Any}) = BacktestBrokerage(Blotter(data["blotter"]), 
-												Commission(data["commission"]),
-												Margin(data["margin"]), 
-												Slippage(data["slippage"]),
-												eval(parse(data["cancelpolicy"])),
+BacktestBrokerage(data::Dict{String, Any}) = BacktestBrokerage(
+												haskey(data, "blotter") ? Blotter(data["blotter"]) : Blotter(), 
+												haskey(data, "commission") ? Commission(data["commission"]) : Commission,
+												haskey(data, "margin") ? Margin(data["margin"]) : Margin(), 
+												haskey(data, "slippage") ? Slippage(data["slippage"]) : Slippage(),
+												haskey(data, "cancelpolicy") ? eval(parse(data["cancelpolicy"])) : CancelPolicy(EOD),
 												haskey(data, "executionpolicy") ? eval(parse(data["executionpolicy"])) : ExecutionPolicy(EP_Close),
-												data["participationrate"])
+												get(data, "participationrate", 0.05)
+											)
 
 """
 Function to set commission model
