@@ -29,7 +29,7 @@ function to reset the cash position of the account
 """
 function setcash!(account::Account, amount::Float64)
     account.seedcash = amount
-    updateaccount_forcash!(account, amount)
+    setaccount_forcash!(account, amount)
 end
 
 """
@@ -54,6 +54,16 @@ function updateaccount_forcash!(account::Account, cash::Float64 = 0.0)
     account.netvalue = account.portfolio.metrics.netexposure + account.portfolio.cash
     account.leverage = account.portfolio.metrics.grossexposure / account.netvalue
 end
+
+"""
+function to set the account with cash 
+"""
+function setaccount_forcash!(account::Account, cash::Float64 = 0.0)
+    setportfolio_forcash!(account.portfolio, cash)
+    account.netvalue = account.portfolio.metrics.netexposure + account.portfolio.cash
+    account.leverage = account.portfolio.metrics.grossexposure / account.netvalue
+end
+
 
 """
 function to update the account portfolio with latest prices

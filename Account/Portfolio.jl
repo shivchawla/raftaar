@@ -138,6 +138,9 @@ function totalabsoluteholdingscost(portfolio::Portfolio)
   return tahc
 end
 
+function setportfolio_forcash!(portfolio::Portfolio, cash::Float64)
+  portfolio.cash = cash
+end
 
 function updateportfolio_forcash!(portfolio::Portfolio, cash::Float64)
   portfolio.cash += cash
@@ -153,7 +156,7 @@ function updateportfolio_fills!(portfolio::Portfolio, fills::Vector{OrderFill})
   end
 
   updateportfolio_forcash!(portfolio, cash)
-  updateportfoliometrics!(portfolio::Portfolio)
+  updateportfoliometrics!(portfolio)
   
 end
 
@@ -205,7 +208,7 @@ function updateportfolio_price!(portfolio::Portfolio, tradebars::Dict{SecuritySy
       end
   end
 
-  updateportfoliometrics!(portfolio::Portfolio)
+  updateportfoliometrics!(portfolio)
 end
 
 function updateportfolio_splits_dividends!(portfolio::Portfolio, adjustments::Dict{SecuritySymbol, Adjustment})
