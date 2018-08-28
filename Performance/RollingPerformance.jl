@@ -1,3 +1,8 @@
+
+function _nanAdjusted(value; default=0.0)
+    isnan(value) ? default : value 
+end
+
 """
 Updates performance of rolling window of 252 days
 """
@@ -36,7 +41,7 @@ function updatelatestperformance_algorithm(accounttracker::AccountTracker, casht
 
     #Add benchmark returns
 
-    currentperformance.returns.dailyreturn_benchmark = benchmarktracker[date].returns.dailyreturn
+    currentperformance.returns.dailyreturn_benchmark = _nanAdjusted(benchmarktracker[date].returns.dailyreturn)
 
     #nowupdate the performance tracker
     performancetracker[date] = currentperformance
@@ -103,31 +108,47 @@ end
 
 
 #Annual RETURN cacualtion is wrong....It should use calendar period!!!
-function _computecurrentperformance(c::Performance, lastperformance::Performance, latestreturn::Float64)
+function _computecurrentperformance(firstperformance::Performance, lastperformance::Performance, latestreturn::Float64)
     performance = Performance()
     performance.returns.dailyreturn = latestreturn
-    performance.returns.totalreturn =  (1 + lastperformance.returns.totalreturn) * (1 + performance.returns.dailyreturn) - 1
+
+    #Handling Initial NaN values
+    lastTotalReturn = _nanAdjusted(lastperformance.returns.totalreturn)
+    lastPeakTotalReturn = _nanAdjusted(lastperformance.returns.peaktotalreturn, default=1.0)
+
+    performance.returns.totalreturn =  (1 + lastTotalReturn) * (1 + performance.returns.dailyreturn) - 1
     
-    if ( 1 + performance.returns.totalreturn > lastperformance.returns.peaktotalreturn)
+    if ( 1 + lastTotalReturn > lastPeakTotalReturn)
         performance.returns.peaktotalreturn =  1 + performance.returns.totalreturn
     else 
-        performance.returns.peaktotalreturn = lastperformance.returns.peaktotalreturn
+        performance.returns.peaktotalreturn = lastPeakTotalReturn
     end
+
 
     performance.deviation.squareddailyreturn =  performance.returns.dailyreturn * performance.returns.dailyreturn
     performance.drawdown.currentdrawdown = (performance.returns.peaktotalreturn - (1+ performance.returns.totalreturn)) / performance.returns.peaktotalreturn
-    if (performance.drawdown.currentdrawdown > lastperformance.drawdown.maxdrawdown) 
+    
+    lastMaxDrawdown = _nanAdjusted(lastperformance.drawdown.maxdrawdown)
+
+    if (performance.drawdown.currentdrawdown > lastMaxDrawdown) 
         performance.drawdown.maxdrawdown = performance.drawdown.currentdrawdown
     else
-        performance.drawdown.maxdrawdown = lastperformance.drawdown.maxdrawdown
+        performance.drawdown.maxdrawdown = lastMaxDrawdown
     end
+    
+    lastSumDailyReturn = _nanAdjusted(lastperformance.deviation.sumdailyreturn)
+    lastSumSquaredDailyReturn = _nanAdjusted(lastperformance.deviation.sumsquareddailyreturn)
+
+    firstSumDailyReturn = _nanAdjusted(firstperformance.deviation.sumdailyreturn)
+    firstSumSquaredDailyReturn = _nanAdjusted(firstperformance.deviation.sumsquareddailyreturn)
+
     # Now here we run a specialized algorithm that updates performance based on 
     if lastperformance.period < 1000000000
         performance.period = lastperformance.period + 1
-        #performance.positivedays = performance.returns.dailyreturn > 0 ? lastperformance.positivedays + 1 : lastperformance.positivedays
-        #performance.negativedays = performance.returns.dailyreturn < 0 ? lastperformance.negativedays + 1 : lastperformance.negativedays
-        performance.deviation.sumdailyreturn = lastperformance.deviation.sumdailyreturn + performance.returns.dailyreturn
-        performance.deviation.sumsquareddailyreturn = lastperformance.deviation.sumsquareddailyreturn + performance.deviation.squareddailyreturn
+
+        
+        performance.deviation.sumdailyreturn = lastSumDailyReturn + performance.returns.dailyreturn
+        performance.deviation.sumsquareddailyreturn = lastSumSquaredDailyReturn + performance.deviation.squareddailyreturn
         #annualvariance and annual standard deviation
         performance.returns.averagedailyreturn = (performance.deviation.sumdailyreturn / performance.period)
         performance.returns.annualreturn = ((1 + performance.returns.averagedailyreturn)^252 - 1.0)
@@ -138,8 +159,8 @@ function _computecurrentperformance(c::Performance, lastperformance::Performance
 
         performance.period = 252
 
-        performance.deviation.sumdailyreturn = lastperformance.deviation.sumdailyreturn + performance.returns.dailyreturn - firstperformance.returns.dailyreturn
-        performance.deviation.sumsquareddailyreturn = lastperformance.deviation.sumsquareddailyreturn + performance.deviation.squareddailyreturn - firstperformance.deviation.squareddailyreturn   
+        performance.deviation.sumdailyreturn = lastSumDailyReturn + performance.returns.dailyreturn - firstSumDailyReturn
+        performance.deviation.sumsquareddailyreturn = lastSumSquaredDailyReturn + performance.deviation.squareddailyreturn - firstSumSquaredDailyReturn
         
         performance.returns.averagedailyreturn = performance.deviation.sumdailyreturn/performance.period
         performance.returns.annualreturn = ((1 + performance.returns.averagedailyreturn)^252 - 1.0)
@@ -168,8 +189,8 @@ function updateperformanceratios(performancetracker::PerformanceTracker)
     latestperformance = performancetracker[sorteddates[end]]
 
     for i in 1:length(sorteddates)
-        algorithmreturns[i] = performancetracker[sorteddates[i]].returns.dailyreturn
-        benchmarkreturns[i] = performancetracker[sorteddates[i]].returns.dailyreturn_benchmark
+        algorithmreturns[i] = _nanAdjusted(performancetracker[sorteddates[i]].returns.dailyreturn)
+        benchmarkreturns[i] = _nanAdjusted(performancetracker[sorteddates[i]].returns.dailyreturn_benchmark)
     end
 
     s_idx = 1
@@ -188,10 +209,10 @@ function updateperformanceratios(performancetracker::PerformanceTracker)
     excessret = 252 * mean(algorithmreturns[s_idx:end] - benchmarkreturns[s_idx:end])
     
     ##
-    latestperformance.ratios.sharperatio = latestperformance.deviation.annualstandarddeviation > 0.0 ? (latestperformance.returns.annualreturn - 0.065) / latestperformance.deviation.annualstandarddeviation : 0.0
+    latestperformance.ratios.sharperatio = _nanAdjusted(latestperformance.deviation.annualstandarddeviation) > 0.0 ? (latestperformance.returns.annualreturn - 0.065) / latestperformance.deviation.annualstandarddeviation : 0.0
     latestperformance.ratios.informationratio = trkerr > 0 ? excessret/trkerr : 0.0
     #latestperformance.ratios.sortinoratio = latestperformance.deviation.annualsemideviation > 0.0 ? latestperformance.returns.annualreturn / latestperformance.deviation.annualsemideviation : 0.0
-    latestperformance.ratios.calmarratio = latestperformance.drawdown.maxdrawdown > 0.0 ? latestperformance.returns.annualreturn/latestperformance.drawdown.maxdrawdown : 0.0
+    latestperformance.ratios.calmarratio = _nanAdjusted(latestperformance.drawdown.maxdrawdown) > 0.0 ? _nanAdjusted(latestperformance.returns.annualreturn)/_nanAdjusted(latestperformance.drawdown.maxdrawdown) : 0.0
 end
 
 #precompile(updateperformanceratios, (PerformanceTracker,))
