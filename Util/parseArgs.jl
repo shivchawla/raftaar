@@ -5,6 +5,10 @@
 
 using ArgParse
 
+function ArgParse.parse_item(::Type{Date}, x::AbstractString)
+    return Date(x)
+end
+
 function getargparsesettings()
     s = ArgParseSettings()
 
