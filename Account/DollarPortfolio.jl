@@ -6,7 +6,7 @@
 """
 Type to encapsulate positions and aggregated metrics
 """
-type DollarDollarPortfolio
+type DollarPortfolio
   positions::Dict{SecuritySymbol, DollarPosition}
   metrics::PortfolioMetrics
   cash::Float64
@@ -18,7 +18,7 @@ DollarPortfolio() = DollarPortfolio(Dict(), PortfolioMetrics(), 0.0)
 
 DollarPortfolio(data::Dict{String, Any}; cash::Float64=0.0) = DollarPortfolio(
                                 Dict(
-                                  [(SecuritySymbol(sym), Position(pos)) for (sym, pos) in data["positions"]]
+                                  [(SecuritySymbol(sym), DollarPosition(pos)) for (sym, pos) in data["positions"]]
                                 ),
                                 PortfolioMetrics(data["metrics"]),
                                 cash !=0.0 ? cash : get(data, "cash", 0.0)
@@ -29,9 +29,9 @@ Indexing function to get position based
 on security symbol or security directly from portfolio
 """
 
-getindex(portfolio::DollarPortfolio, symbol::SecuritySymbol) = get(portfolio.positions, symbol, Position(symbol))
-getindex(portfolio::DollarPortfolio, security::Security) = get(portfolio.positions, security.symbol, Position(security.symbol))
-setindex!(portfolio::DollarPortfolio, position::Position, securitysymbol::SecuritySymbol) =
+getindex(portfolio::DollarPortfolio, symbol::SecuritySymbol) = get(portfolio.positions, symbol, DollarPosition(symbol))
+getindex(portfolio::DollarPortfolio, security::Security) = get(portfolio.positions, security.symbol, DollarPosition(security.symbol))
+setindex!(portfolio::DollarPortfolio, position::DollarPosition, securitysymbol::SecuritySymbol) =
                       setindex!(portfolio.positions, position, securitysymbol)
 
 
@@ -130,7 +130,7 @@ function updateportfolio_fill!(portfolio::DollarPortfolio, fill::OrderFill)
   securitysymbol = fill.securitysymbol
 
   if !haskey(portfolio.positions, securitysymbol)
-      portfolio[securitysymbol] = Position(securitysymbol)
+      portfolio[securitysymbol] = DollarPosition(securitysymbol)
   end
 
   position = portfolio[securitysymbol]

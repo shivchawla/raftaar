@@ -44,9 +44,9 @@ DollarPosition(data::Dict{String, Any}) = DollarPosition(SecuritySymbol(data["se
 DollarPosition(securitysymbol::SecuritySymbol) = DollarPosition(securitysymbol, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, "", 0.0)
 
 
-DollarPosition(symbol::SecuritySymbol, averageprice::Float64, totalfees::Float64, advice::String="", dividendcash::Float64=0.0) = DollarPosition(symbol, investment, averageprice, totalfees, 0.0, 0.0, 0.0, 0.0, advice, dividendcash)
+DollarPosition(symbol::SecuritySymbol, investment::Float64, averageprice::Float64, totalfees::Float64, advice::String="", dividendcash::Float64=0.0) = DollarPosition(symbol, investment, averageprice, totalfees, 0.0, 0.0, 0.0, 0.0, advice, dividendcash)
 
-DollarPosition(symbol::SecuritySymbol, averageprice::Float64, advice::String="", dividendcash::Float64=0.0) = DollarPosition(symbol, investment, averageprice, 0.0, 0.0, 0.0, 0.0, 0.0, advice, dividendcash)
+DollarPosition(symbol::SecuritySymbol, investment::Float64, averageprice::Float64, advice::String="", dividendcash::Float64=0.0) = DollarPosition(symbol, investment, averageprice, 0.0, 0.0, 0.0, 0.0, 0.0, advice, dividendcash)
 
 empty(position::DollarPosition) = empty(position.securitysymbol) && position.investment == 0 && position.averageprice==0.0
 
@@ -85,7 +85,7 @@ Function to update position for latest price
 function updateposition_price!(position::DollarPosition, tradebar::TradeBar)
   if(tradebar.close > 0.0000000001 && !isnan(tradebar.close))
     position.lastprice = tradebar.close
-    position.lasttradepnl = round(positions.averageprice > 0 ? (position.investment * (position.lastprice - position.averageprice)/pos.averageprice), 2)
+    position.lasttradepnl = round(position.averageprice > 0 ? (position.investment * (position.lastprice - position.averageprice)/position.averageprice) : 0.0, 2)
   end
 end
 

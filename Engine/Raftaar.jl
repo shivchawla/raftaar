@@ -21,7 +21,9 @@ include("../Execution/Order.jl")
 include("../Execution/OrderFill.jl")
 include("../Algorithm/Universe.jl")
 include("../Account/Position.jl")
+include("../Account/DollarPosition.jl")
 include("../Account/Portfolio.jl")
+include("../Account/DollarPortfolio.jl")
 include("../Account/Account.jl")
 include("../Performance/Performance.jl")
 include("../Performance/RollingPerformance.jl")
@@ -41,7 +43,7 @@ include("../Algorithm/Algorithm.jl")
 
 export Security, SecuritySymbol, Adjustment,
        Commission, Slippage, Order, TradeBar,
-       Performance,Portfolio, Account, AlgorithmState
+       Performance, Portfolio, DollarPortfolio, Account, AlgorithmState
 
 export Resolution, CancelPolicy, SecurityType,
          CommissionModel, SlippageModel,
