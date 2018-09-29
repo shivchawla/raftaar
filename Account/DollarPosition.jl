@@ -214,7 +214,7 @@ function updateposition_splits_dividends!(position::DollarPosition, adjustment::
         position.lastprice = round(position.lastprice * adjustment.adjustmentfactor,2)
         position.investment = round(position.investment * (1.0/adjustment.adjustmentfactor))
     else
-        cash = positons.averageprice ? (position.investment/position.averageprice)*adjustment.adjustmentfactor : 0.0
+        cash = position.averageprice ? (position.investment/position.averageprice)*adjustment.adjustmentfactor : 0.0
         position.dividendcash += cash
     end
 
