@@ -398,6 +398,17 @@ function serialize(tradebars::Vector{TradeBar})
   return arr
 end
 
+function serialize(tradebar::TradeBar)
+  
+  return Dict{String, Any}(
+    "datetime" => tb.datetime,
+    "open"    => tb.open,
+    "high"    => tb.high,
+    "low"     => tb.low,
+    "close"   => tb.close,
+    "volume"  => tb.volume)
+end
+
 function serialize(universe::Universe)
   t2s = Dict{String, Any}()
   for (str, vectorSymbols) in universe.tickertosymbol

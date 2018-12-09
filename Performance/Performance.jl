@@ -171,13 +171,17 @@ function calculateperformance(algorithmreturns::Vector{Float64}, benchmarkreturn
 
     df = DataFrame(X = benchmarkreturns, Y = algorithmreturns)
     
-    if(size(df, 1) > 2)
-        OLS = fit(LinearModel, @formula(Y ~ X), df)
-        coefficients = coef(OLS)
+    try
+        if(size(df, 1) > 2)
+            OLS = fit(LinearModel, @formula(Y ~ X), df)
+            coefficients = coef(OLS)
 
-        ps.ratios.beta = round(coefficients[2], 2)
-        ps.ratios.alpha = round(coefficients[1] * 252.0, 4)
-        ps.ratios.stability = round(r2(OLS), 3)
+            ps.ratios.beta = round(coefficients[2], 2)
+            ps.ratios.alpha = round(coefficients[1] * 252.0, 4)
+            ps.ratios.stability = round(r2(OLS), 3)
+        end
+    catch err
+        println(err)
     end
 
     trkerr = sqrt(252) * std(algorithmreturns - benchmarkreturns)
