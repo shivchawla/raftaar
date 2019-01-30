@@ -1,12 +1,4 @@
-import API
-import HistoryAPI
-import UtilityAPI
-import OptimizeAPI
-import TechnicalAPI
-import BackTester
-import YRead
 using JSON
-
 import Redis
 
 port = ARGS[1]
@@ -172,7 +164,7 @@ function processRedisQueue()
         if rawRequest != nothing 
             request = rawRequest != nothing ? JSON.parse(rawRequest) : nothing
         end
-    
+        
         if request != nothing && rawRequest != nothing 
             
             #Add the request to active sets (overall and this process)
@@ -228,7 +220,8 @@ function startProcess()
 end
 
 function waitALittle(seconds = 0.1)
-    wait(Timer(startProcess, seconds))
+    wait(Timer(seconds))
+    startProcess()
 end
 
 
