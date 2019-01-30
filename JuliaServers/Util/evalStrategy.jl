@@ -44,13 +44,13 @@ function evaluate_strategy(args)
 
     #Run the complete file
     try
-        eval(parse("""include("$(source_dir)/boilerPlate.jl")"""))
+        eval(include("$(source_dir)/boilerPlate.jl"))
         
         info_static("Checking user algorithm for errors")
         if (parsed_args["code"] == nothing)
-            eval(parse("""include(parsed_args["file"])"""))
+            eval(include(parsed_args["file"]))
         elseif (parsed_args["file"] == nothing)
-            eval(parse("""include_string(parsed_args["code"])"""))
+            eval(include_string(parsed_args["code"]))
         end
         
         st = "run_algo(false)"
@@ -58,7 +58,7 @@ function evaluate_strategy(args)
             st = "run_algo(true)"
         end
         
-        eval(parse(st))
+        eval(st)
         
     catch err
         println(err)
