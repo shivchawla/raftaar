@@ -17,6 +17,7 @@ include("./handleErrors.jl")
 global parsed_args = Dict{String, Any}()
 
 function evaluate_strategy(args)
+
     try 
         Logger.configure(style=:json, modes=[:redis])
         global parsed_args = parse_arguments(args)
@@ -44,13 +45,13 @@ function evaluate_strategy(args)
 
     #Run the complete file
     try
-        eval(include("$(source_dir)/Util/boilerPlate.jl"))
+        eval(Meta.parse("""include("$(source_dir)/boilerPlate.jl")"""))
         
         info_static("Checking user algorithm for errors")
         if (parsed_args["code"] == nothing)
-            eval(include(parsed_args["file"]))
+            eval(Meta.parse("""include(parsed_args["file"])"""))
         elseif (parsed_args["file"] == nothing)
-            eval(include_string(parsed_args["code"]))
+            eval(Meta.parse("""include_string(parsed_args["code"])"""))
         end
         
         st = "run_algo(false)"
@@ -58,7 +59,7 @@ function evaluate_strategy(args)
             st = "run_algo(true)"
         end
         
-        eval(st)
+        eval(Meta.parse(st))
         
     catch err
         println(err)
