@@ -32,11 +32,11 @@ function setupRedisClient()
     println("Setting up redis client")
     try
         connections = JSON.parsefile("$(source_dir)/connection.json")
-        logger_conn = get(connections, "redis", Dict())
+        redis_conn = get(connections, "redis", Dict())
         
-        pass = get(logger_conn, "pass", "")
-        host = get(logger_conn, "host", "127.0.0.1")
-        port = get(logger_conn, "port", 13472)
+        pass = get(redis_conn, "pass", "")
+        host = get(redis_conn, "host", "127.0.0.1")
+        port = get(redis_conn, "port", 13472)
         delete!(connections, "redis")
         global redisClient = Redis.RedisConnection(host=host, port=port, password=pass, db=0)
     catch err

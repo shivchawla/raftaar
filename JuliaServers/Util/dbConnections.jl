@@ -1,5 +1,6 @@
 
 using YRead
+import Redis
 
 function connect(host::String, port::Int, user::String="", pass::String="")
     usr_pwd_less = user=="" && pass==""
@@ -15,7 +16,7 @@ function getredisclient(host::String="127.0.0.1", port::Int=6379, password::Stri
 
     println("Setting up redis client at $(host)/$(port)")
     try
-        return RedisConnection(host=host, port=port, password=password, db=0)
+        return Redis.RedisConnection(host=host, port=port, password=password, db=0)
     catch err
         println("Error while setting redis-client")
         println(err)
