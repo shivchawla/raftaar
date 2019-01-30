@@ -3,7 +3,7 @@
 # Author: Shiv Chawla
 # Email: shiv.chawla@aimsquant.com
 # Organization: AIMSQUANT PVT. LTD.
-using Raftaar
+using BackTester
 function initialize(state)	
 	setcash(1000000.0)
 	setresolution("Day")

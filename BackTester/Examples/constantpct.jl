@@ -6,7 +6,7 @@
 #include(\"../Engine/API.jl\")
 #using API
 
-# using Raftaar
+# using BackTester
 
 function initialize(state)
 	#setstartdate(DateTime(\"01/01/2016\",\"dd/mm/yyyy\"))

@@ -4,7 +4,7 @@
 # Invest in bottom (least performing) 5 stocks of NIFTY based on
 # last 22 days return
 ##################
-using Raftaar
+using BackTester
 # Intialize the strategy with various settings and/or parameters
 function initialize(state)
 	
