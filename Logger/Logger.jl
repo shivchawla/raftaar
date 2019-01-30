@@ -57,10 +57,10 @@ function configure(;style::Symbol = :text, modes::Vector{Symbol}=[:console], sav
 end
 
 function setredisclient(redis_client::Redis.RedisConnection)
-    if haskey(params, "redis_client")
-        global params = delete!(params, "redis_client")
+    if haskey(logbook.params, "redis_client")
+        global logbook.params = delete!(logbook.params, "redis_client")
     end
-    global params["redis_client"] = redis_client 
+    global logbook.params["redis_client"] = redis_client 
 end
 
 function setbacktestid(backtestId::String)
@@ -182,7 +182,7 @@ function _logstandard(msg::String, msgtype::MessageType, modes::Vector{Symbol}, 
             fmsg = "[ERROR][$(dt)]" * "$(datestr)" * msg
         end
 
-        write(params["client"], fmsg)
+        write(logbook.params["client"], fmsg)
     end
 
     if (:db in modes)
@@ -232,13 +232,13 @@ function _logJSON(msg::String, msgtype::MessageType, modes::Vector{Symbol}, date
         if (:redis in modes)
             backtestId = logbook.params["backtestId"]
             #Base.run(pipeline(pushQueueCmd("backtest-realtime-$(backtestId)", jsonmsg), devnull))
-            Redis.rpush(params["redis_client"], "backtest-realtime-$(backtestId)", jsonmsg)
+            Redis.rpush(logbook.params["redis_client"], "backtest-realtime-$(backtestId)", jsonmsg)
 
             #Special addition to detect julia exception 
             if string(msgtype) == "ERROR"
                 try
                     #Base.run(pipeline(publishCmd("backtest-realtime-$(backtestId)", jsonmsg), devnull))
-                    Redis.publish(params["redis_client"], "backtest-realtime-$(backtestId)", jsonmsg)
+                    Redis.publish(logbook.params["redis_client"], "backtest-realtime-$(backtestId)", jsonmsg)
                 catch err
                     println(err)
                     println("Error Running Redis command")
@@ -312,7 +312,7 @@ function print(str; realtime=true)
         channel = realtime ? "backtest-realtime-$(backtestId)" : "backtest-final-$(backtestId)"
         if realtime
             #Base.run(pipeline(pushQueueCmd(channel, str), devnull))
-            Redis.rpush(params["redis_client"], channel, str)
+            Redis.rpush(logbook.params["redis_client"], channel, str)
         else
 
             chunksize = 10000
@@ -324,13 +324,13 @@ function print(str; realtime=true)
             for i=1:chunksize:endof(str)
                 chunk = str[i:min(endof(str), i+chunksize-1)]
                 # Base.run(pipeline(pushQueueCmd(channel, JSON.json(Dict{String, Any}("data"=>chunk, "index"=>idx))), devnull))
-                Redis.rpush(params["redis_client"], channel, JSON.json(Dict{String, Any}("data"=>chunk, "index"=>idx)))
+                Redis.rpush(logbook.params["redis_client"], channel, JSON.json(Dict{String, Any}("data"=>chunk, "index"=>idx)))
                 idx+=1
             end
 
             try
                 #Base.run(pipeline(publishCmd(channel, "backtest-final-output-ready"), devnull))
-                Redis.publish(params["redis_client"], channel, "backtest-final-output-ready")
+                Redis.publish(logbook.params["redis_client"], channel, "backtest-final-output-ready")
             catch err
                 println(err)
                 println("Error Running Redis command") 
