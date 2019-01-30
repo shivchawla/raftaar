@@ -106,7 +106,7 @@ function removeActiveRequestOnRestart()
 
         for (key, rawRequest) in allRawRequests 
             
-            if (rawRequest != nothing && rawRequest != NullException())
+            if rawRequest != nothing
                 try
                     request = rawRequest != nothing ? JSON.parse(rawRequest) : nothing
                     backtestId = request != nothing ? get(request, "backtestId", "") : ""
@@ -169,11 +169,11 @@ function processRedisQueue()
     request = nothing    
     
     try
-        if (rawRequest != nothing && rawRequest != NullException())
-            request = rawRequest != nothing ? JSON.parse(get(rawRequest)) : nothing
+        if rawRequest != nothing 
+            request = rawRequest != nothing ? JSON.parse(rawRequest) : nothing
         end
     
-        if request != nothing && rawRequest != nothing && request != NullException()
+        if request != nothing && rawRequest != nothing 
             
             #Add the request to active sets (overall and this process)
             println("Pushing the request to active/julia set")
@@ -201,7 +201,7 @@ function processRedisQueue()
         end
     catch err 
         println(err)
-        if rawRequest != nothing && rawRequest != NullException()
+        if rawRequest != nothing 
             println("Pushing the request in original queue")
             Redis.rpush(redisClient, BACKTEST_QUEUE, rawRequest)
         end
