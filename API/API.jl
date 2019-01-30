@@ -28,10 +28,10 @@ function setlogmode(style::Symbol, print::Symbol, save::Bool)
     Logger.configure(style_mode = style, print_mode = print, save_mode = save)
 end
 
-function setlogmode(style::Symbol, print::Symbol, save::Bool, client::WebSocket)
-    Logger.configure(client, style_mode = style, print_mode = print, save_mode = save)
-end
-export setlogmode
+# function setlogmode(style::Symbol, print::Symbol, save::Bool, client::WebSocket)
+#     Logger.configure(client, style_mode = style, print_mode = print, save_mode = save)
+# end
+# export setlogmode
 
 function setparent(parent::Symbol)
     if (parent == :ondata && !hasparent(:initialize)) || (parent == :initialize && !hasparent(:ondata)) || parent == :all

@@ -9,6 +9,7 @@ module Logger
 import Base: run
 using Mongoc
 using Dates
+using JSON
 import Redis
 
 mutable struct  LogBook
@@ -36,9 +37,6 @@ LogBook() = LogBook(
             )
 
 @enum MessageType INFO WARN ERROR
-
-import Base: info, error
-using JSON
 
 logbook = LogBook()
 
