@@ -41,12 +41,16 @@ function save_backtest(args)
 end
 
 function get_backtest()
-    shift!(backtests_requests)
+    if length(backtests_requests) > 0
+        popfirst!(backtests_requests)
+    end
 end
 
 function process_backtest()
     args = get_backtest()
-    evaluate_strategy(args)
+    if args != nothing
+        evaluate_strategy(args)
+    end
 end
 
 """
