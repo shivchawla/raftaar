@@ -15,7 +15,7 @@ function _compute_returns(prices::TimeArray, rettype::Symbol, total::Bool)
         first_val = values(TimeSeries.head(prices, 1))
         last_val = values(TimeSeries.tail(prices, 1))
 
-        vs = (retmutable struct == :log) ? log(last_val).-log(first_val) : (last_val .- first_val)./first_val
+        vs = (rettype == :log) ? log(last_val).-log(first_val) : (last_val .- first_val)./first_val
         rets = TimeArray(timestamp(prices)[end], vs, colnames(prices))
     else
         rets = percentchange(prices, rettype)
@@ -44,7 +44,7 @@ function stddev(tickers, series::String, frequency::Symbol, horizon::Int, enddat
 
     # Fetch prices for horizon
     if returns
-        rets = price_returns(tickers, series, frequency, horizon, enddate, retmutable struct = rettype)
+        rets = price_returns(tickers, series, frequency, horizon, enddate, rettype = rettype)
         std(rets)
     else
         prices = YRead.history(tickers, series, :Day, horizon, enddate, displaylogs=false)
@@ -56,8 +56,8 @@ export stddev
 function beta_old(tickers, frequency::Symbol, horizon::Int, enddate::DateTime; 
                 benchmark="NIFTY_50", rettype::Symbol=:log, series::String = "Close")
     
-    rets_ts = price_returns(tickers, series, frequency, horizon, enddate, retmutable struct = rettype)
-    rets_benchmark = price_returns([benchmark], series, frequency, horizon, enddate, retmutable struct = rettype, strict = false)
+    rets_ts = price_returns(tickers, series, frequency, horizon, enddate, rettype = rettype)
+    rets_benchmark = price_returns([benchmark], series, frequency, horizon, enddate, rettype = rettype, strict = false)
  
     names = colnames(rets_ts)
     nNames = length(names)
@@ -107,8 +107,8 @@ function beta(tickers, frequency::Symbol, horizon::Int, enddate::DateTime;
         return nothing
     end
 
-    rets_ts = price_returns(tickers, series, frequency, horizon, enddate, retmutable struct = rettype)
-    rets_benchmark = price_returns([benchmark], series, frequency, horizon, enddate, retmutable struct = rettype, strict = false)
+    rets_ts = price_returns(tickers, series, frequency, horizon, enddate, rettype = rettype)
+    rets_benchmark = price_returns([benchmark], series, frequency, horizon, enddate, rettype = rettype, strict = false)
     names = colnames(rets_ts)
     nNames = length(names)
   
