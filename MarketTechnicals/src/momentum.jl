@@ -4,7 +4,7 @@
 Relative Strength Index
 
 ```math
-    RSI = \frac{EMA(Up, n)}{EMA(Up, n) + EMA(Dn, n)}
+    RSI = 'frac{EMA(Up, n)}{EMA(Up, n) + EMA(Dn, n)}'
 ```
 """
 function rsi(ta::TimeArray, n::Int=14; wilder::Bool=false)
@@ -43,7 +43,7 @@ end
 Commodity Channel Index
 
 ```math
-    CCI = \frac{P_{typical} - SMA(P_{typical})}{c \times \sigma(P_{typical})}
+    CCI = 'frac{P_{typical} - SMA(P_{typical})}{c times sigma(P_{typical})}'
 ```
 
 **Reference**
@@ -67,7 +67,7 @@ Developed by Marc Chaikin
 **Formula**
 
 ```math
-    Chaikin\ OSC = EMA(ADL, fast) - EMA(ADL, slow)
+    'Chaikin OSC = EMA(ADL, fast) - EMA(ADL, slow)'
 ```
 
 where the [`adl`](@ref) is the Accumulation/Distribution Line.
@@ -89,11 +89,11 @@ end
 Moving Average Convergence / Divergence
 
 ```math
-    \begin{align*}
+    'begin{align*}
         MACD Bar & = DIF - DEM \\
         DIF & = EMA(P_{close}, fast) - EMA(P_{close}, slow) \\
-        DEM & = EMA(DIF, 9) \tag{signal}
-    \end{align*}
+        DEM & = EMA(DIF, 9) tag{signal}
+    end{align*}'
 ```
 
 **Return**:
@@ -125,7 +125,7 @@ end
 **Formula**:
 
 ```math
-    roc = \frac{close_{t} - close_{t-n}}{close_{t-n}}
+    roc = 'frac{close_{t} - close_{t-n}}{close_{t-n}}'
 ```
 
 **Reference**:
@@ -146,11 +146,11 @@ end
 **Formula**
 
 ```math
-    \begin{align*}
-        up   & = \frac{\mathop{argmax}(High_{t-n} \dots High_t)}{n} \times 100 \\
-        down & = \frac{\mathop{argmin}(Low_{t-n} \dots Low_t)}{n} \times 100 \\
+    'begin{align*}
+        up   & = frac{mathop{argmax}(High_{t-n} dots High_t)}{n} times 100 \\
+        down & = frac{mathop{argmin}(Low_{t-n} dots Low_t)}{n} times 100 \\
         osc  & = up - down
-    \end{align*}
+    end{align*}''
 ```
 
 **Reference**
@@ -221,13 +221,13 @@ A.k.a *%K%D*, or *KD*
 **Formula**
 
 ```math
-    \begin{align*}
-        fast\ \%K & = \frac{Close_t - \max(High_{t-n}, \dots, High_t)}
-            {\max(High_{t-n}, \dots, High_t) - \min(Low_{t-n}, \dots, Low_t)}
-            \times 100 \\
-        fast\ \%D & = SMA(fast\ \%K) \\
-        slow\ \%D & = SMA(fast\ \%D)
-    \end{align*}
+    'begin{align*}
+        fast %K & = frac{Close_t - max(High_{t-n}, dots, High_t)}
+            {max(High_{t-n}, dots, High_t) - min(Low_{t-n}, dots, Low_t)}
+            times 100 \\
+        fast %D & = SMA(fast %K) \\
+        slow %D & = SMA(fast %D)
+    end{align*}'
 ```
 
 **Reference**

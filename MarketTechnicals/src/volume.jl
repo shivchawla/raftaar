@@ -5,11 +5,11 @@ On Balance Volume
 
 ```math
     OBV_t = OBV_{t - 1} +
-        \begin{cases}
-            volume  & \text{if} \ close_t > close_{t-1} \\
-            0       & \text{if} \ close_t = close_{t-1} \\
-            -volume & \text{if} \ close_t < close_{t-1}
-        \end{cases}
+        'begin{cases}
+            volume  & text{if}  close_t > close_{t-1} \\
+            0       & text{if}  close_t = close_{t-1} \\
+            -volume & text{if}  close_t < close_{t-1}
+        end{cases}'
 ```
 
 """
@@ -40,7 +40,7 @@ end
 Volume Weight-Adjusted Price
 
 ```math
-    P = \frac{\sum_j P_j Q_j}{\sum_j Q_j} \ ,\text{where Q is the volume}
+    P = 'frac{sum_j P_j Q_j}{sum_j Q_j}  ,text{where Q is the volume}'
 ```
 
 """
@@ -79,8 +79,8 @@ Developed by Marc Chaikin.
 
 ```math
     ADL_t = ADL_{t-1} +
-        \frac{(Close_t - Low_t) - (High_t - Close_t)}{High_t - Low_t}
-        \times Volume_t
+        'frac{(Close_t - Low_t) - (High_t - Close_t)}{High_t - Low_t}'
+        'times Volume_t'
 ```
 
 **Reference**

@@ -5,18 +5,18 @@
 Floor Trader Pivots
 
 ```math
-\begin{align*}
+'begin{align*}
 
     R3 & = Pivot_t + (R2 - S1) \\
     R2 & = Pivot_t + (R1 - S1) \\
     R1 & = 2 Pivot_t - P^{low}_{t-1} \\
     Pivot_t & = Price^{typical}_{t-1} =
-        \frac{P^{high}_{t-1} + P^{low}_{t-1} + P^{close}_{t-1}}{3} \\
+        frac{P^{high}_{t-1} + P^{low}_{t-1} + P^{close}_{t-1}}{3} \\
     S1 & = 2 Pivot_t - P^{high}_{t-1} \\
     S2 & = Pivot_t - (R1 - S1) \\
     S3 & = Pivot_t - (R2 - S1)
 
-\end{align*}
+end{align*}'
 ```
 """
 function floorpivots(ohlc::TimeArray{T,N}) where {T,N}
@@ -42,7 +42,7 @@ end
 Woodie's Pivot
 
 ```math
-\begin{align*}
+'begin{align*}
 
     Range & = Price^{high}_{t-1} - Price^{low}_{t-1} \\
 
@@ -51,13 +51,13 @@ Woodie's Pivot
     R2 & = Pivot_t + Range \\
     R1 & = 2 Pivot_t - Price^{low}_{t-1} \\
     Pivot_t & =
-        \frac{Price^{high}_{t-1} + Price^{low}_{t-1} + 2 Price^{open}_t}{4} \\
+        frac{Price^{high}_{t-1} + Price^{low}_{t-1} + 2 Price^{open}_t}{4} \\
     S1 & = 2 Pivot_t - Price^{high}_{t-1} \\
     S2 & = Pivot_t - Range \\
     S3 & = S1 - Range \\
     S4 & = S3 - Range \tag{not implemented}
 
-\end{align*}
+end{align*}'
 ```
 """
 function woodiespivots(ohlc::TimeArray{T,N}) where {T,N}

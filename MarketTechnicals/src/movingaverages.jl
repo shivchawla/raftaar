@@ -142,10 +142,9 @@ end
 Simple Moving Average
 
 ```math
-SMA = \frac{\sum_i^n{P_i}}{n}
+SMA = 'frac{sum_i^n{P_i}}{n}'
 ```
 """
-sma
 
 """
     ema(arr, n, wilder=false)
@@ -155,17 +154,16 @@ Exponemtial Moving Average
 A.k.a. exponentially weighted moving average (EWMA)
 
 ```math
-    \text{Let } k \text{denote the degree of weighting decrease}
+    'text{Let } k text{denote the degree of weighting decrease}'
 ```
 
-If parameter `wilder` is `true`, ``k = \frac{1}{n}``,
-else ``k = \frac{2}{n + 1}``.
+If parameter `wilder` is `true`, ``k = 'frac{1}{n}'``,
+else ``k = 'frac{2}{n + 1}'``.
 
 ```math
-    EMA_t = k \times P_t + (1 - k) \times EMA_{t - 1}
+    EMA_t = k 'times P_t + (1 - k) times EMA_{t - 1}'
 ```
 """
-ema
 
 """
 
@@ -182,17 +180,16 @@ Kaufman's Adaptive Moving Average
 **Formula**:
 
 ```math
-    \begin{align*}
-        KAMA_t & = KAMA_{t-1} + SC \times (Price - KAMA_{t-1}) \\
+    'begin{align*}
+        KAMA_t & = KAMA_{t-1} + SC times (Price - KAMA_{t-1}) \\
         SC     & =
-            (ER \times (\frac{2}{fn + 1} - \frac{2}{sn + 1}) + \frac{2}{sn + 1})^2 \\
-        ER     & = \frac{Change}{Volatility} \\
+            (ER times (frac{2}{fn + 1} - frac{2}{sn + 1}) + frac{2}{sn + 1})^2 \\
+        ER     & = frac{Change}{Volatility} \\
         Change & = | Price - Price_{t-n} | \\
-        Volatility & = \sum_{i}^{n} | Price_i - Price_{i-1} |
-    \end{align*}
+        Volatility & = sum_{i}^{n} | Price_i - Price_{i-1} |
+    end{align*}'
 ```
 """
-kama
 
 """
 
@@ -201,10 +198,10 @@ kama
 Moving Average Envelope
 
 ```math
-  \begin{align*}
-    \text{Upper Envelope} & = \text{n period SMA } \times (1 + e) \\
-    \text{Lower Envelope} & = \text{n period SMA } \times (1 - e)
-  \end{align*}
+  'begin{align*}
+    text{Upper Envelope} & = text{n period SMA } times (1 + e) \\
+    text{Lower Envelope} & = text{n period SMA } times (1 - e)
+  end{align*}''
 ```
 
 **Arguments**
@@ -215,4 +212,3 @@ Moving Average Envelope
 
 - [TradingView](https://www.tradingview.com/wiki/Envelope_(ENV))
 """
-env

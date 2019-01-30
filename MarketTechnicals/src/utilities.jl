@@ -4,7 +4,7 @@
 Typical Price
 
 ```math
-    \text{Typical Price} = \frac{H + L + C}{3}
+    'text{Typical Price} = frac{H + L + C}{3}'
 ```
 """
 function typical(ohlc::TimeArray{T,N}; h=:High, l=:Low, c=:Close) where {T,N}

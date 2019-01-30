@@ -4,13 +4,13 @@
 Bollinger Bands
 
 ```math
-\begin{align*}
+'begin{align*}
 
-    Up & = SMA + width \times \sigma \\
+    Up & = SMA + width times sigma \\
     Mean & = SMA \\
-    Down & = SMA - width \times \sigma
+    Down & = SMA - width times sigma
 
-\end{align*}
+end{align*}''
 ```
 """
 function bollingerbands(ta::TimeArray, ma::Integer=20, width::AbstractFloat=2.0)
@@ -29,11 +29,11 @@ end
 **Formula**
 
 ```math
-    \begin{align*}
-        Up   & = \max (High_1\ to\ High_t) \\
-        Mid  & = \frac{Up + Down}{2} \\
-        Down & = \min (Low_1\ to\ Low_t)
-    \end{align*}
+    'begin{align*}
+        Up   & = max (High_1 to High_t) \\
+        Mid  & = frac{Up + Down}{2} \\
+        Down & = min (Low_1 to Low_t)
+    end{align*}'
 ```
 
 **Reference**
@@ -55,7 +55,7 @@ end
 True Range
 
 ```math
-    TR = \max (H_t, C_{t-1}) - \min (L_t, C{t-1})
+    TR = 'max (H_t, C_{t-1}) - min (L_t, C{t-1})'
 ```
 
 """
@@ -96,11 +96,11 @@ in the 1980s. We implement the newer version.
 **Formula**
 
 ```math
-    \begin{align*}
-        \text{Up}   & = \text{Mid} + w \times ATR(n) \\
-        \text{Mid}  & = EMA(P_{typical}, n) \\
-        \text{Down} & = \text{Mid} - w \times ATR(n)
-    \end{align*}
+    'begin{align*}
+        text{Up}   & = text{Mid} + w times ATR(n) \\
+        text{Mid}  & = EMA(P_{typical}, n) \\
+        text{Down} & = text{Mid} - w times ATR(n)
+    end{align*}'
 ```
 
 **Reference**
@@ -137,10 +137,10 @@ end
 **Formula**
 
 ```math
-    Chaikin\ Vola =
-        \frac{EMA(High_t - Low_t, n) - EMA(High_{t-p} - Low_{t-p}, n)}
+    'Chaikin Vola =
+        frac{EMA(High_t - Low_t, n) - EMA(High_{t-p} - Low_{t-p}, n)}
         {EMA(High_{t-p} - Low_{t-p}, n)}
-        \times 100
+        times 100'
 ```
 
 **Reference**
