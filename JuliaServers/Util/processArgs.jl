@@ -27,11 +27,7 @@ function processargs(parsed_args::Dict{String,Any})
       end
       
       benchmark = get(parsed_args, "benchmark", "NIFTY_50")
-      if typeof(Meta.parse(benchmark)) == Int64
-          setbenchmark(Meta.parse(benchmark))
-      else
-          setbenchmark(benchmark)  
-      end
+      setbenchmark(benchmark)  
       
       universeconstituents = Vector{String}()    
       
@@ -50,18 +46,7 @@ function processargs(parsed_args::Dict{String,Any})
       n_universeconstituents = length(universeconstituents)
     
       for ticker in universeconstituents
-          #str = strip(String(ss[i]))
-          if(ticker != "")
-              parsed = Meta.parse(ticker)
-
-              if(typeof(parsed) == Int64)
-                adduniverse(parsed)
-              #Handle M&M like symbols (parse resolves to expression)  
-              elseif (typeof(parsed)==Symbol || typeof(parsed)==Expr) 
-                adduniverse(ticker)
-                #replace(ticker, r"[^a-zA-Z0-9]", "_")
-              end
-          end
+          adduniverse(ticker)
       end
 
       if (parsed_args["investmentplan"] != nothing)
