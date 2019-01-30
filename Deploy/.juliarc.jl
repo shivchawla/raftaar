@@ -1,10 +1,12 @@
-import Pkg
+# import Pkg
 
-function Pkg_update()
-    pkgs = readlines(joinpath(homedir(), ".julia", "REQUIRE"))
-    Pkg.add(pkgs)
-    Pkg.update(pkgs)
-end
+# function Pkg_update()
+#     pkgs = readlines(joinpath(homedir(), ".julia", "REQUIRE"))
+#     Pkg.add(pkgs)
+#     Pkg.update(pkgs)
+# end
+
+# Pkg_update()
 
 user = ENV["USER"]
 push!(LOAD_PATH, "/home/$user/Raftaar/Backtester/")

@@ -27,8 +27,10 @@ chgrp -R $user /home/$user/yojak
 chmod -R u=rx /home/$user/raftaar
 chmod -R u=rx /home/$user/yojak
 
-cp /home/admin/$env/raftaar/Deploy/.juliarc.jl /home/$user/.julia/startup/config.jl
-cp /home/admin/$env/raftaar/Deploy/REQUIRE /home/$user/.julia/REQUIRE
+mkdir /home/$user/.julia/startup && cp /home/admin/$env/raftaar/Deploy/.juliarc.jl /home/$user/.julia/startup/config.jl --force
+#cp /home/admin/$env/raftaar/Deploy/REQUIRE /home/$user/.julia/REQUIRE
+mkdir /home/$user/.julia/environments/v1.1/ && cp /home/admin/$env/raftaar/Deploy/Manifest.toml /home/$user/.julia/environments/v1.1/Manifest.toml --force
+mkdir /home/$user/.julia/environments/v1.1/ && cp /home/admin/$env/raftaar/Deploy/Project.toml /home/$user/.julia/environments/v1.1/Project.toml --force
 
 chown -R $user /home/$user/.juliarc.jl
 chgrp -R $user /home/$user/.juliarc.jl
