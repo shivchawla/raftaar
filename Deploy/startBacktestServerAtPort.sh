@@ -21,20 +21,11 @@ chown -R $user /home/$user/raftaar
 chgrp -R $user /home/$user/raftaar
 chmod -R u=rx /home/$user/raftaar
 
-mkdir /home/$user/.julia/config && cp /home/admin/$env/raftaar/Deploy/.juliarc.jl /home/$user/.julia/config/startup.jl --force
-mkdir /home/$user/.julia/environments/v1.1/ && cp /home/admin/$env/raftaar/Manifest.toml /home/$user/.julia/environments/v1.1/Manifest.toml --force
-mkdir /home/$user/.julia/environments/v1.1/ && cp /home/admin/$env/raftaar/Project.toml /home/$user/.julia/environments/v1.1/Project.toml --force
+mkdir -p /home/$user/.julia/config && cp /home/admin/$env/raftaar/Deploy/.juliarc.jl /home/$user/.julia/config/startup.jl --force
+mkdir -p /home/$user/.julia/environments/v1.1/ && cp /home/admin/$env/raftaar/Manifest.toml /home/$user/.julia/environments/v1.1/Manifest.toml --force
+mkdir -p /home/$user/.julia/environments/v1.1/ && cp /home/admin/$env/raftaar/Project.toml /home/$user/.julia/environments/v1.1/Project.toml --force
 
-# chown -R $user /home/$user/.juliarc.jl
-# chgrp -R $user /home/$user/.juliarc.jl
-
-# #sudo su - $user -c "${juliaExec} ~/raftaar/Deploy/setupUser.jl $user $env"
-
-# #Update the Redis from local folder
-# #cp -r /home/admin/$env/raftaar/Deploy/Redis-src/* /home/$user/.julia/v0.6/Redis/src/
-
-source /home/$user/raftaar/Juliaservers/launchForeverServer.sh \
+source /home/$user/raftaar/Deploy/launchForeverServer.sh \
 		${user} ${port} ${env} "/home/${user}" $juliaExec 
-
 
 
