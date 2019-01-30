@@ -11,7 +11,6 @@ module API
 using BackTester
 using TimeSeries
 using Logger
-using WebSockets
 using YRead
 using JSON
 using Dates

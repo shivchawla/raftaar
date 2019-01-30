@@ -3,10 +3,8 @@ StatsBase
 JSON			 		 
 Mongoc
 TimeSeries		 
-WebSockets		 
 ZipFile			 
-ArgParse		 
-MarketTechnicals	 
+ArgParse		 	 
 MultivariateStats	 
 JuMP			 
 Ipopt			
