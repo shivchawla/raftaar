@@ -47,14 +47,14 @@ end
 function setredisconnection(connections)
     try
         redis_conn = connections["redis"]
-        user = redis_conn["user"]
-        pass = redis_conn["pass"]
-        host = redis_conn["host"]
-        port = redis_conn["port"]
+
+        rpass = get(redis_conn, "pass", "")
+        rhost = get(redis_conn, "host", "127.0.0.1")
+        rport = get(redis_conn, "port", "13472")
 
         delete!(connections, "redis")
            
-        Logger.setredisclient(getredisclient(host, port, pass))    
+        Logger.setredisclient(getredisclient(rhost, rport, rpass))    
     catch err
         println(err)
     end

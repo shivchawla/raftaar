@@ -228,8 +228,7 @@ function startProcess()
 end
 
 function waitALittle(seconds = 0.1)
-    wait(Timer(seconds, 0))
-    startProcess()
+    wait(Timer(startProcess, seconds))
 end
 
 
