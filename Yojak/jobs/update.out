@@ -1,0 +1,987 @@
+tee: /Users/shivkumarchawla/yojak/jobs/logs/Quandl_update_20171216_15:31:42.txt: Permission denied
+Running data update process for Quandl XNSE and NSE at 2017-12-16T15:31:43.708
+
+WARNING: ignoring conflicting import of Requests.delete into YWrite
+WARNING: Compat.UTF8String is deprecated, use String instead.
+  likely near /Users/shivkumarchawla/yojak/jobs/updateQuandlData.jl:21
+WARNING: Compat.UTF8String is deprecated, use String instead.
+  likely near /Users/shivkumarchawla/yojak/jobs/updateQuandlData.jl:59
+WARNING: Compat.UTF8String is deprecated, use String instead.
+  likely near /Users/shivkumarchawla/yojak/jobs/updateQuandlData.jl:59
+WARNING: Compat.UTF8String is deprecated, use String instead.
+  likely near /Users/shivkumarchawla/yojak/jobs/updateQuandlData.jl:59
+WARNING: Compat.UTF8String is deprecated, use String instead.
+  likely near /Users/shivkumarchawla/yojak/jobs/updateQuandlData.jl:59
+WARNING: Compat.UTF8String is deprecated, use String instead.
+  likely near /Users/shivkumarchawla/yojak/jobs/updateQuandlData.jl:59
+WARNING: Compat.UTF8String is deprecated, use String instead.
+  likely near /Users/shivkumarchawla/yojak/jobs/updateQuandlData.jl:59
+WARNING: Compat.UTF8String is deprecated, use String instead.
+  likely near /Users/shivkumarchawla/yojak/jobs/updateQuandlData.jl:59
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:--  0:00:01 --:--:--     0  0     0    0     0    0     0      0      0 --:--:--  0:00:02 --:--:--     0  0     0    0     0    0     0      0      0 --:--:--  0:00:03 --:--:--     0100  1107  100  1107    0     0    307      0  0:00:03  0:00:03 --:--:--   307
+  0     0    0     0    0     0      0      0 --:--:--  0:00:03 --:--:--     0  0     0    0     0    0     0      0      0 --:--:--  0:00:05 --:--:--     0  0 77413    0     0    0     0      0      0 --:--:--  0:00:06 --:--:--     0  0 77413    0     0    0     0      0      0 --:--:--  0:00:06 --:--:--     0 21 77413   21 16895    0     0   2091      0  0:00:37  0:00:08  0:00:29  4081 44 77413   44 34303    0     0   3602      0  0:00:21  0:00:09  0:00:12  6145 44 77413   44 34303    0     0   3481      0  0:00:22  0:00:09  0:00:13  7130 44 77413   44 34303    0     0   2938      0  0:00:26  0:00:11  0:00:15  6054 65 77413   65 50663    0     0   4080      0  0:00:18  0:00:12  0:00:06  9270 66 77413   66 51711    0     0   3940      0  0:00:19  0:00:13  0:00:06  6901 87 77413   87 68071    0     0   4716      0  0:00:16  0:00:14  0:00:02  6877 89 77413   89 69119    0     0   4635      0  0:00:16  0:00:14  0:00:02  6880 89 77413   89 69119    0     0   4341      0  0:00:17  0:00:15  0:00:02  8195100 77413  100 77413    0     0   4466      0  0:00:17  0:00:17 --:--:--  5440100 77413  100 77413    0     0   4466      0  0:00:17  0:00:17 --:--:--  6107
+Extracting file
+Deleting the downloaded file
+WARNING: Compat.unsafe_convert is deprecated, use Base.unsafe_convert instead.
+  likely near /Users/shivkumarchawla/yojak/jobs/updateQuandlData.jl:303
+WARNING: Compat.unsafe_convert is deprecated, use Base.unsafe_convert instead.
+  likely near /Users/shivkumarchawla/yojak/jobs/updateQuandlData.jl:303
+WARNING: Compat.unsafe_convert is deprecated, use Base.unsafe_convert instead.
+  likely near /Users/shivkumarchawla/yojak/jobs/updateQuandlData.jl:303
+[INFO][2017-12-16 15:32:21.748]2017-12-16T15:32:21.537:Downloading metadata from Quandl/XNSE
+[INFO][2017-12-16 15:32:21.983]2017-12-16T15:32:21.983:Downloading metadata from Quandl/NSE
+Using API key MX4zkypoSjUzp8CyotQg
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:32:26.471]2017-12-16T15:32:26.471:Downloading security data from Quandl/XNSE, securities_per_page:50, current_page:144
+Using API key MX4zkypoSjUzp8CyotQg[INFO][2017-12-16 15:32:26.504]2017-12-16T15:32:26.504:Downloading security data from Quandl/NSE, securities_per_page:50, current_page:44
+
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:32:29.089]2017-12-16T15:32:29.089:Downloading security data from Quandl/XNSE, securities_per_page:50, current_page:143
+WARNING: Compat.UTF8String is deprecated, use String instead.
+  likely near /Users/shivkumarchawla/yojak/jobs/updateQuandlData.jl:303
+WARNING: Compat.UTF8String is deprecated, use String instead.
+  likely near /Users/shivkumarchawla/yojak/jobs/updateQuandlData.jl:303
+WARNING: Compat.unsafe_convert is deprecated, use Base.unsafe_convert instead.
+  likely near /Users/shivkumarchawla/yojak/jobs/updateQuandlData.jl:303
+WARNING: Compat.unsafe_convert is deprecated, use Base.unsafe_convert instead.
+  likely near /Users/shivkumarchawla/yojak/jobs/updateQuandlData.jl:303
+WARNING: Compat.unsafe_convert is deprecated, use Base.unsafe_convert instead.
+  likely near /Users/shivkumarchawla/yojak/jobs/updateQuandlData.jl:303
+WARNING: Compat.unsafe_convert is deprecated, use Base.unsafe_convert instead.
+  likely near /Users/shivkumarchawla/yojak/jobs/updateQuandlData.jl:303
+WARNING: Compat.unsafe_convert is deprecated, use Base.unsafe_convert instead.
+  likely near /Users/shivkumarchawla/yojak/jobs/updateQuandlData.jl:303
+WARNING: Compat.unsafe_convert is deprecated, use Base.unsafe_convert instead.
+  likely near /Users/shivkumarchawla/yojak/jobs/updateQuandlData.jl:303
+[WARNING][2017-12-16 15:32:31.488]2017-12-16T15:32:31.469:In updatedb_fromquandl_persecurity(): Can not update 'Adjusted Data' for datasource: XNSE. SKIPPING Adjusted Data!!
+Using API key MX4zkypoSjUzp8CyotQg[INFO][2017-12-16 15:32:31.490]2017-12-16T15:32:31.49:Downloading security data from Quandl/NSE, securities_per_page:50, current_page:43
+
+[INFO][2017-12-16 15:32:31.653]2017-12-16T15:32:31.653:In getsecurityid(): Finding for symbol:DIAMONDYD
+WARNING: Compat.UTF8String is deprecated, use String instead.
+  likely near /Users/shivkumarchawla/yojak/jobs/updateQuandlData.jl:303
+WARNING: Compat.UTF8String is deprecated, use String instead.
+  likely near /Users/shivkumarchawla/yojak/jobs/updateQuandlData.jl:303
+[INFO][2017-12-16 15:32:31.987]2017-12-16T15:32:31.987:Updating data for securityid:89975
+[INFO][2017-12-16 15:32:32.302]2017-12-16T15:32:32.302:Updating security data for securityid:89975
+
+WARNING: Compat.unsafe_convert is deprecated, use Base.unsafe_convert instead.
+  likely near /Users/shivkumarchawla/yojak/jobs/updateQuandlData.jl:303
+WARNING: Compat.unsafe_convert is deprecated, use Base.unsafe_convert instead.
+  likely near /Users/shivkumarchawla/yojak/jobs/updateQuandlData.jl:303
+WARNING: Compat.unsafe_convert is deprecated, use Base.unsafe_convert instead.
+  likely near /Users/shivkumarchawla/yojak/jobs/updateQuandlData.jl:303
+WARNING: Compat.unsafe_convert is deprecated, use Base.unsafe_convert instead.
+  likely near /Users/shivkumarchawla/yojak/jobs/updateQuandlData.jl:303
+[INFO][2017-12-16 15:32:34.823]2017-12-16T15:32:34.823:Updating column data for securityid:89975
+[INFO][2017-12-16 15:32:34.823]2017-12-16T15:32:34.823:In getsecurityid(): Finding for symbol:MFHEOF1126DG
+Using API key [INFO][2017-12-16 15:32:42.730]2017-12-16T15:32:42.73:Updating data for securityid:84782
+MX4zkypoSjUzp8CyotQg[INFO][2017-12-16 15:32:42.730]2017-12-16T15:32:42.73:Updating security data for securityid:84782
+
+[INFO][2017-12-16 15:32:42.750]2017-12-16T15:32:42.749:updatesecuritydata_fromquandl(): Data is up-to-date for securityid: 84782, dataset:MFHEOF1126DG_UADJ and datasource: XNSE
+[INFO][2017-12-16 15:32:42.750]2017-12-16T15:32:42.75:Downloading column data from Quandl/NSE/DIAMONDYD
+[INFO][2017-12-16 15:32:42.750]2017-12-16T15:32:42.75:Updating column data for securityid:84782
+Using API key [INFO][2017-12-16 15:32:43.194]2017-12-16T15:32:43.193:In updatecolumndata_fromquandl(): Column data is up-to-date for securityid: 84782, dataset:MFHEOF1126DG_UADJ and datasource: XNSE
+MX4zkypoSjUzp8CyotQg[INFO][2017-12-16 15:32:43.194]2017-12-16T15:32:43.194:updatedb_fromquandl(): Successful update for securityid:84782
+
+
+[WARNING][2017-12-16 15:32:43.194]2017-12-16T15:32:43.194:In updatedb_fromquandl_persecurity(): Can not update 'Adjusted Data' for datasource: XNSE. SKIPPING Adjusted Data!!
+
+[WARNING][2017-12-16 15:32:43.195]2017-12-16T15:32:43.195:In updatedb_fromquandl_persecurity(): Can not update 'Adjusted Data' for datasource: XNSE. SKIPPING Adjusted Data!!
+
+[INFO][2017-12-16 15:32:43.195]2017-12-16T15:32:43.195:In getsecurityid(): Finding for symbol:SMZODIAC
+[INFO][2017-12-16 15:32:43.222]2017-12-16T15:32:43.222:Updating data for securityid:13735
+[INFO][2017-12-16 15:32:43.223]2017-12-16T15:32:43.223:Updating security data for securityid:13735
+[INFO][2017-12-16 15:32:43.249]2017-12-16T15:32:43.249:Updating column data for securityid:13735
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:32:43.298]2017-12-16T15:32:43.298:Downloading column data from Quandl/XNSE/SMZODIAC_UADJ
+WARNING: Compat.unsafe_convert is deprecated, use Base.unsafe_convert instead.
+  likely near /Users/shivkumarchawla/yojak/jobs/updateQuandlData.jl:303
+[INFO][2017-12-16 15:32:45.382]2017-12-16T15:32:45.382:In updatecolumndata_fromquandl(): Data updated successfully for securityid: 89975 and year:2017
+[INFO][2017-12-16 15:32:45.383]2017-12-16T15:32:45.383:updatedb_fromquandl(): Successful update for securityid:89975
+
+[INFO][2017-12-16 15:32:45.383]2017-12-16T15:32:45.383:In getsecurityid(): Finding for symbol:BALAXI
+[INFO][2017-12-16 15:32:45.409]2017-12-16T15:32:45.409:Updating data for securityid:29266
+[INFO][2017-12-16 15:32:45.410]2017-12-16T15:32:45.41:Updating security data for securityid:29266
+[INFO][2017-12-16 15:32:45.427]2017-12-16T15:32:45.427:updatesecuritydata_fromquandl(): Data is up-to-date for securityid: 29266, dataset:BALAXI and datasource: NSE
+[INFO][2017-12-16 15:32:45.458]2017-12-16T15:32:45.458:In updatecolumndata_fromquandl(): Data updated successfully for securityid: 13735 and year:2017
+[INFO][2017-12-16 15:32:45.459]2017-12-16T15:32:45.459:Updating column data for securityid:29266
+[INFO][2017-12-16 15:32:45.459]2017-12-16T15:32:45.459:updatedb_fromquandl(): Successful update for securityid:13735
+[INFO][2017-12-16 15:32:45.587]2017-12-16T15:32:45.587:In updatecolumndata_fromquandl(): Column data is up-to-date for securityid: 29266, dataset:BALAXI and datasource: NSE
+[INFO][2017-12-16 15:32:45.587]2017-12-16T15:32:45.587:updatedb_fromquandl(): Successful update for securityid:29266
+
+[INFO][2017-12-16 15:32:45.587]2017-12-16T15:32:45.587:In getsecurityid(): Finding for symbol:GUJRAFFIA
+[INFO][2017-12-16 15:32:45.617]2017-12-16T15:32:45.617:Updating data for securityid:35138
+
+[INFO][2017-12-16 15:32:45.617]2017-12-16T15:32:45.617:Updating security data for securityid:35138
+[INFO][2017-12-16 15:32:45.617]2017-12-16T15:32:45.617:In getsecurityid(): Finding for symbol:SCAPDVR
+[INFO][2017-12-16 15:32:45.712]2017-12-16T15:32:45.712:Updating column data for securityid:35138
+[INFO][2017-12-16 15:32:45.738]2017-12-16T15:32:45.738:Updating data for securityid:2176
+Using API key [INFO][2017-12-16 15:32:45.778]2017-12-16T15:32:45.778:Updating security data for securityid:2176
+MX4zkypoSjUzp8CyotQg[INFO][2017-12-16 15:32:45.801]2017-12-16T15:32:45.801:Updating column data for securityid:2176
+
+[INFO][2017-12-16 15:32:46.088]2017-12-16T15:32:46.088:Downloading column data from Quandl/XNSE/GUJRAFFIA_UADJ
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:32:46.089]2017-12-16T15:32:46.089:Downloading column data from Quandl/NSE/SCAPDVR
+[INFO][2017-12-16 15:32:47.805]2017-12-16T15:32:47.805:Downloading security data from Quandl/NSE, securities_per_page:50, current_page:42
+[INFO][2017-12-16 15:32:47.805]2017-12-16T15:32:47.805:In getsecurityid(): Finding for symbol:WIPL
+Using API key [INFO][2017-12-16 15:32:47.830]2017-12-16T15:32:47.83:Updating data for securityid:56841
+MX4zkypoSjUzp8CyotQg[INFO][2017-12-16 15:32:47.831]2017-12-16T15:32:47.831:Updating security data for securityid:56841
+
+[INFO][2017-12-16 15:32:47.884]2017-12-16T15:32:47.884:Updating column data for securityid:56841
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:32:48.130]2017-12-16T15:32:48.13:Downloading column data from Quandl/NSE/WIPL
+[INFO][2017-12-16 15:32:49.807]2017-12-16T15:32:49.807:In updatecolumndata_fromquandl(): Data updated successfully for securityid: 35138 and year:2017
+[INFO][2017-12-16 15:32:49.807]2017-12-16T15:32:49.807:updatedb_fromquandl(): Successful update for securityid:35138
+
+[WARNING][2017-12-16 15:32:49.807]2017-12-16T15:32:49.807:In updatedb_fromquandl_persecurity(): Can not update 'Adjusted Data' for datasource: XNSE. SKIPPING Adjusted Data!!
+
+[INFO][2017-12-16 15:32:49.808]2017-12-16T15:32:49.808:In getsecurityid(): Finding for symbol:SMICEMAKE
+[WARNING][2017-12-16 15:32:49.817]2017-12-16T15:32:49.817:No security present for ticker:SMICEMAKE
+             exchange:NSE securitytype:EQ country:IN
+[WARNING][2017-12-16 15:32:49.818]2017-12-16T15:32:49.818:In updatedb_fromquandl_persecurity(): security is not present. Attempting to INSERT instead!
+[INFO][2017-12-16 15:32:49.818]2017-12-16T15:32:49.818:In getsecurityid(): Finding for symbol:SMICEMAKE
+[WARNING][2017-12-16 15:32:49.826]2017-12-16T15:32:49.826:No security present for ticker:SMICEMAKE
+             exchange:NSE securitytype:EQ country:IN
+[INFO][2017-12-16 15:32:50.002]2017-12-16T15:32:50.002:Inserting data for securityid:66435
+[INFO][2017-12-16 15:32:50.003]2017-12-16T15:32:50.003:Inserting security data for securityid:66435
+WARNING: Compat.unsafe_convert is deprecated, use Base.unsafe_convert instead.
+  likely near /Users/shivkumarchawla/yojak/jobs/updateQuandlData.jl:303
+[INFO][2017-12-16 15:32:50.203]2017-12-16T15:32:50.202:Inserting column data for securityid:66435
+Using API key MX4zkypoSjUzp8CyotQg[INFO][2017-12-16 15:32:50.462]2017-12-16T15:32:50.462:Downloading security data from Quandl/XNSE, securities_per_page:50, current_page:142
+[INFO][2017-12-16 15:32:50.464]2017-12-16T15:32:50.464:Downloading security data from Quandl/NSE, securities_per_page:50, current_page:41
+
+[WARNING][2017-12-16 15:32:50.465]2017-12-16T15:32:50.465:In updatedb_fromquandl_persecurity(): Can not update 'Adjusted Data' for datasource: XNSE. SKIPPING Adjusted Data!!
+[INFO][2017-12-16 15:32:50.465]2017-12-16T15:32:50.465:In getsecurityid(): Finding for symbol:SANCO
+[INFO][2017-12-16 15:32:50.466]2017-12-16T15:32:50.465:Downloading column data from Quandl/XNSE/SMICEMAKE_UADJ
+[INFO][2017-12-16 15:32:50.490]2017-12-16T15:32:50.49:Updating data for securityid:71972
+
+[INFO][2017-12-16 15:32:50.491]2017-12-16T15:32:50.491:Updating security data for securityid:71972
+[INFO][2017-12-16 15:32:50.491]2017-12-16T15:32:50.491:In getsecurityid(): Finding for symbol:KHADIM
+[INFO][2017-12-16 15:32:50.515]2017-12-16T15:32:50.515:Updating column data for securityid:71972
+Using API key [INFO][2017-12-16 15:32:50.539]2017-12-16T15:32:50.539:Updating data for securityid:37570
+MX4zkypoSjUzp8CyotQg[INFO][2017-12-16 15:32:50.838]2017-12-16T15:32:50.838:Updating security data for securityid:37570
+
+[INFO][2017-12-16 15:32:50.863]2017-12-16T15:32:50.863:Updating column data for securityid:37570
+[INFO][2017-12-16 15:32:50.867]2017-12-16T15:32:50.867:In updatecolumndata_fromquandl(): Data updated successfully for securityid: 2176 and year:2017
+[INFO][2017-12-16 15:32:50.873]2017-12-16T15:32:50.873:In updatecolumndata_fromquandl(): Data updated successfully for securityid: 56841 and year:2017
+Using API key [INFO][2017-12-16 15:32:50.877]2017-12-16T15:32:50.877:updatedb_fromquandl(): Successful update for securityid:2176
+[INFO][2017-12-16 15:32:50.877]2017-12-16T15:32:50.877:updatedb_fromquandl(): Successful update for securityid:56841
+MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:32:50.877]2017-12-16T15:32:50.877:Downloading column data from Quandl/XNSE/KHADIM_UADJ
+Using API key MX4zkypoSjUzp8CyotQg
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:32:50.878]2017-12-16T15:32:50.878:Downloading column data from Quandl/NSE/SANCO
+
+[INFO][2017-12-16 15:32:50.878]2017-12-16T15:32:50.878:In getsecurityid(): Finding for symbol:GODREJAGRO
+[INFO][2017-12-16 15:32:50.902]2017-12-16T15:32:50.902:Updating data for securityid:51303
+
+[INFO][2017-12-16 15:32:50.903]2017-12-16T15:32:50.903:Updating security data for securityid:51303
+[INFO][2017-12-16 15:32:50.903]2017-12-16T15:32:50.903:In getsecurityid(): Finding for symbol:DOLLAR
+[INFO][2017-12-16 15:32:50.944]2017-12-16T15:32:50.944:Updating column data for securityid:51303
+[INFO][2017-12-16 15:32:50.968]2017-12-16T15:32:50.968:Updating data for securityid:90219
+Using API key [INFO][2017-12-16 15:32:51.129]2017-12-16T15:32:51.129:Updating security data for securityid:90219
+MX4zkypoSjUzp8CyotQg[INFO][2017-12-16 15:32:51.187]2017-12-16T15:32:51.187:Updating column data for securityid:90219
+
+[INFO][2017-12-16 15:32:51.256]2017-12-16T15:32:51.256:Downloading column data from Quandl/NSE/GODREJAGRO
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:32:51.369]2017-12-16T15:32:51.369:Downloading column data from Quandl/NSE/DOLLAR
+[INFO][2017-12-16 15:32:52.270]2017-12-16T15:32:52.27:In updatecolumndata_fromquandl(): Data updated successfully for securityid: 90219 and year:2017
+[INFO][2017-12-16 15:32:52.270]2017-12-16T15:32:52.27:updatedb_fromquandl(): Successful update for securityid:90219
+
+[INFO][2017-12-16 15:32:52.270]2017-12-16T15:32:52.27:In getsecurityid(): Finding for symbol:SCHAND
+[INFO][2017-12-16 15:32:52.295]2017-12-16T15:32:52.295:Updating data for securityid:57516
+[INFO][2017-12-16 15:32:52.295]2017-12-16T15:32:52.295:Updating security data for securityid:57516
+[INFO][2017-12-16 15:32:52.316]2017-12-16T15:32:52.316:Updating column data for securityid:57516
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:32:52.418]2017-12-16T15:32:52.418:Downloading column data from Quandl/NSE/SCHAND
+[INFO][2017-12-16 15:32:52.860]2017-12-16T15:32:52.86:In updatecolumndata_fromquandl(): Data updated successfully for securityid: 51303 and year:2017
+[INFO][2017-12-16 15:32:52.860]2017-12-16T15:32:52.86:updatedb_fromquandl(): Successful update for securityid:51303
+
+[INFO][2017-12-16 15:32:52.861]2017-12-16T15:32:52.861:In getsecurityid(): Finding for symbol:TCPLPACK
+[INFO][2017-12-16 15:32:52.885]2017-12-16T15:32:52.885:Updating data for securityid:26792
+[INFO][2017-12-16 15:32:52.886]2017-12-16T15:32:52.886:Updating security data for securityid:26792
+[INFO][2017-12-16 15:32:52.906]2017-12-16T15:32:52.906:Updating column data for securityid:26792
+[INFO][2017-12-16 15:32:52.910]2017-12-16T15:32:52.91:In updatecolumndata_fromquandl(): Data updated successfully for securityid: 37570 and year:2017
+Using API key [INFO][2017-12-16 15:32:52.970]2017-12-16T15:32:52.97:updatedb_fromquandl(): Successful update for securityid:37570
+MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:32:52.971]2017-12-16T15:32:52.971:Downloading column data from Quandl/NSE/TCPLPACK
+
+[INFO][2017-12-16 15:32:52.971]2017-12-16T15:32:52.971:In getsecurityid(): Finding for symbol:IFGLEXPOR
+[INFO][2017-12-16 15:32:52.997]2017-12-16T15:32:52.997:Updating data for securityid:48001
+[INFO][2017-12-16 15:32:52.997]2017-12-16T15:32:52.997:Updating security data for securityid:48001
+[INFO][2017-12-16 15:32:53.020]2017-12-16T15:32:53.02:Updating column data for securityid:48001
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:32:53.023]2017-12-16T15:32:53.023:Downloading column data from Quandl/XNSE/IFGLEXPOR_UADJ
+[INFO][2017-12-16 15:32:53.107]2017-12-16T15:32:53.107:In updatecolumndata_fromquandl(): Data updated successfully for securityid: 71972 and year:2017
+[INFO][2017-12-16 15:32:53.107]2017-12-16T15:32:53.107:updatedb_fromquandl(): Successful update for securityid:71972
+
+[INFO][2017-12-16 15:32:53.108]2017-12-16T15:32:53.108:In getsecurityid(): Finding for symbol:SASTASUNDR
+[INFO][2017-12-16 15:32:53.133]2017-12-16T15:32:53.133:Updating data for securityid:8588
+[INFO][2017-12-16 15:32:53.134]2017-12-16T15:32:53.134:Updating security data for securityid:8588
+[INFO][2017-12-16 15:32:53.152]2017-12-16T15:32:53.152:Updating column data for securityid:8588
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:32:53.523]2017-12-16T15:32:53.523:Downloading security data from Quandl/XNSE, securities_per_page:50, current_page:141
+[INFO][2017-12-16 15:32:53.524]2017-12-16T15:32:53.524:Downloading column data from Quandl/NSE/SASTASUNDR
+[INFO][2017-12-16 15:32:53.524]2017-12-16T15:32:53.524:In getsecurityid(): Finding for symbol:ARENTERP
+Using API key [INFO][2017-12-16 15:32:53.552]2017-12-16T15:32:53.552:Updating data for securityid:87720
+MX4zkypoSjUzp8CyotQg[INFO][2017-12-16 15:32:53.552]2017-12-16T15:32:53.552:Updating security data for securityid:87720
+
+[INFO][2017-12-16 15:32:53.573]2017-12-16T15:32:53.573:Updating column data for securityid:87720
+Using API key MX4zkypoSjUzp8CyotQg[INFO][2017-12-16 15:32:53.802]2017-12-16T15:32:53.802:Successfuly inserted data for securityid: 66435
+
+[INFO][2017-12-16 15:32:53.875]2017-12-16T15:32:53.875:Downloading column data from Quandl/XNSE/ARENTERP_UADJ
+
+[WARNING][2017-12-16 15:32:53.876]2017-12-16T15:32:53.876:In updatedb_fromquandl_persecurity(): Can not update 'Adjusted Data' for datasource: XNSE. SKIPPING Adjusted Data!!
+
+[INFO][2017-12-16 15:32:53.876]2017-12-16T15:32:53.876:In getsecurityid(): Finding for symbol:DNAMEDIA
+[WARNING][2017-12-16 15:32:53.884]2017-12-16T15:32:53.884:No security present for ticker:DNAMEDIA
+             exchange:NSE securitytype:EQ country:IN
+[WARNING][2017-12-16 15:32:53.884]2017-12-16T15:32:53.884:In updatedb_fromquandl_persecurity(): security is not present. Attempting to INSERT instead!
+[INFO][2017-12-16 15:32:53.884]2017-12-16T15:32:53.884:In getsecurityid(): Finding for symbol:DNAMEDIA
+[WARNING][2017-12-16 15:32:53.892]2017-12-16T15:32:53.892:No security present for ticker:DNAMEDIA
+             exchange:NSE securitytype:EQ country:IN
+[INFO][2017-12-16 15:32:53.942]2017-12-16T15:32:53.941:Inserting data for securityid:6052
+[INFO][2017-12-16 15:32:53.942]2017-12-16T15:32:53.942:Inserting security data for securityid:6052
+[INFO][2017-12-16 15:32:53.947]2017-12-16T15:32:53.947:Inserting column data for securityid:6052
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:32:53.948]2017-12-16T15:32:53.948:Downloading column data from Quandl/XNSE/DNAMEDIA_UADJ
+[INFO][2017-12-16 15:32:54.781]2017-12-16T15:32:54.781:Successfuly inserted data for securityid: 6052
+
+[WARNING][2017-12-16 15:32:54.781]2017-12-16T15:32:54.781:In updatedb_fromquandl_persecurity(): Can not update 'Adjusted Data' for datasource: XNSE. SKIPPING Adjusted Data!!
+
+[INFO][2017-12-16 15:32:54.782]2017-12-16T15:32:54.782:In getsecurityid(): Finding for symbol:SMSHRADHA
+[WARNING][2017-12-16 15:32:54.789]2017-12-16T15:32:54.789:No security present for ticker:SMSHRADHA
+             exchange:NSE securitytype:EQ country:IN
+[WARNING][2017-12-16 15:32:54.789]2017-12-16T15:32:54.789:In updatedb_fromquandl_persecurity(): security is not present. Attempting to INSERT instead!
+[INFO][2017-12-16 15:32:54.790]2017-12-16T15:32:54.79:In getsecurityid(): Finding for symbol:SMSHRADHA
+[WARNING][2017-12-16 15:32:54.797]2017-12-16T15:32:54.797:No security present for ticker:SMSHRADHA
+             exchange:NSE securitytype:EQ country:IN
+[INFO][2017-12-16 15:32:54.851]2017-12-16T15:32:54.851:Inserting data for securityid:36597
+[INFO][2017-12-16 15:32:54.851]2017-12-16T15:32:54.851:Inserting security data for securityid:36597
+[INFO][2017-12-16 15:32:54.857]2017-12-16T15:32:54.857:Inserting column data for securityid:36597
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:32:54.859]2017-12-16T15:32:54.859:Downloading column data from Quandl/XNSE/SMSHRADHA_UADJ
+[INFO][2017-12-16 15:32:54.868]2017-12-16T15:32:54.868:In updatecolumndata_fromquandl(): Data updated successfully for securityid: 48001 and year:2017
+[INFO][2017-12-16 15:32:54.868]2017-12-16T15:32:54.868:updatedb_fromquandl(): Successful update for securityid:48001
+
+[WARNING][2017-12-16 15:32:54.869]2017-12-16T15:32:54.869:In updatedb_fromquandl_persecurity(): Can not update 'Adjusted Data' for datasource: XNSE. SKIPPING Adjusted Data!!
+
+[WARNING][2017-12-16 15:32:54.869]2017-12-16T15:32:54.869:In updatedb_fromquandl_persecurity(): Can not update 'Adjusted Data' for datasource: XNSE. SKIPPING Adjusted Data!!
+
+[INFO][2017-12-16 15:32:54.869]2017-12-16T15:32:54.869:In getsecurityid(): Finding for symbol:GBSGBNOV25VI
+[INFO][2017-12-16 15:32:54.905]2017-12-16T15:32:54.905:Updating data for securityid:42927
+[INFO][2017-12-16 15:32:54.908]2017-12-16T15:32:54.908:Updating security data for securityid:42927
+[INFO][2017-12-16 15:32:54.940]2017-12-16T15:32:54.94:Updating column data for securityid:42927
+[INFO][2017-12-16 15:32:54.947]2017-12-16T15:32:54.947:In updatecolumndata_fromquandl(): Data updated successfully for securityid: 57516 and year:2017
+Using API key [INFO][2017-12-16 15:32:55.017]2017-12-16T15:32:55.017:updatedb_fromquandl(): Successful update for securityid:57516
+MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:32:55.023]2017-12-16T15:32:55.023:In updatecolumndata_fromquandl(): Data updated successfully for securityid: 87720 and year:2017
+[INFO][2017-12-16 15:32:55.023]2017-12-16T15:32:55.023:Downloading column data from Quandl/XNSE/GBSGBNOV25VI_UADJ
+[INFO][2017-12-16 15:32:55.024]2017-12-16T15:32:55.024:updatedb_fromquandl(): Successful update for securityid:87720
+
+[INFO][2017-12-16 15:32:55.024]2017-12-16T15:32:55.024:In getsecurityid(): Finding for symbol:BHAGYANGR
+[INFO][2017-12-16 15:32:55.048]2017-12-16T15:32:55.048:Updating data for securityid:68312
+
+[INFO][2017-12-16 15:32:55.049]2017-12-16T15:32:55.049:Updating security data for securityid:68312
+[INFO][2017-12-16 15:32:55.049]2017-12-16T15:32:55.049:In getsecurityid(): Finding for symbol:SMOMFURN
+[INFO][2017-12-16 15:32:55.070]2017-12-16T15:32:55.07:Updating column data for securityid:68312
+[INFO][2017-12-16 15:32:55.096]2017-12-16T15:32:55.096:Updating data for securityid:29390
+Using API key [INFO][2017-12-16 15:32:55.167]2017-12-16T15:32:55.167:Updating security data for securityid:29390
+MX4zkypoSjUzp8CyotQg[INFO][2017-12-16 15:32:55.188]2017-12-16T15:32:55.188:Updating column data for securityid:29390
+
+[INFO][2017-12-16 15:32:55.192]2017-12-16T15:32:55.192:Downloading column data from Quandl/NSE/BHAGYANGR
+[INFO][2017-12-16 15:32:55.194]2017-12-16T15:32:55.194:Downloading security data from Quandl/NSE, securities_per_page:50, current_page:40
+Using API key [INFO][2017-12-16 15:32:55.194]2017-12-16T15:32:55.194:In getsecurityid(): Finding for symbol:QUESS
+MX4zkypoSjUzp8CyotQg[INFO][2017-12-16 15:32:55.220]2017-12-16T15:32:55.22:Updating data for securityid:11608
+
+[INFO][2017-12-16 15:32:55.220]2017-12-16T15:32:55.22:Updating security data for securityid:11608
+[INFO][2017-12-16 15:32:55.221]2017-12-16T15:32:55.221:Downloading column data from Quandl/XNSE/SMOMFURN_UADJ
+[INFO][2017-12-16 15:32:55.241]2017-12-16T15:32:55.241:Updating column data for securityid:11608
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:32:55.339]2017-12-16T15:32:55.339:In updatecolumndata_fromquandl(): Data updated successfully for securityid: 8588 and year:2017
+[INFO][2017-12-16 15:32:55.340]2017-12-16T15:32:55.34:updatedb_fromquandl(): Successful update for securityid:8588
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:32:55.341]2017-12-16T15:32:55.341:Downloading column data from Quandl/NSE/QUESS
+
+[INFO][2017-12-16 15:32:55.342]2017-12-16T15:32:55.342:In getsecurityid(): Finding for symbol:HIGHGROUND
+[INFO][2017-12-16 15:32:55.366]2017-12-16T15:32:55.366:Updating data for securityid:99317
+[INFO][2017-12-16 15:32:55.366]2017-12-16T15:32:55.366:Updating security data for securityid:99317
+[INFO][2017-12-16 15:32:55.386]2017-12-16T15:32:55.386:Updating column data for securityid:99317
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:32:55.433]2017-12-16T15:32:55.433:Downloading column data from Quandl/NSE/HIGHGROUND
+[INFO][2017-12-16 15:32:55.578]2017-12-16T15:32:55.578:In updatecolumndata_fromquandl(): Data updated successfully for securityid: 26792 and year:2017
+[INFO][2017-12-16 15:32:55.579]2017-12-16T15:32:55.579:updatedb_fromquandl(): Successful update for securityid:26792
+
+[INFO][2017-12-16 15:32:55.579]2017-12-16T15:32:55.579:In getsecurityid(): Finding for symbol:MASFIN
+[INFO][2017-12-16 15:32:55.606]2017-12-16T15:32:55.606:Updating data for securityid:85207
+[INFO][2017-12-16 15:32:55.607]2017-12-16T15:32:55.607:Updating security data for securityid:85207
+[INFO][2017-12-16 15:32:55.630]2017-12-16T15:32:55.63:Updating column data for securityid:85207
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:32:55.634]2017-12-16T15:32:55.634:Downloading column data from Quandl/NSE/MASFIN
+[INFO][2017-12-16 15:32:55.912]2017-12-16T15:32:55.912:Successfuly inserted data for securityid: 36597
+
+[INFO][2017-12-16 15:32:55.913]2017-12-16T15:32:55.913:In getsecurityid(): Finding for symbol:GBSGBDEC25
+[WARNING][2017-12-16 15:32:55.921]2017-12-16T15:32:55.921:No security present for ticker:GBSGBDEC25
+             exchange:NSE securitytype:EQ country:IN
+[WARNING][2017-12-16 15:32:55.921]2017-12-16T15:32:55.921:In updatedb_fromquandl_persecurity(): security is not present. Attempting to INSERT instead!
+[INFO][2017-12-16 15:32:55.922]2017-12-16T15:32:55.922:In getsecurityid(): Finding for symbol:GBSGBDEC25
+[WARNING][2017-12-16 15:32:55.929]2017-12-16T15:32:55.929:No security present for ticker:GBSGBDEC25
+             exchange:NSE securitytype:EQ country:IN
+[INFO][2017-12-16 15:32:55.979]2017-12-16T15:32:55.979:Inserting data for securityid:99034
+[INFO][2017-12-16 15:32:55.979]2017-12-16T15:32:55.979:Inserting security data for securityid:99034
+[INFO][2017-12-16 15:32:55.985]2017-12-16T15:32:55.985:Inserting column data for securityid:99034
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:32:55.986]2017-12-16T15:32:55.986:Downloading column data from Quandl/XNSE/GBSGBDEC25_UADJ
+[INFO][2017-12-16 15:32:56.227]2017-12-16T15:32:56.227:In updatecolumndata_fromquandl(): Data updated successfully for securityid: 42927 and year:2017
+[INFO][2017-12-16 15:32:56.227]2017-12-16T15:32:56.227:updatedb_fromquandl(): Successful update for securityid:42927
+
+[WARNING][2017-12-16 15:32:56.228]2017-12-16T15:32:56.228:In updatedb_fromquandl_persecurity(): Can not update 'Adjusted Data' for datasource: XNSE. SKIPPING Adjusted Data!!
+
+[WARNING][2017-12-16 15:32:56.228]2017-12-16T15:32:56.228:In updatedb_fromquandl_persecurity(): Can not update 'Adjusted Data' for datasource: XNSE. SKIPPING Adjusted Data!!
+
+[INFO][2017-12-16 15:32:56.228]2017-12-16T15:32:56.228:In getsecurityid(): Finding for symbol:GBSGBOCT25_1
+[INFO][2017-12-16 15:32:56.254]2017-12-16T15:32:56.254:Updating data for securityid:29635
+[INFO][2017-12-16 15:32:56.254]2017-12-16T15:32:56.254:Updating security data for securityid:29635
+[INFO][2017-12-16 15:32:56.272]2017-12-16T15:32:56.272:updatesecuritydata_fromquandl(): Data is up-to-date for securityid: 29635, dataset:GBSGBOCT25_1_UADJ and datasource: XNSE
+[INFO][2017-12-16 15:32:56.273]2017-12-16T15:32:56.273:Updating column data for securityid:29635
+[INFO][2017-12-16 15:32:56.275]2017-12-16T15:32:56.275:In updatecolumndata_fromquandl(): Column data is up-to-date for securityid: 29635, dataset:GBSGBOCT25_1_UADJ and datasource: XNSE
+[INFO][2017-12-16 15:32:56.275]2017-12-16T15:32:56.275:updatedb_fromquandl(): Successful update for securityid:29635
+
+[INFO][2017-12-16 15:32:56.275]2017-12-16T15:32:56.275:In getsecurityid(): Finding for symbol:GBSGBOCT25IV_1
+[INFO][2017-12-16 15:32:56.299]2017-12-16T15:32:56.299:Updating data for securityid:37400
+[INFO][2017-12-16 15:32:56.299]2017-12-16T15:32:56.299:Updating security data for securityid:37400
+[INFO][2017-12-16 15:32:56.317]2017-12-16T15:32:56.317:updatesecuritydata_fromquandl(): Data is up-to-date for securityid: 37400, dataset:GBSGBOCT25IV_1_UADJ and datasource: XNSE
+[INFO][2017-12-16 15:32:56.317]2017-12-16T15:32:56.317:Updating column data for securityid:37400
+[INFO][2017-12-16 15:32:56.318]2017-12-16T15:32:56.318:In updatecolumndata_fromquandl(), securityid 37400 doesn't exist in the database
+[INFO][2017-12-16 15:32:56.318]2017-12-16T15:32:56.318:In updatecolumndata_fromquandl(), attempting to insert column data for securityid 37400 in the database
+[INFO][2017-12-16 15:32:56.318]2017-12-16T15:32:56.318:Inserting column data for securityid:37400
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:32:56.319]2017-12-16T15:32:56.319:Downloading column data from Quandl/XNSE/GBSGBOCT25IV_1_UADJ
+[INFO][2017-12-16 15:32:56.589]2017-12-16T15:32:56.589:In updatecolumndata_fromquandl(): Data updated successfully for securityid: 68312 and year:2017
+[INFO][2017-12-16 15:32:56.589]2017-12-16T15:32:56.589:updatedb_fromquandl(): Successful update for securityid:68312
+
+[INFO][2017-12-16 15:32:56.590]2017-12-16T15:32:56.589:In getsecurityid(): Finding for symbol:HUDCO
+[INFO][2017-12-16 15:32:56.614]2017-12-16T15:32:56.614:Updating data for securityid:32657
+[INFO][2017-12-16 15:32:56.615]2017-12-16T15:32:56.615:Updating security data for securityid:32657
+[INFO][2017-12-16 15:32:56.635]2017-12-16T15:32:56.635:Updating column data for securityid:32657
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:32:56.683]2017-12-16T15:32:56.683:Downloading column data from Quandl/NSE/HUDCO
+[INFO][2017-12-16 15:32:56.754]2017-12-16T15:32:56.754:In updatecolumndata_fromquandl(): Data updated successfully for securityid: 29390 and year:2017
+[INFO][2017-12-16 15:32:56.754]2017-12-16T15:32:56.754:updatedb_fromquandl(): Successful update for securityid:29390
+
+[WARNING][2017-12-16 15:32:56.755]2017-12-16T15:32:56.755:In updatedb_fromquandl_persecurity(): Can not update 'Adjusted Data' for datasource: XNSE. SKIPPING Adjusted Data!!
+
+[WARNING][2017-12-16 15:32:56.755]2017-12-16T15:32:56.755:In updatedb_fromquandl_persecurity(): Can not update 'Adjusted Data' for datasource: XNSE. SKIPPING Adjusted Data!!
+
+[INFO][2017-12-16 15:32:56.755]2017-12-16T15:32:56.755:In getsecurityid(): Finding for symbol:GODREJAGRO
+[INFO][2017-12-16 15:32:56.779]2017-12-16T15:32:56.779:Updating data for securityid:51303
+[INFO][2017-12-16 15:32:56.780]2017-12-16T15:32:56.78:Updating security data for securityid:51303
+[INFO][2017-12-16 15:32:56.800]2017-12-16T15:32:56.8:Updating column data for securityid:51303
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:32:56.803]2017-12-16T15:32:56.803:Downloading column data from Quandl/XNSE/GODREJAGRO_UADJ
+[INFO][2017-12-16 15:32:57.227]2017-12-16T15:32:57.227:Downloading security data from Quandl/XNSE, securities_per_page:50, current_page:140
+[WARNING][2017-12-16 15:32:57.230]2017-12-16T15:32:57.229:In updatedb_fromquandl_persecurity(): Can not update 'Adjusted Data' for datasource: XNSE. SKIPPING Adjusted Data!!
+Using API key MX4zkypoSjUzp8CyotQg[INFO][2017-12-16 15:32:57.241]2017-12-16T15:32:57.241:In updatecolumndata_fromquandl(): Data updated successfully for securityid: 99317 and year:2017
+
+[INFO][2017-12-16 15:32:57.243]2017-12-16T15:32:57.243:updatedb_fromquandl(): Successful update for securityid:99317
+
+[INFO][2017-12-16 15:32:57.246]2017-12-16T15:32:57.246:In getsecurityid(): Finding for symbol:CMICABLES
+[INFO][2017-12-16 15:32:57.292]2017-12-16T15:32:57.292:Updating data for securityid:32991
+
+[INFO][2017-12-16 15:32:57.292]2017-12-16T15:32:57.292:Updating security data for securityid:32991
+[WARNING][2017-12-16 15:32:57.293]2017-12-16T15:32:57.293:In updatedb_fromquandl_persecurity(): Can not update 'Adjusted Data' for datasource: XNSE. SKIPPING Adjusted Data!!
+[INFO][2017-12-16 15:32:57.327]2017-12-16T15:32:57.327:Updating column data for securityid:32991
+
+[INFO][2017-12-16 15:32:57.377]2017-12-16T15:32:57.377:In getsecurityid(): Finding for symbol:ICICIGI
+Using API key [INFO][2017-12-16 15:32:57.416]2017-12-16T15:32:57.416:Updating data for securityid:9024
+MX4zkypoSjUzp8CyotQg[INFO][2017-12-16 15:32:57.417]2017-12-16T15:32:57.417:Updating security data for securityid:9024
+
+[INFO][2017-12-16 15:32:57.497]2017-12-16T15:32:57.497:Updating column data for securityid:9024
+[INFO][2017-12-16 15:32:57.497]2017-12-16T15:32:57.497:Downloading column data from Quandl/NSE/CMICABLES
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:32:57.502]2017-12-16T15:32:57.502:Downloading column data from Quandl/XNSE/ICICIGI_UADJ
+[INFO][2017-12-16 15:32:57.575]2017-12-16T15:32:57.575:Downloading security data from Quandl/NSE, securities_per_page:50, current_page:39
+[INFO][2017-12-16 15:32:57.575]2017-12-16T15:32:57.575:In getsecurityid(): Finding for symbol:VIDHIDYE
+Using API key [INFO][2017-12-16 15:32:57.600]2017-12-16T15:32:57.6:Updating data for securityid:42284
+MX4zkypoSjUzp8CyotQg[INFO][2017-12-16 15:32:57.600]2017-12-16T15:32:57.6:Updating security data for securityid:42284
+
+[INFO][2017-12-16 15:32:57.618]2017-12-16T15:32:57.618:updatesecuritydata_fromquandl(): Data is up-to-date for securityid: 42284, dataset:VIDHIDYE and datasource: NSE
+[INFO][2017-12-16 15:32:57.618]2017-12-16T15:32:57.618:Updating column data for securityid:42284
+[INFO][2017-12-16 15:32:57.647]2017-12-16T15:32:57.647:In updatecolumndata_fromquandl(): Column data is up-to-date for securityid: 42284, dataset:VIDHIDYE and datasource: NSE
+[INFO][2017-12-16 15:32:57.648]2017-12-16T15:32:57.648:updatedb_fromquandl(): Successful update for securityid:42284
+
+[INFO][2017-12-16 15:32:57.648]2017-12-16T15:32:57.648:In getsecurityid(): Finding for symbol:SEQUENT
+[INFO][2017-12-16 15:32:57.674]2017-12-16T15:32:57.674:Updating data for securityid:27293
+[INFO][2017-12-16 15:32:57.674]2017-12-16T15:32:57.674:Updating security data for securityid:27293
+[INFO][2017-12-16 15:32:57.694]2017-12-16T15:32:57.694:Updating column data for securityid:27293
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:32:57.759]2017-12-16T15:32:57.759:In updatecolumndata_fromquandl(): Data updated successfully for securityid: 11608 and year:2017
+[INFO][2017-12-16 15:32:57.760]2017-12-16T15:32:57.76:Downloading column data from Quandl/NSE/SEQUENT
+[INFO][2017-12-16 15:32:57.760]2017-12-16T15:32:57.76:updatedb_fromquandl(): Successful update for securityid:11608
+
+[INFO][2017-12-16 15:32:57.761]2017-12-16T15:32:57.761:In getsecurityid(): Finding for symbol:RRSLGETF
+[INFO][2017-12-16 15:32:57.789]2017-12-16T15:32:57.789:Updating data for securityid:48866
+[INFO][2017-12-16 15:32:57.789]2017-12-16T15:32:57.789:Updating security data for securityid:48866
+[INFO][2017-12-16 15:32:57.809]2017-12-16T15:32:57.809:Updating column data for securityid:48866
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:32:57.971]2017-12-16T15:32:57.971:Downloading column data from Quandl/NSE/RRSLGETF
+[INFO][2017-12-16 15:32:58.435]2017-12-16T15:32:58.435:Successfuly inserted data for securityid: 99034
+
+[WARNING][2017-12-16 15:32:58.436]2017-12-16T15:32:58.436:In updatedb_fromquandl_persecurity(): Can not update 'Adjusted Data' for datasource: XNSE. SKIPPING Adjusted Data!!
+
+[INFO][2017-12-16 15:32:58.436]2017-12-16T15:32:58.436:In getsecurityid(): Finding for symbol:SMINNOVANA
+[WARNING][2017-12-16 15:32:58.446]2017-12-16T15:32:58.446:No security present for ticker:SMINNOVANA
+             exchange:NSE securitytype:EQ country:IN
+[WARNING][2017-12-16 15:32:58.446]2017-12-16T15:32:58.446:In updatedb_fromquandl_persecurity(): security is not present. Attempting to INSERT instead!
+[INFO][2017-12-16 15:32:58.447]2017-12-16T15:32:58.447:In getsecurityid(): Finding for symbol:SMINNOVANA
+[WARNING][2017-12-16 15:32:58.455]2017-12-16T15:32:58.455:No security present for ticker:SMINNOVANA
+             exchange:NSE securitytype:EQ country:IN
+[INFO][2017-12-16 15:32:58.502]2017-12-16T15:32:58.502:Inserting data for securityid:69575
+[INFO][2017-12-16 15:32:58.503]2017-12-16T15:32:58.503:Inserting security data for securityid:69575
+[INFO][2017-12-16 15:32:58.508]2017-12-16T15:32:58.508:Inserting column data for securityid:69575
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:32:58.510]2017-12-16T15:32:58.51:Downloading column data from Quandl/XNSE/SMINNOVANA_UADJ
+[INFO][2017-12-16 15:32:58.790]2017-12-16T15:32:58.79:In updatecolumndata_fromquandl(): Data updated successfully for securityid: 51303 and year:2017
+[INFO][2017-12-16 15:32:58.791]2017-12-16T15:32:58.791:updatedb_fromquandl(): Successful update for securityid:51303
+
+[INFO][2017-12-16 15:32:58.792]2017-12-16T15:32:58.792:In getsecurityid(): Finding for symbol:SMMILTON
+[INFO][2017-12-16 15:32:58.816]2017-12-16T15:32:58.816:Updating data for securityid:2633
+[INFO][2017-12-16 15:32:58.816]2017-12-16T15:32:58.816:Updating security data for securityid:2633
+[INFO][2017-12-16 15:32:58.837]2017-12-16T15:32:58.837:Updating column data for securityid:2633
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:32:58.872]2017-12-16T15:32:58.872:Downloading column data from Quandl/XNSE/SMMILTON_UADJ
+[INFO][2017-12-16 15:32:58.906]2017-12-16T15:32:58.906:updatedb_fromquandl(): Successful update for securityid:37400
+
+[INFO][2017-12-16 15:32:58.906]2017-12-16T15:32:58.906:In getsecurityid(): Finding for symbol:GBSGBOCT25IV
+[INFO][2017-12-16 15:32:58.933]2017-12-16T15:32:58.933:Updating data for securityid:21111
+[INFO][2017-12-16 15:32:58.933]2017-12-16T15:32:58.933:Updating security data for securityid:21111
+[INFO][2017-12-16 15:32:58.997]2017-12-16T15:32:58.996:Updating column data for securityid:21111
+[INFO][2017-12-16 15:32:59.031]2017-12-16T15:32:59.031:In updatecolumndata_fromquandl(): Data updated successfully for securityid: 32657 and year:2017
+Using API key [INFO][2017-12-16 15:32:59.038]2017-12-16T15:32:59.038:In updatecolumndata_fromquandl(): Data updated successfully for securityid: 85207 and year:2017
+[INFO][2017-12-16 15:32:59.038]2017-12-16T15:32:59.038:updatedb_fromquandl(): Successful update for securityid:32657
+MX4zkypoSjUzp8CyotQg[INFO][2017-12-16 15:32:59.074]2017-12-16T15:32:59.074:updatedb_fromquandl(): Successful update for securityid:85207
+
+[INFO][2017-12-16 15:32:59.075]2017-12-16T15:32:59.075:Downloading column data from Quandl/XNSE/GBSGBOCT25IV_UADJ
+
+[INFO][2017-12-16 15:32:59.075]2017-12-16T15:32:59.075:In getsecurityid(): Finding for symbol:HITECHCORP
+[INFO][2017-12-16 15:32:59.100]2017-12-16T15:32:59.099:Updating data for securityid:92521
+
+[INFO][2017-12-16 15:32:59.100]2017-12-16T15:32:59.1:Updating security data for securityid:92521
+[INFO][2017-12-16 15:32:59.101]2017-12-16T15:32:59.101:In getsecurityid(): Finding for symbol:IEX
+[INFO][2017-12-16 15:32:59.122]2017-12-16T15:32:59.122:Updating column data for securityid:92521
+[INFO][2017-12-16 15:32:59.148]2017-12-16T15:32:59.148:Updating data for securityid:44022
+Using API key [INFO][2017-12-16 15:32:59.184]2017-12-16T15:32:59.184:Updating security data for securityid:44022
+MX4zkypoSjUzp8CyotQg[INFO][2017-12-16 15:32:59.205]2017-12-16T15:32:59.205:Updating column data for securityid:44022
+
+[INFO][2017-12-16 15:32:59.260]2017-12-16T15:32:59.26:Downloading column data from Quandl/NSE/HITECHCORP
+Using API key [INFO][2017-12-16 15:32:59.299]2017-12-16T15:32:59.299:Downloading security data from Quandl/NSE, securities_per_page:50, current_page:38
+MX4zkypoSjUzp8CyotQg[INFO][2017-12-16 15:32:59.300]2017-12-16T15:32:59.3:In getsecurityid(): Finding for symbol:NIFTY_IT
+[INFO][2017-12-16 15:32:59.302]2017-12-16T15:32:59.302:Successfuly inserted data for securityid: 69575
+
+[INFO][2017-12-16 15:32:59.328]2017-12-16T15:32:59.328:Updating data for securityid:74830
+[INFO][2017-12-16 15:32:59.329]2017-12-16T15:32:59.329:Downloading column data from Quandl/NSE/IEX
+[INFO][2017-12-16 15:32:59.329]2017-12-16T15:32:59.329:Updating security data for securityid:74830
+Using API key [INFO][2017-12-16 15:32:59.350]2017-12-16T15:32:59.35:Updating column data for securityid:74830
+MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:32:59.942]2017-12-16T15:32:59.942:In updatecolumndata_fromquandl(): Data updated successfully for securityid: 27293 and year:2017
+[INFO][2017-12-16 15:32:59.942]2017-12-16T15:32:59.942:updatedb_fromquandl(): Successful update for securityid:27293
+
+[WARNING][2017-12-16 15:32:59.943]2017-12-16T15:32:59.943:In updatedb_fromquandl_persecurity(): Can not update 'Adjusted Data' for datasource: XNSE. SKIPPING Adjusted Data!!
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:32:59.943]2017-12-16T15:32:59.943:Downloading column data from Quandl/NSE/NIFTY_IT
+
+[INFO][2017-12-16 15:32:59.944]2017-12-16T15:32:59.944:In getsecurityid(): Finding for symbol:BHARATIDIL
+[INFO][2017-12-16 15:32:59.969]2017-12-16T15:32:59.969:Updating data for securityid:81689
+
+[INFO][2017-12-16 15:32:59.970]2017-12-16T15:32:59.97:Updating security data for securityid:81689
+[INFO][2017-12-16 15:33:00.006]2017-12-16T15:33:00.006:In getsecurityid(): Finding for symbol:MFHHOF1140DG
+[INFO][2017-12-16 15:33:00.026]2017-12-16T15:33:00.026:Updating column data for securityid:81689
+[WARNING][2017-12-16 15:33:00.034]2017-12-16T15:33:00.033:No security present for ticker:MFHHOF1140DG
+             exchange:NSE securitytype:EQ country:IN
+Using API key [WARNING][2017-12-16 15:33:00.175]2017-12-16T15:33:00.175:In updatedb_fromquandl_persecurity(): security is not present. Attempting to INSERT instead!
+MX4zkypoSjUzp8CyotQg[INFO][2017-12-16 15:33:00.176]2017-12-16T15:33:00.176:In getsecurityid(): Finding for symbol:MFHHOF1140DG
+
+[WARNING][2017-12-16 15:33:00.184]2017-12-16T15:33:00.184:No security present for ticker:MFHHOF1140DG
+             exchange:NSE securitytype:EQ country:IN
+[INFO][2017-12-16 15:33:00.185]2017-12-16T15:33:00.185:Downloading column data from Quandl/NSE/BHARATIDIL
+[INFO][2017-12-16 15:33:00.230]2017-12-16T15:33:00.23:Inserting data for securityid:31317
+[INFO][2017-12-16 15:33:00.230]2017-12-16T15:33:00.23:Inserting security data for securityid:31317
+[INFO][2017-12-16 15:33:00.271]2017-12-16T15:33:00.271:Inserting column data for securityid:31317
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:33:00.272]2017-12-16T15:33:00.272:Downloading column data from Quandl/XNSE/MFHHOF1140DG_UADJ
+ERROR (unhandled task failure): read: connection timed out (ETIMEDOUT)
+Stacktrace:
+ [1] try_yieldto(::Base.##296#297{Task}, ::Task) at ./event.jl:189
+ [2] wait() at ./event.jl:234
+ [3] wait(::Condition) at ./event.jl:27
+ [4] wait_readnb(::TCPSocket, ::Int64) at ./stream.jl:296
+ [5] eof(::TCPSocket) at ./stream.jl:56
+ [6] eof(::MbedTLS.SSLContext) at /Users/shivkumarchawla/.julia/v0.6/MbedTLS/src/ssl.jl:227
+ [7] macro expansion at /Users/shivkumarchawla/.julia/v0.6/Requests/src/streaming.jl:67 [inlined]
+ [8] (::Requests.##6#8{Requests.ResponseStream{MbedTLS.SSLContext},Requests.ResponseParser,Channel{Symbol}})() at ./event.jl:73
+ERROR (unhandled task failure): read: connection timed out (ETIMEDOUT)
+Stacktrace:
+ [1] try_yieldto(::Base.##296#297{Task}, ::Task) at ./event.jl:189
+ [2] wait() at ./event.jl:234
+ [3] wait(::Condition) at ./event.jl:27
+ [4] wait_readnb(::TCPSocket, ::Int64) at ./stream.jl:296
+ [5] eof(::TCPSocket) at ./stream.jl:56
+ [6] eof(::MbedTLS.SSLContext) at /Users/shivkumarchawla/.julia/v0.6/MbedTLS/src/ssl.jl:227
+ [7] macro expansion at /Users/shivkumarchawla/.julia/v0.6/Requests/src/streaming.jl:67 [inlined]
+ [8] (::Requests.##6#8{Requests.ResponseStream{MbedTLS.SSLContext},Requests.ResponseParser,Channel{Symbol}})() at ./event.jl:73
+read: connection timed out (ETIMEDOUT)
+[WARNING][2017-12-16 15:34:22.843]2017-12-16T15:34:22.843:In updatecolumndata_fromquandl(), data for securityid 92521 and year:2017 doesn't exist in the database. SKIPPING!!!
+[WARNING][2017-12-16 15:34:22.843]2017-12-16T15:34:22.843:updatedb_fromquandl(): Failed updating column data for securityid :92521
+
+[INFO][2017-12-16 15:34:22.843]2017-12-16T15:34:22.843:In getsecurityid(): Finding for symbol:PSPPROJECT
+[INFO][2017-12-16 15:34:22.870]2017-12-16T15:34:22.87:Updating data for securityid:63874
+[INFO][2017-12-16 15:34:22.870]2017-12-16T15:34:22.87:Updating security data for securityid:63874
+[INFO][2017-12-16 15:34:22.929]2017-12-16T15:34:22.929:Updating column data for securityid:63874
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:34:22.983]2017-12-16T15:34:22.983:Downloading column data from Quandl/NSE/PSPPROJECT
+DNSError: www.quandl.com, unknown node or service (EAI_NONAME)
+[WARNING][2017-12-16 15:34:23.476]2017-12-16T15:34:23.476:In updatecolumndata_fromquandl(), data for securityid 63874 and year:2017 doesn't exist in the database. SKIPPING!!!
+[WARNING][2017-12-16 15:34:23.476]2017-12-16T15:34:23.476:updatedb_fromquandl(): Failed updating column data for securityid :63874
+
+[INFO][2017-12-16 15:34:23.476]2017-12-16T15:34:23.476:In getsecurityid(): Finding for symbol:FEDDERELEC
+[INFO][2017-12-16 15:34:23.506]2017-12-16T15:34:23.506:Updating data for securityid:79755
+[INFO][2017-12-16 15:34:23.506]2017-12-16T15:34:23.506:Updating security data for securityid:79755
+[INFO][2017-12-16 15:34:23.529]2017-12-16T15:34:23.529:Updating column data for securityid:79755
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:34:23.563]2017-12-16T15:34:23.563:Downloading column data from Quandl/NSE/FEDDERELEC
+DNSError: www.quandl.com, unknown node or service (EAI_NONAME)
+[WARNING][2017-12-16 15:34:23.564]2017-12-16T15:34:23.564:In updatecolumndata_fromquandl(), data for securityid 79755 and year:2017 doesn't exist in the database. SKIPPING!!!
+[WARNING][2017-12-16 15:34:23.565]2017-12-16T15:34:23.565:updatedb_fromquandl(): Failed updating column data for securityid :79755
+
+[INFO][2017-12-16 15:34:23.565]2017-12-16T15:34:23.565:In getsecurityid(): Finding for symbol:STARCEMENT
+[INFO][2017-12-16 15:34:23.590]2017-12-16T15:34:23.59:Updating data for securityid:67176
+[INFO][2017-12-16 15:34:23.591]2017-12-16T15:34:23.591:Updating security data for securityid:67176
+[INFO][2017-12-16 15:34:23.610]2017-12-16T15:34:23.61:Updating column data for securityid:67176
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:34:23.640]2017-12-16T15:34:23.64:Downloading column data from Quandl/NSE/STARCEMENT
+DNSError: www.quandl.com, unknown node or service (EAI_NONAME)
+[WARNING][2017-12-16 15:34:23.642]2017-12-16T15:34:23.642:In updatecolumndata_fromquandl(), data for securityid 67176 and year:2017 doesn't exist in the database. SKIPPING!!!
+[WARNING][2017-12-16 15:34:23.642]2017-12-16T15:34:23.642:updatedb_fromquandl(): Failed updating column data for securityid :67176
+
+[INFO][2017-12-16 15:34:23.643]2017-12-16T15:34:23.643:In getsecurityid(): Finding for symbol:LEEL
+[INFO][2017-12-16 15:34:23.668]2017-12-16T15:34:23.668:Updating data for securityid:6046
+[INFO][2017-12-16 15:34:23.668]2017-12-16T15:34:23.668:Updating security data for securityid:6046
+[INFO][2017-12-16 15:34:23.689]2017-12-16T15:34:23.689:Updating column data for securityid:6046
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:34:23.866]2017-12-16T15:34:23.866:Downloading column data from Quandl/NSE/LEEL
+DNSError: www.quandl.com, unknown node or service (EAI_NONAME)
+[WARNING][2017-12-16 15:34:23.868]2017-12-16T15:34:23.868:In updatecolumndata_fromquandl(), data for securityid 6046 and year:2017 doesn't exist in the database. SKIPPING!!!
+[WARNING][2017-12-16 15:34:23.868]2017-12-16T15:34:23.868:updatedb_fromquandl(): Failed updating column data for securityid :6046
+
+[INFO][2017-12-16 15:34:23.868]2017-12-16T15:34:23.868:In getsecurityid(): Finding for symbol:TEJASNET
+[INFO][2017-12-16 15:34:23.987]2017-12-16T15:34:23.987:Updating data for securityid:43019
+[INFO][2017-12-16 15:34:23.987]2017-12-16T15:34:23.987:Updating security data for securityid:43019
+[INFO][2017-12-16 15:34:24.007]2017-12-16T15:34:24.007:Updating column data for securityid:43019
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:34:24.172]2017-12-16T15:34:24.172:Downloading column data from Quandl/NSE/TEJASNET
+DNSError: www.quandl.com, unknown node or service (EAI_NONAME)
+[WARNING][2017-12-16 15:34:24.174]2017-12-16T15:34:24.174:In updatecolumndata_fromquandl(), data for securityid 43019 and year:2017 doesn't exist in the database. SKIPPING!!!
+[WARNING][2017-12-16 15:34:24.174]2017-12-16T15:34:24.174:updatedb_fromquandl(): Failed updating column data for securityid :43019
+
+[INFO][2017-12-16 15:34:24.174]2017-12-16T15:34:24.174:In getsecurityid(): Finding for symbol:ERIS
+[INFO][2017-12-16 15:34:24.199]2017-12-16T15:34:24.199:Updating data for securityid:88564
+[INFO][2017-12-16 15:34:24.199]2017-12-16T15:34:24.199:Updating security data for securityid:88564
+[INFO][2017-12-16 15:34:24.221]2017-12-16T15:34:24.221:Updating column data for securityid:88564
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:34:24.282]2017-12-16T15:34:24.282:Downloading column data from Quandl/NSE/ERIS
+DNSError: www.quandl.com, unknown node or service (EAI_NONAME)
+[WARNING][2017-12-16 15:34:24.284]2017-12-16T15:34:24.284:In updatecolumndata_fromquandl(), data for securityid 88564 and year:2017 doesn't exist in the database. SKIPPING!!!
+[WARNING][2017-12-16 15:34:24.284]2017-12-16T15:34:24.284:updatedb_fromquandl(): Failed updating column data for securityid :88564
+
+[INFO][2017-12-16 15:34:24.285]2017-12-16T15:34:24.285:In getsecurityid(): Finding for symbol:CDSL
+[INFO][2017-12-16 15:34:24.309]2017-12-16T15:34:24.309:Updating data for securityid:96646
+[INFO][2017-12-16 15:34:24.309]2017-12-16T15:34:24.309:Updating security data for securityid:96646
+[INFO][2017-12-16 15:34:24.329]2017-12-16T15:34:24.329:Updating column data for securityid:96646
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:34:24.556]2017-12-16T15:34:24.556:Downloading column data from Quandl/NSE/CDSL
+DNSError: www.quandl.com, unknown node or service (EAI_NONAME)
+[WARNING][2017-12-16 15:34:24.558]2017-12-16T15:34:24.558:In updatecolumndata_fromquandl(), data for securityid 96646 and year:2017 doesn't exist in the database. SKIPPING!!!
+[WARNING][2017-12-16 15:34:24.559]2017-12-16T15:34:24.559:updatedb_fromquandl(): Failed updating column data for securityid :96646
+
+[INFO][2017-12-16 15:34:24.559]2017-12-16T15:34:24.559:In getsecurityid(): Finding for symbol:GTPL
+[INFO][2017-12-16 15:34:24.583]2017-12-16T15:34:24.583:Updating data for securityid:9709
+[INFO][2017-12-16 15:34:24.584]2017-12-16T15:34:24.584:Updating security data for securityid:9709
+[INFO][2017-12-16 15:34:24.604]2017-12-16T15:34:24.604:Updating column data for securityid:9709
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:34:24.607]2017-12-16T15:34:24.607:Downloading column data from Quandl/NSE/GTPL
+DNSError: www.quandl.com, unknown node or service (EAI_NONAME)
+[WARNING][2017-12-16 15:34:24.609]2017-12-16T15:34:24.609:In updatecolumndata_fromquandl(), data for securityid 9709 and year:2017 doesn't exist in the database. SKIPPING!!!
+[WARNING][2017-12-16 15:34:24.609]2017-12-16T15:34:24.609:updatedb_fromquandl(): Failed updating column data for securityid :9709
+
+[INFO][2017-12-16 15:34:24.609]2017-12-16T15:34:24.609:In getsecurityid(): Finding for symbol:AUBANK
+[INFO][2017-12-16 15:34:24.634]2017-12-16T15:34:24.634:Updating data for securityid:23047
+[INFO][2017-12-16 15:34:24.634]2017-12-16T15:34:24.634:Updating security data for securityid:23047
+[INFO][2017-12-16 15:34:24.655]2017-12-16T15:34:24.655:Updating column data for securityid:23047
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:34:24.701]2017-12-16T15:34:24.701:Downloading column data from Quandl/NSE/AUBANK
+DNSError: www.quandl.com, unknown node or service (EAI_NONAME)
+[WARNING][2017-12-16 15:34:24.703]2017-12-16T15:34:24.703:In updatecolumndata_fromquandl(), data for securityid 23047 and year:2017 doesn't exist in the database. SKIPPING!!!
+[WARNING][2017-12-16 15:34:24.703]2017-12-16T15:34:24.703:updatedb_fromquandl(): Failed updating column data for securityid :23047
+
+[INFO][2017-12-16 15:34:24.703]2017-12-16T15:34:24.703:In getsecurityid(): Finding for symbol:AXISNIFTY
+[INFO][2017-12-16 15:34:24.728]2017-12-16T15:34:24.728:Updating data for securityid:54552
+[INFO][2017-12-16 15:34:24.728]2017-12-16T15:34:24.728:Updating security data for securityid:54552
+[INFO][2017-12-16 15:34:24.793]2017-12-16T15:34:24.793:Updating column data for securityid:54552
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:34:24.815]2017-12-16T15:34:24.815:Downloading column data from Quandl/NSE/AXISNIFTY
+DNSError: www.quandl.com, unknown node or service (EAI_NONAME)
+[WARNING][2017-12-16 15:34:24.816]2017-12-16T15:34:24.816:In updatecolumndata_fromquandl(), data for securityid 54552 and year:2017 doesn't exist in the database. SKIPPING!!!
+[WARNING][2017-12-16 15:34:24.817]2017-12-16T15:34:24.817:updatedb_fromquandl(): Failed updating column data for securityid :54552
+
+[INFO][2017-12-16 15:34:24.817]2017-12-16T15:34:24.817:In getsecurityid(): Finding for symbol:LOWVOLIWIN
+[INFO][2017-12-16 15:34:24.841]2017-12-16T15:34:24.841:Updating data for securityid:2810
+[INFO][2017-12-16 15:34:24.841]2017-12-16T15:34:24.841:Updating security data for securityid:2810
+[INFO][2017-12-16 15:34:24.862]2017-12-16T15:34:24.862:Updating column data for securityid:2810
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:34:25.046]2017-12-16T15:34:25.046:Downloading column data from Quandl/NSE/LOWVOLIWIN
+DNSError: www.quandl.com, unknown node or service (EAI_NONAME)
+[WARNING][2017-12-16 15:34:25.047]2017-12-16T15:34:25.047:In updatecolumndata_fromquandl(), data for securityid 2810 and year:2017 doesn't exist in the database. SKIPPING!!!
+[WARNING][2017-12-16 15:34:25.047]2017-12-16T15:34:25.047:updatedb_fromquandl(): Failed updating column data for securityid :2810
+
+[INFO][2017-12-16 15:34:25.047]2017-12-16T15:34:25.047:In getsecurityid(): Finding for symbol:DYNPRO
+[INFO][2017-12-16 15:34:25.072]2017-12-16T15:34:25.072:Updating data for securityid:78072
+[INFO][2017-12-16 15:34:25.072]2017-12-16T15:34:25.072:Updating security data for securityid:78072
+[INFO][2017-12-16 15:34:25.092]2017-12-16T15:34:25.092:Updating column data for securityid:78072
+Using API key MX4zkypoSjUzp8CyotQgERROR (unhandled task failure): read: connection timed out (ETIMEDOUT)
+Stacktrace:
+ [1] try_yieldto(::Base.##296#297{Task}, ::Task) at ./event.jl:189
+ [2] wait() at ./event.jl:234
+ [3] wait(::Condition) at ./event.jl:27
+ [4] wait_readnb(::TCPSocket, ::Int64) at ./stream.jl:296
+ [5] eof(::TCPSocket) at ./stream.jl:56
+ [6] eof(::MbedTLS.SSLContext) at /Users/shivkumarchawla/.julia/v0.6/MbedTLS/src/ssl.jl:227
+ [7] macro expansion at /Users/shivkumarchawla/.julia/v0.6/Requests/src/streaming.jl:67 [inlined]
+ [8] (::Requests.##6#8{Requests.ResponseStream{MbedTLS.SSLContext},Requests.ResponseParser,Channel{Symbol}})() at ./event.jl:73
+
+[INFO][2017-12-16 15:34:25.249]2017-12-16T15:34:25.249:Downloading column data from Quandl/NSE/DYNPRO
+DNSError: www.quandl.com, unknown node or service (EAI_NONAME)
+[WARNING][2017-12-16 15:34:25.251]2017-12-16T15:34:25.251:In updatecolumndata_fromquandl(), data for securityid 78072 and year:2017 doesn't exist in the database. SKIPPING!!!
+[WARNING][2017-12-16 15:34:25.251]2017-12-16T15:34:25.251:updatedb_fromquandl(): Failed updating column data for securityid :78072
+
+[INFO][2017-12-16 15:34:25.252]2017-12-16T15:34:25.252:In getsecurityid(): Finding for symbol:AGLSL
+[INFO][2017-12-16 15:34:25.275]2017-12-16T15:34:25.275:Updating data for securityid:56333
+[INFO][2017-12-16 15:34:25.276]2017-12-16T15:34:25.276:Updating security data for securityid:56333
+[INFO][2017-12-16 15:34:25.295]2017-12-16T15:34:25.295:Updating column data for securityid:56333
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:34:25.398]2017-12-16T15:34:25.398:Downloading column data from Quandl/NSE/AGLSL
+DNSError: www.quandl.com, unknown node or service (EAI_NONAME)
+[WARNING][2017-12-16 15:34:25.399]2017-12-16T15:34:25.399:In updatecolumndata_fromquandl(), data for securityid 56333 and year:2017 doesn't exist in the database. SKIPPING!!!
+[WARNING][2017-12-16 15:34:25.400]2017-12-16T15:34:25.4:updatedb_fromquandl(): Failed updating column data for securityid :56333
+
+[INFO][2017-12-16 15:34:25.400]2017-12-16T15:34:25.4:In getsecurityid(): Finding for symbol:BHAGYAPROP
+[INFO][2017-12-16 15:34:25.424]2017-12-16T15:34:25.424:Updating data for securityid:89000
+[INFO][2017-12-16 15:34:25.425]2017-12-16T15:34:25.425:Updating security data for securityid:89000
+[INFO][2017-12-16 15:34:25.445]2017-12-16T15:34:25.445:Updating column data for securityid:89000
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:34:25.448]2017-12-16T15:34:25.448:Downloading column data from Quandl/NSE/BHAGYAPROP
+DNSError: www.quandl.com, unknown node or service (EAI_NONAME)
+[WARNING][2017-12-16 15:34:25.450]2017-12-16T15:34:25.45:In updatecolumndata_fromquandl(), data for securityid 89000 and year:2017 doesn't exist in the database. SKIPPING!!!
+[WARNING][2017-12-16 15:34:25.450]2017-12-16T15:34:25.45:updatedb_fromquandl(): Failed updating column data for securityid :89000
+
+[INFO][2017-12-16 15:34:25.450]2017-12-16T15:34:25.45:In getsecurityid(): Finding for symbol:STEELXIND
+[INFO][2017-12-16 15:34:25.474]2017-12-16T15:34:25.474:Updating data for securityid:2043
+[INFO][2017-12-16 15:34:25.475]2017-12-16T15:34:25.475:Updating security data for securityid:2043
+[INFO][2017-12-16 15:34:25.494]2017-12-16T15:34:25.494:Updating column data for securityid:2043
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:34:25.522]2017-12-16T15:34:25.522:Downloading column data from Quandl/NSE/STEELXIND
+DNSError: www.quandl.com, unknown node or service (EAI_NONAME)
+[WARNING][2017-12-16 15:34:25.524]2017-12-16T15:34:25.524:In updatecolumndata_fromquandl(), data for securityid 2043 and year:2017 doesn't exist in the database. SKIPPING!!!
+[WARNING][2017-12-16 15:34:25.524]2017-12-16T15:34:25.524:updatedb_fromquandl(): Failed updating column data for securityid :2043
+
+[INFO][2017-12-16 15:34:25.525]2017-12-16T15:34:25.524:In getsecurityid(): Finding for symbol:SALASAR
+[INFO][2017-12-16 15:34:25.549]2017-12-16T15:34:25.549:Updating data for securityid:55180
+[INFO][2017-12-16 15:34:25.550]2017-12-16T15:34:25.55:Updating security data for securityid:55180
+[INFO][2017-12-16 15:34:25.569]2017-12-16T15:34:25.569:Updating column data for securityid:55180
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:34:25.613]2017-12-16T15:34:25.613:Downloading column data from Quandl/NSE/SALASAR
+DNSError: www.quandl.com, unknown node or service (EAI_NONAME)
+[WARNING][2017-12-16 15:34:25.615]2017-12-16T15:34:25.615:In updatecolumndata_fromquandl(), data for securityid 55180 and year:2017 doesn't exist in the database. SKIPPING!!!
+[WARNING][2017-12-16 15:34:25.615]2017-12-16T15:34:25.615:updatedb_fromquandl(): Failed updating column data for securityid :55180
+
+[INFO][2017-12-16 15:34:25.615]2017-12-16T15:34:25.615:In getsecurityid(): Finding for symbol:AVADHSUGAR
+[INFO][2017-12-16 15:34:25.640]2017-12-16T15:34:25.64:Updating data for securityid:83797
+[INFO][2017-12-16 15:34:25.640]2017-12-16T15:34:25.64:Updating security data for securityid:83797
+[INFO][2017-12-16 15:34:25.659]2017-12-16T15:34:25.659:Updating column data for securityid:83797
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:34:25.663]2017-12-16T15:34:25.663:Downloading column data from Quandl/NSE/AVADHSUGAR
+DNSError: www.quandl.com, unknown node or service (EAI_NONAME)
+[WARNING][2017-12-16 15:34:25.664]2017-12-16T15:34:25.664:In updatecolumndata_fromquandl(), data for securityid 83797 and year:2017 doesn't exist in the database. SKIPPING!!!
+[WARNING][2017-12-16 15:34:25.665]2017-12-16T15:34:25.665:updatedb_fromquandl(): Failed updating column data for securityid :83797
+
+[INFO][2017-12-16 15:34:25.665]2017-12-16T15:34:25.665:In getsecurityid(): Finding for symbol:BIOFILCHEM
+[INFO][2017-12-16 15:34:25.689]2017-12-16T15:34:25.689:Updating data for securityid:30549
+[INFO][2017-12-16 15:34:25.689]2017-12-16T15:34:25.689:Updating security data for securityid:30549
+[INFO][2017-12-16 15:34:25.712]2017-12-16T15:34:25.712:Updating column data for securityid:30549
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:34:25.772]2017-12-16T15:34:25.772:Downloading column data from Quandl/NSE/BIOFILCHEM
+DNSError: www.quandl.com, unknown node or service (EAI_NONAME)
+[WARNING][2017-12-16 15:34:25.774]2017-12-16T15:34:25.774:In updatecolumndata_fromquandl(), data for securityid 30549 and year:2017 doesn't exist in the database. SKIPPING!!!
+[WARNING][2017-12-16 15:34:25.774]2017-12-16T15:34:25.774:updatedb_fromquandl(): Failed updating column data for securityid :30549
+
+[INFO][2017-12-16 15:34:25.774]2017-12-16T15:34:25.774:In getsecurityid(): Finding for symbol:GANGESSECU
+[INFO][2017-12-16 15:34:25.799]2017-12-16T15:34:25.798:Updating data for securityid:17365
+[INFO][2017-12-16 15:34:25.799]2017-12-16T15:34:25.799:Updating security data for securityid:17365
+[INFO][2017-12-16 15:34:25.818]2017-12-16T15:34:25.818:Updating column data for securityid:17365
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:34:25.822]2017-12-16T15:34:25.822:Downloading column data from Quandl/NSE/GANGESSECU
+DNSError: www.quandl.com, unknown node or service (EAI_NONAME)
+[WARNING][2017-12-16 15:34:25.823]2017-12-16T15:34:25.823:In updatecolumndata_fromquandl(), data for securityid 17365 and year:2017 doesn't exist in the database. SKIPPING!!!
+[WARNING][2017-12-16 15:34:25.824]2017-12-16T15:34:25.824:updatedb_fromquandl(): Failed updating column data for securityid :17365
+
+[INFO][2017-12-16 15:34:25.824]2017-12-16T15:34:25.824:In getsecurityid(): Finding for symbol:MAGADSUGAR
+[INFO][2017-12-16 15:34:25.846]2017-12-16T15:34:25.846:Updating data for securityid:10371
+[INFO][2017-12-16 15:34:25.847]2017-12-16T15:34:25.847:Updating security data for securityid:10371
+[INFO][2017-12-16 15:34:25.866]2017-12-16T15:34:25.866:Updating column data for securityid:10371
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:34:25.887]2017-12-16T15:34:25.887:Downloading column data from Quandl/NSE/MAGADSUGAR
+DNSError: www.quandl.com, unknown node or service (EAI_NONAME)
+[WARNING][2017-12-16 15:34:25.888]2017-12-16T15:34:25.888:In updatecolumndata_fromquandl(), data for securityid 10371 and year:2017 doesn't exist in the database. SKIPPING!!!
+[WARNING][2017-12-16 15:34:25.888]2017-12-16T15:34:25.888:updatedb_fromquandl(): Failed updating column data for securityid :10371
+
+[INFO][2017-12-16 15:34:25.889]2017-12-16T15:34:25.889:In getsecurityid(): Finding for symbol:PALASHSECU
+[INFO][2017-12-16 15:34:25.914]2017-12-16T15:34:25.914:Updating data for securityid:8840
+[INFO][2017-12-16 15:34:25.914]2017-12-16T15:34:25.914:Updating security data for securityid:8840
+[INFO][2017-12-16 15:34:25.934]2017-12-16T15:34:25.934:Updating column data for securityid:8840
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:34:25.976]2017-12-16T15:34:25.976:Downloading column data from Quandl/NSE/PALASHSECU
+DNSError: www.quandl.com, unknown node or service (EAI_NONAME)
+[WARNING][2017-12-16 15:34:25.978]2017-12-16T15:34:25.978:In updatecolumndata_fromquandl(), data for securityid 8840 and year:2017 doesn't exist in the database. SKIPPING!!!
+[WARNING][2017-12-16 15:34:25.978]2017-12-16T15:34:25.978:updatedb_fromquandl(): Failed updating column data for securityid :8840
+
+[INFO][2017-12-16 15:34:25.978]2017-12-16T15:34:25.978:In getsecurityid(): Finding for symbol:MOHOTAMILL
+[INFO][2017-12-16 15:34:26.003]2017-12-16T15:34:26.003:Updating data for securityid:48699
+[INFO][2017-12-16 15:34:26.003]2017-12-16T15:34:26.003:Updating security data for securityid:48699
+[INFO][2017-12-16 15:34:26.023]2017-12-16T15:34:26.023:Updating column data for securityid:48699
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:34:26.091]2017-12-16T15:34:26.091:Downloading column data from Quandl/NSE/MOHOTAMILL
+DNSError: www.quandl.com, unknown node or service (EAI_NONAME)
+[WARNING][2017-12-16 15:34:26.093]2017-12-16T15:34:26.093:In updatecolumndata_fromquandl(), data for securityid 48699 and year:2017 doesn't exist in the database. SKIPPING!!!
+[WARNING][2017-12-16 15:34:26.093]2017-12-16T15:34:26.093:updatedb_fromquandl(): Failed updating column data for securityid :48699
+
+[INFO][2017-12-16 15:34:26.093]2017-12-16T15:34:26.093:In getsecurityid(): Finding for symbol:SCHAEFFLER
+[INFO][2017-12-16 15:34:26.119]2017-12-16T15:34:26.119:Updating data for securityid:27807
+[INFO][2017-12-16 15:34:26.119]2017-12-16T15:34:26.119:Updating security data for securityid:27807
+[INFO][2017-12-16 15:34:26.141]2017-12-16T15:34:26.141:Updating column data for securityid:27807
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:34:26.218]2017-12-16T15:34:26.218:Downloading column data from Quandl/NSE/SCHAEFFLER
+DNSError: www.quandl.com, unknown node or service (EAI_NONAME)
+[WARNING][2017-12-16 15:34:26.220]2017-12-16T15:34:26.22:In updatecolumndata_fromquandl(), data for securityid 27807 and year:2017 doesn't exist in the database. SKIPPING!!!
+[WARNING][2017-12-16 15:34:26.220]2017-12-16T15:34:26.22:updatedb_fromquandl(): Failed updating column data for securityid :27807
+
+[INFO][2017-12-16 15:34:26.220]2017-12-16T15:34:26.22:In getsecurityid(): Finding for symbol:FORTUNEFIN
+[INFO][2017-12-16 15:34:26.245]2017-12-16T15:34:26.245:Updating data for securityid:50799
+[INFO][2017-12-16 15:34:26.245]2017-12-16T15:34:26.245:Updating security data for securityid:50799
+[INFO][2017-12-16 15:34:26.267]2017-12-16T15:34:26.267:Updating column data for securityid:50799
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:34:26.301]2017-12-16T15:34:26.301:Downloading column data from Quandl/NSE/FORTUNEFIN
+DNSError: www.quandl.com, unknown node or service (EAI_NONAME)
+[WARNING][2017-12-16 15:34:26.303]2017-12-16T15:34:26.303:In updatecolumndata_fromquandl(), data for securityid 50799 and year:2017 doesn't exist in the database. SKIPPING!!!
+[WARNING][2017-12-16 15:34:26.304]2017-12-16T15:34:26.304:updatedb_fromquandl(): Failed updating column data for securityid :50799
+
+[INFO][2017-12-16 15:34:26.304]2017-12-16T15:34:26.304:In getsecurityid(): Finding for symbol:OPTIEMUS
+[INFO][2017-12-16 15:34:26.328]2017-12-16T15:34:26.328:Updating data for securityid:37470
+[INFO][2017-12-16 15:34:26.329]2017-12-16T15:34:26.329:Updating security data for securityid:37470
+[INFO][2017-12-16 15:34:26.348]2017-12-16T15:34:26.348:Updating column data for securityid:37470
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:34:26.413]2017-12-16T15:34:26.413:Downloading column data from Quandl/NSE/OPTIEMUS
+DNSError: www.quandl.com, unknown node or service (EAI_NONAME)
+[WARNING][2017-12-16 15:34:26.414]2017-12-16T15:34:26.414:In updatecolumndata_fromquandl(), data for securityid 37470 and year:2017 doesn't exist in the database. SKIPPING!!!
+[WARNING][2017-12-16 15:34:26.415]2017-12-16T15:34:26.415:updatedb_fromquandl(): Failed updating column data for securityid :37470
+
+[INFO][2017-12-16 15:34:26.415]2017-12-16T15:34:26.415:In getsecurityid(): Finding for symbol:SPTL
+[INFO][2017-12-16 15:34:26.439]2017-12-16T15:34:26.439:Updating data for securityid:82326
+[INFO][2017-12-16 15:34:26.440]2017-12-16T15:34:26.44:Updating security data for securityid:82326
+[INFO][2017-12-16 15:34:26.460]2017-12-16T15:34:26.46:Updating column data for securityid:82326
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:34:26.480]2017-12-16T15:34:26.48:Downloading column data from Quandl/NSE/SPTL
+DNSError: www.quandl.com, unknown node or service (EAI_NONAME)
+[WARNING][2017-12-16 15:34:26.482]2017-12-16T15:34:26.482:In updatecolumndata_fromquandl(), data for securityid 82326 and year:2017 doesn't exist in the database. SKIPPING!!!
+[WARNING][2017-12-16 15:34:26.482]2017-12-16T15:34:26.482:updatedb_fromquandl(): Failed updating column data for securityid :82326
+
+[INFO][2017-12-16 15:34:26.483]2017-12-16T15:34:26.483:In getsecurityid(): Finding for symbol:UTINEXT50
+[INFO][2017-12-16 15:34:26.507]2017-12-16T15:34:26.507:Updating data for securityid:51680
+[INFO][2017-12-16 15:34:26.508]2017-12-16T15:34:26.508:Updating security data for securityid:51680
+[INFO][2017-12-16 15:34:26.527]2017-12-16T15:34:26.527:Updating column data for securityid:51680
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:34:26.554]2017-12-16T15:34:26.554:Downloading column data from Quandl/NSE/UTINEXT50
+DNSError: www.quandl.com, unknown node or service (EAI_NONAME)
+[WARNING][2017-12-16 15:34:26.556]2017-12-16T15:34:26.556:In updatecolumndata_fromquandl(), data for securityid 51680 and year:2017 doesn't exist in the database. SKIPPING!!!
+[WARNING][2017-12-16 15:34:26.556]2017-12-16T15:34:26.556:updatedb_fromquandl(): Failed updating column data for securityid :51680
+
+[INFO][2017-12-16 15:34:26.556]2017-12-16T15:34:26.556:In getsecurityid(): Finding for symbol:SIS
+[INFO][2017-12-16 15:34:26.580]2017-12-16T15:34:26.58:Updating data for securityid:64230
+[INFO][2017-12-16 15:34:26.581]2017-12-16T15:34:26.581:Updating security data for securityid:64230
+[INFO][2017-12-16 15:34:26.600]2017-12-16T15:34:26.6:Updating column data for securityid:64230
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:34:26.603]2017-12-16T15:34:26.603:Downloading column data from Quandl/NSE/SIS
+DNSError: www.quandl.com, unknown node or service (EAI_NONAME)
+[WARNING][2017-12-16 15:34:26.605]2017-12-16T15:34:26.605:In updatecolumndata_fromquandl(), data for securityid 64230 and year:2017 doesn't exist in the database. SKIPPING!!!
+[WARNING][2017-12-16 15:34:26.605]2017-12-16T15:34:26.605:updatedb_fromquandl(): Failed updating column data for securityid :64230
+
+[INFO][2017-12-16 15:34:26.605]2017-12-16T15:34:26.605:In getsecurityid(): Finding for symbol:COCHINSHIP
+[INFO][2017-12-16 15:34:26.628]2017-12-16T15:34:26.628:Updating data for securityid:2421
+[INFO][2017-12-16 15:34:26.629]2017-12-16T15:34:26.629:Updating security data for securityid:2421
+[INFO][2017-12-16 15:34:26.650]2017-12-16T15:34:26.65:Updating column data for securityid:2421
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:34:26.751]2017-12-16T15:34:26.751:Downloading column data from Quandl/NSE/COCHINSHIP
+DNSError: www.quandl.com, unknown node or service (EAI_NONAME)
+[WARNING][2017-12-16 15:34:26.753]2017-12-16T15:34:26.753:In updatecolumndata_fromquandl(), data for securityid 2421 and year:2017 doesn't exist in the database. SKIPPING!!!
+[WARNING][2017-12-16 15:34:26.753]2017-12-16T15:34:26.753:updatedb_fromquandl(): Failed updating column data for securityid :2421
+
+[INFO][2017-12-16 15:34:26.753]2017-12-16T15:34:26.753:In getsecurityid(): Finding for symbol:SMSLIFE
+[INFO][2017-12-16 15:34:26.778]2017-12-16T15:34:26.778:Updating data for securityid:31388
+[INFO][2017-12-16 15:34:26.779]2017-12-16T15:34:26.779:Updating security data for securityid:31388
+[INFO][2017-12-16 15:34:26.799]2017-12-16T15:34:26.798:Updating column data for securityid:31388
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:34:26.802]2017-12-16T15:34:26.802:Downloading column data from Quandl/NSE/SMSLIFE
+DNSError: www.quandl.com, unknown node or service (EAI_NONAME)
+[WARNING][2017-12-16 15:34:26.804]2017-12-16T15:34:26.804:In updatecolumndata_fromquandl(), data for securityid 31388 and year:2017 doesn't exist in the database. SKIPPING!!!
+[WARNING][2017-12-16 15:34:26.804]2017-12-16T15:34:26.804:updatedb_fromquandl(): Failed updating column data for securityid :31388
+
+[INFO][2017-12-16 15:34:26.804]2017-12-16T15:34:26.804:In getsecurityid(): Finding for symbol:ABCAPITAL
+[INFO][2017-12-16 15:34:26.828]2017-12-16T15:34:26.828:Updating data for securityid:22587
+[INFO][2017-12-16 15:34:26.828]2017-12-16T15:34:26.828:Updating security data for securityid:22587
+[INFO][2017-12-16 15:34:26.848]2017-12-16T15:34:26.848:Updating column data for securityid:22587
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:34:26.851]2017-12-16T15:34:26.851:Downloading column data from Quandl/NSE/ABCAPITAL
+DNSError: www.quandl.com, unknown node or service (EAI_NONAME)
+[WARNING][2017-12-16 15:34:26.853]2017-12-16T15:34:26.853:In updatecolumndata_fromquandl(), data for securityid 22587 and year:2017 doesn't exist in the database. SKIPPING!!!
+[WARNING][2017-12-16 15:34:26.853]2017-12-16T15:34:26.853:updatedb_fromquandl(): Failed updating column data for securityid :22587
+
+[INFO][2017-12-16 15:34:26.853]2017-12-16T15:34:26.853:In getsecurityid(): Finding for symbol:APEX
+[INFO][2017-12-16 15:34:26.877]2017-12-16T15:34:26.877:Updating data for securityid:91628
+[INFO][2017-12-16 15:34:26.877]2017-12-16T15:34:26.877:Updating security data for securityid:91628
+[INFO][2017-12-16 15:34:26.897]2017-12-16T15:34:26.897:Updating column data for securityid:91628
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:34:26.900]2017-12-16T15:34:26.9:Downloading column data from Quandl/NSE/APEX
+DNSError: www.quandl.com, unknown node or service (EAI_NONAME)
+[WARNING][2017-12-16 15:34:26.901]2017-12-16T15:34:26.901:In updatecolumndata_fromquandl(), data for securityid 91628 and year:2017 doesn't exist in the database. SKIPPING!!!
+[WARNING][2017-12-16 15:34:26.902]2017-12-16T15:34:26.902:updatedb_fromquandl(): Failed updating column data for securityid :91628
+
+[INFO][2017-12-16 15:34:26.902]2017-12-16T15:34:26.902:In getsecurityid(): Finding for symbol:BRNL
+[INFO][2017-12-16 15:34:26.926]2017-12-16T15:34:26.926:Updating data for securityid:26064
+[INFO][2017-12-16 15:34:26.926]2017-12-16T15:34:26.926:Updating security data for securityid:26064
+[INFO][2017-12-16 15:34:26.946]2017-12-16T15:34:26.946:Updating column data for securityid:26064
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:34:26.982]2017-12-16T15:34:26.982:Downloading column data from Quandl/NSE/BRNL
+DNSError: www.quandl.com, unknown node or service (EAI_NONAME)
+[WARNING][2017-12-16 15:34:26.984]2017-12-16T15:34:26.984:In updatecolumndata_fromquandl(), data for securityid 26064 and year:2017 doesn't exist in the database. SKIPPING!!!
+[WARNING][2017-12-16 15:34:26.984]2017-12-16T15:34:26.984:updatedb_fromquandl(): Failed updating column data for securityid :26064
+
+[INFO][2017-12-16 15:34:26.984]2017-12-16T15:34:26.984:In getsecurityid(): Finding for symbol:DIXON
+[INFO][2017-12-16 15:34:27.031]2017-12-16T15:34:27.031:Updating data for securityid:78427
+[INFO][2017-12-16 15:34:27.032]2017-12-16T15:34:27.032:Updating security data for securityid:78427
+[INFO][2017-12-16 15:34:27.057]2017-12-16T15:34:27.057:Updating column data for securityid:78427
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:34:27.060]2017-12-16T15:34:27.06:Downloading column data from Quandl/NSE/DIXON
+DNSError: www.quandl.com, unknown node or service (EAI_NONAME)
+[WARNING][2017-12-16 15:34:27.061]2017-12-16T15:34:27.061:In updatecolumndata_fromquandl(), data for securityid 78427 and year:2017 doesn't exist in the database. SKIPPING!!!
+[WARNING][2017-12-16 15:34:27.062]2017-12-16T15:34:27.062:updatedb_fromquandl(): Failed updating column data for securityid :78427
+
+[INFO][2017-12-16 15:34:27.062]2017-12-16T15:34:27.062:In getsecurityid(): Finding for symbol:RNAVAL
+[INFO][2017-12-16 15:34:27.087]2017-12-16T15:34:27.087:Updating data for securityid:79951
+[INFO][2017-12-16 15:34:27.088]2017-12-16T15:34:27.088:Updating security data for securityid:79951
+[INFO][2017-12-16 15:34:27.108]2017-12-16T15:34:27.108:Updating column data for securityid:79951
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:34:27.184]2017-12-16T15:34:27.184:Downloading column data from Quandl/NSE/RNAVAL
+DNSError: www.quandl.com, unknown node or service (EAI_NONAME)
+[WARNING][2017-12-16 15:34:27.186]2017-12-16T15:34:27.186:In updatecolumndata_fromquandl(), data for securityid 79951 and year:2017 doesn't exist in the database. SKIPPING!!!
+[WARNING][2017-12-16 15:34:27.186]2017-12-16T15:34:27.186:updatedb_fromquandl(): Failed updating column data for securityid :79951
+
+[INFO][2017-12-16 15:34:27.187]2017-12-16T15:34:27.187:In getsecurityid(): Finding for symbol:DCAL
+[INFO][2017-12-16 15:34:27.212]2017-12-16T15:34:27.212:Updating data for securityid:80689
+[INFO][2017-12-16 15:34:27.213]2017-12-16T15:34:27.213:Updating security data for securityid:80689
+[INFO][2017-12-16 15:34:27.235]2017-12-16T15:34:27.235:Updating column data for securityid:80689
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:34:27.315]2017-12-16T15:34:27.315:Downloading column data from Quandl/NSE/DCAL
+DNSError: www.quandl.com, unknown node or service (EAI_NONAME)
+[WARNING][2017-12-16 15:34:27.317]2017-12-16T15:34:27.317:In updatecolumndata_fromquandl(), data for securityid 80689 and year:2017 doesn't exist in the database. SKIPPING!!!
+[WARNING][2017-12-16 15:34:27.317]2017-12-16T15:34:27.317:updatedb_fromquandl(): Failed updating column data for securityid :80689
+
+[INFO][2017-12-16 15:34:27.317]2017-12-16T15:34:27.317:In getsecurityid(): Finding for symbol:LASA
+[INFO][2017-12-16 15:34:27.341]2017-12-16T15:34:27.341:Updating data for securityid:30934
+[INFO][2017-12-16 15:34:27.342]2017-12-16T15:34:27.342:Updating security data for securityid:30934
+[INFO][2017-12-16 15:34:27.379]2017-12-16T15:34:27.378:Updating column data for securityid:30934
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:34:27.408]2017-12-16T15:34:27.408:Downloading column data from Quandl/NSE/LASA
+DNSError: www.quandl.com, unknown node or service (EAI_NONAME)
+[WARNING][2017-12-16 15:34:27.410]2017-12-16T15:34:27.41:In updatecolumndata_fromquandl(), data for securityid 30934 and year:2017 doesn't exist in the database. SKIPPING!!!
+[WARNING][2017-12-16 15:34:27.410]2017-12-16T15:34:27.41:updatedb_fromquandl(): Failed updating column data for securityid :30934
+
+[INFO][2017-12-16 15:34:27.411]2017-12-16T15:34:27.411:In getsecurityid(): Finding for symbol:MATRIMONY
+[INFO][2017-12-16 15:34:27.436]2017-12-16T15:34:27.436:Updating data for securityid:17153
+[INFO][2017-12-16 15:34:27.437]2017-12-16T15:34:27.437:Updating security data for securityid:17153
+[INFO][2017-12-16 15:34:27.456]2017-12-16T15:34:27.456:Updating column data for securityid:17153
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:34:27.459]2017-12-16T15:34:27.459:Downloading column data from Quandl/NSE/MATRIMONY
+DNSError: www.quandl.com, unknown node or service (EAI_NONAME)
+[WARNING][2017-12-16 15:34:27.461]2017-12-16T15:34:27.461:In updatecolumndata_fromquandl(), data for securityid 17153 and year:2017 doesn't exist in the database. SKIPPING!!!
+[WARNING][2017-12-16 15:34:27.461]2017-12-16T15:34:27.461:updatedb_fromquandl(): Failed updating column data for securityid :17153
+
+[INFO][2017-12-16 15:34:27.461]2017-12-16T15:34:27.461:In getsecurityid(): Finding for symbol:RHFL
+[INFO][2017-12-16 15:34:27.488]2017-12-16T15:34:27.488:Updating data for securityid:62392
+[INFO][2017-12-16 15:34:27.488]2017-12-16T15:34:27.488:Updating security data for securityid:62392
+[INFO][2017-12-16 15:34:27.509]2017-12-16T15:34:27.509:Updating column data for securityid:62392
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:34:27.512]2017-12-16T15:34:27.512:Downloading column data from Quandl/NSE/RHFL
+DNSError: www.quandl.com, unknown node or service (EAI_NONAME)
+[WARNING][2017-12-16 15:34:27.513]2017-12-16T15:34:27.513:In updatecolumndata_fromquandl(), data for securityid 62392 and year:2017 doesn't exist in the database. SKIPPING!!!
+[WARNING][2017-12-16 15:34:27.513]2017-12-16T15:34:27.513:updatedb_fromquandl(): Failed updating column data for securityid :62392
+
+[INFO][2017-12-16 15:34:27.514]2017-12-16T15:34:27.514:In getsecurityid(): Finding for symbol:CAPACITE
+[INFO][2017-12-16 15:34:27.538]2017-12-16T15:34:27.538:Updating data for securityid:52382
+[INFO][2017-12-16 15:34:27.538]2017-12-16T15:34:27.538:Updating security data for securityid:52382
+[INFO][2017-12-16 15:34:27.561]2017-12-16T15:34:27.561:Updating column data for securityid:52382
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:34:27.564]2017-12-16T15:34:27.564:Downloading column data from Quandl/NSE/CAPACITE
+DNSError: www.quandl.com, unknown node or service (EAI_NONAME)
+[WARNING][2017-12-16 15:34:27.565]2017-12-16T15:34:27.565:In updatecolumndata_fromquandl(), data for securityid 52382 and year:2017 doesn't exist in the database. SKIPPING!!!
+[WARNING][2017-12-16 15:34:27.565]2017-12-16T15:34:27.565:updatedb_fromquandl(): Failed updating column data for securityid :52382
+
+[INFO][2017-12-16 15:34:27.566]2017-12-16T15:34:27.566:In getsecurityid(): Finding for symbol:TIFIN
+[INFO][2017-12-16 15:34:27.589]2017-12-16T15:34:27.589:Updating data for securityid:73153
+[INFO][2017-12-16 15:34:27.590]2017-12-16T15:34:27.59:Updating security data for securityid:73153
+[INFO][2017-12-16 15:34:27.610]2017-12-16T15:34:27.61:Updating column data for securityid:73153
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:34:27.697]2017-12-16T15:34:27.697:Downloading column data from Quandl/NSE/TIFIN
+DNSError: www.quandl.com, unknown node or service (EAI_NONAME)
+[WARNING][2017-12-16 15:34:27.699]2017-12-16T15:34:27.699:In updatecolumndata_fromquandl(), data for securityid 73153 and year:2017 doesn't exist in the database. SKIPPING!!!
+[WARNING][2017-12-16 15:34:27.699]2017-12-16T15:34:27.699:updatedb_fromquandl(): Failed updating column data for securityid :73153
+
+[INFO][2017-12-16 15:34:27.700]2017-12-16T15:34:27.7:In getsecurityid(): Finding for symbol:ICICIGI
+[INFO][2017-12-16 15:34:27.725]2017-12-16T15:34:27.725:Updating data for securityid:9024
+[INFO][2017-12-16 15:34:27.726]2017-12-16T15:34:27.726:Updating security data for securityid:9024
+[INFO][2017-12-16 15:34:27.746]2017-12-16T15:34:27.746:Updating column data for securityid:9024
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:34:27.749]2017-12-16T15:34:27.749:Downloading column data from Quandl/NSE/ICICIGI
+DNSError: www.quandl.com, unknown node or service (EAI_NONAME)
+[WARNING][2017-12-16 15:34:27.750]2017-12-16T15:34:27.75:In updatecolumndata_fromquandl(), data for securityid 9024 and year:2017 doesn't exist in the database. SKIPPING!!!
+[WARNING][2017-12-16 15:34:27.751]2017-12-16T15:34:27.751:updatedb_fromquandl(): Failed updating column data for securityid :9024
+
+[INFO][2017-12-16 15:34:27.751]2017-12-16T15:34:27.751:In getsecurityid(): Finding for symbol:NACLIND
+[INFO][2017-12-16 15:34:27.776]2017-12-16T15:34:27.776:Updating data for securityid:71020
+[INFO][2017-12-16 15:34:27.776]2017-12-16T15:34:27.776:Updating security data for securityid:71020
+[INFO][2017-12-16 15:34:27.797]2017-12-16T15:34:27.797:Updating column data for securityid:71020
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:34:27.847]2017-12-16T15:34:27.847:Downloading column data from Quandl/NSE/NACLIND
+DNSError: www.quandl.com, unknown node or service (EAI_NONAME)
+[WARNING][2017-12-16 15:34:27.849]2017-12-16T15:34:27.849:In updatecolumndata_fromquandl(), data for securityid 71020 and year:2017 doesn't exist in the database. SKIPPING!!!
+[WARNING][2017-12-16 15:34:27.850]2017-12-16T15:34:27.85:updatedb_fromquandl(): Failed updating column data for securityid :71020
+
+[INFO][2017-12-16 15:34:27.850]2017-12-16T15:34:27.85:In getsecurityid(): Finding for symbol:SBILIFE
+[INFO][2017-12-16 15:34:27.875]2017-12-16T15:34:27.875:Updating data for securityid:29623
+[INFO][2017-12-16 15:34:27.875]2017-12-16T15:34:27.875:Updating security data for securityid:29623
+[INFO][2017-12-16 15:34:27.896]2017-12-16T15:34:27.896:Updating column data for securityid:29623
+Using API key MX4zkypoSjUzp8CyotQg
+[INFO][2017-12-16 15:34:27.899]2017-12-16T15:34:27.899:Downloading column data from Quandl/NSE/SBILIFE
+DNSError: www.quandl.com, unknown node or service (EAI_NONAME)
+[WARNING][2017-12-16 15:34:27.901]2017-12-16T15:34:27.901:In updatecolumndata_fromquandl(), data for securityid 29623 and year:2017 doesn't exist in the database. SKIPPING!!!
+[WARNING][2017-12-16 15:34:27.901]2017-12-16T15:34:27.901:updatedb_fromquandl(): Failed updating column data for securityid :29623
+

@@ -1,0 +1,16 @@
+Reexport
+StatsBase
+JSON			 		 
+Mongoc
+TimeSeries		 
+WebSockets		 
+ZipFile			 
+ArgParse		 
+MarketTechnicals	 
+MultivariateStats	 
+JuMP			 
+Ipopt			
+DataFrames		 
+GLM			 
+Redis
+BufferedStreams
