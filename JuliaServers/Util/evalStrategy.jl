@@ -33,8 +33,9 @@ function evaluate_strategy(args)
         return 0
     end
     
+    eval(Meta.parse("fname = nothing"))
     try
-        fname = processargs(parsed_args)
+        eval(Meta.parse("fname = processargs(parsed_args)"))
     catch err
         println(err)
         error_static("Error parsing arguments from settings panel")

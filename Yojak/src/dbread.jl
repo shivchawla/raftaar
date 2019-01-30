@@ -947,7 +947,7 @@ function _get_adjustments_security(datacollection::Mongoc.Collection,
         adjType = 0.0
         adjFactor = 0.0
         
-        if (rowdata[4] != "")
+        if (rowdata[4] != "" && rowdata[4] != nothing)
             # Added absolute because of some data issue
             # ALBK has negatve adjustment factor (data issue)
             # ******BUT THROWING ERROR in SOME CASES abs(symbol) not allowed

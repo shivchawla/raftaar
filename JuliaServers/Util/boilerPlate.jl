@@ -12,6 +12,8 @@ dir = Base.source_dir()
 
 #find fname_full in dir
 idx_arr = something(findfirst(dir, fname_full), 0:-1)
+
+#fname is used downstream in handleErrors
 fname = length(idx_arr) != 0 ? fname_full[(idx_arr[end] + 2):end] : fname_full
 
 #wrt the temp folder
