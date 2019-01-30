@@ -61,5 +61,8 @@ function setredisconnection(connections)
 end
 
 connections = JSON.parsefile(Base.source_dir()*"/connection.json")
+
 setdatastores(connections)
+setredisconnection(connections)
+
 connections = nothing

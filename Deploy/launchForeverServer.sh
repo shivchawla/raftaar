@@ -29,5 +29,5 @@ raftaar_dir="$base_dir/raftaar"
 yojak_dir="$base_dir/yojak"
 
 
-bash $base_dir/raftaar/Juliaservers/relaxPermissions.sh $user $base_dir
-su - $user -c "$julia $base_dir/raftaar/Juliaservers/forever.jl $port $env 1>&2"
+bash $base_dir/raftaar/JuliaServers/relaxPermissions.sh $user $base_dir
+su - $user -c "$julia $base_dir/raftaar/JuliaServers/forever.jl $port $env 1>&2"
