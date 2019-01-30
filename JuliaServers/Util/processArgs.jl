@@ -3,7 +3,7 @@
 # Email: shiv.chawla@aimsquant.com
 # Organization: AIMSQUANT PVT. LTD.
 
-include("../../BackTester/Benchmark/benchmark.jl") 
+const tempDir = "$(ENV["HOME"])/raftaat/tmp"
 
 function processargs(parsed_args::Dict{String,Any})
   
@@ -14,7 +14,16 @@ function processargs(parsed_args::Dict{String,Any})
     fname = parsed_args["file"]
   elseif (parsed_args["file"] == nothing)
     parsed_args["code"] = replace(parsed_args["code"], "Base." => "_")
-    parsed_args["code"] = replace(parsed_args["code"], "run(" => "_run(")
+    parsed_args["code"] = replace(parsed_args["code"], "run(" => "_run(") 
+
+    (tf, io) = mktemp(tempDir)
+
+    open(tf, "w") do f
+      write(f, parsed_args["code"])
+    end
+
+    fname = tf 
+
   end
 
   #When there is serialized data, this is the FIRST step 
