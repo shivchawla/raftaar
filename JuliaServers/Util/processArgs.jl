@@ -3,7 +3,7 @@
 # Email: shiv.chawla@aimsquant.com
 # Organization: AIMSQUANT PVT. LTD.
 
-const tempDir = "$(ENV["HOME"])/raftaat/tmp"
+const tempDir = "$(ENV["HOME"])/raftaar/tmp"
 
 function processargs(parsed_args::Dict{String,Any})
   
