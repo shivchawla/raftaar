@@ -1,6 +1,5 @@
 # an idea: create one method named pivots with kwargs
-
-doc"""
+"""
     floorpivots(ohlc)
 
 Floor Trader Pivots
@@ -37,7 +36,7 @@ function floorpivots(ohlc::TimeArray{T,N}) where {T,N}
 
 end
 
-doc"""
+"""
     woodiespivots(ohlc)
 
 Woodie's Pivot

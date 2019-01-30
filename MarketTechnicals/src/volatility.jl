@@ -1,4 +1,4 @@
-doc"""
+"""
     bollingerbands(ta, ma=20, width=2.0)
 
 Bollinger Bands
@@ -21,7 +21,7 @@ function bollingerbands(ta::TimeArray, ma::Integer=20, width::AbstractFloat=2.0)
     merge(bands, tama, colnames = [:up, :down, :mean])
 end
 
-doc"""
+"""
     donchianchannels(ta, n=20; h="High", l="Low")
 
 **Donchian Channels**
@@ -49,7 +49,7 @@ function donchianchannels(ta::TimeArray, n::Integer=20; h=:High, l=:Low)
     merge(up, merge(mid, down))
 end
 
-doc"""
+"""
     truerange(ohlc; h="High", l="Low", c="Close")
 
 True Range
@@ -67,7 +67,7 @@ function truerange(ohlc::TimeArray{T,N}; h=:High, l=:Low, c=:Close) where {T,N}
     rename(truehigh .- truelow, :tr)
 end
 
-doc"""
+"""
     atr(ohlc, n=14; h="High", l="Low", c="Close")
 
 Average True Range
@@ -85,7 +85,7 @@ function atr(ohlc::TimeArray, n::Integer=14; h=:High, l=:Low, c=:Close)
     TimeArray(timestamp(res), values(res), [:atr], meta(ohlc))
 end
 
-doc"""
+"""
     keltnerbands(ohlc, n=20, w=2; h="High", l="Low", c="Close")
 
 **Keltner Channels**
@@ -123,7 +123,7 @@ function keltnerbands(ohlc::TimeArray, n::Integer=20, w::Integer=2;
     merge(kup, merge(kma, kdn))
 end
 
-doc"""
+"""
     chaikinvolatility(ta, n=10, p=10; h="High", l="Low")
 
 **Chaikin Volatility**

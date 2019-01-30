@@ -136,7 +136,7 @@ function env(a::AbstractArray, n::Int; e::Float64 = 0.1)
     [lower upper]
 end
 
-doc"""
+"""
     sma(arr, n)
 
 Simple Moving Average
@@ -147,7 +147,7 @@ SMA = \frac{\sum_i^n{P_i}}{n}
 """
 sma
 
-doc"""
+"""
     ema(arr, n, wilder=false)
 
 Exponemtial Moving Average
@@ -167,7 +167,7 @@ else ``k = \frac{2}{n + 1}``.
 """
 ema
 
-doc"""
+"""
 
 Kaufman's Adaptive Moving Average
 
@@ -194,7 +194,7 @@ Kaufman's Adaptive Moving Average
 """
 kama
 
-doc"""
+"""
 
     env(arr, n; e = 0.1)
 

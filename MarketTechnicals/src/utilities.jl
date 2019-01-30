@@ -1,4 +1,4 @@
-doc"""
+"""
     typical(ohlc; h="High", l="Low", c="Close")
 
 Typical Price

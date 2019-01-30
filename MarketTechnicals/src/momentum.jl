@@ -1,4 +1,4 @@
-doc"""
+"""
     rsi(ta, n=14; wilder=false)
 
 Relative Strength Index
@@ -37,7 +37,7 @@ function rsi(ta::TimeArray, n::Int=14; wilder::Bool=false)
     TimeArray(timestamp(ta)[n+1:end], res, cname, meta(ta))
 end
 
-doc"""
+"""
     cci(ohlc, ma=20, c=0.015)
 
 Commodity Channel Index
@@ -57,7 +57,7 @@ function cci(ohlc::TimeArray, ma::Int=20, c::AbstractFloat=0.015)
     rename(cci, :cci)
 end
 
-doc"""
+"""
     chaikinoscillator(ohlcv, fast=3, slow=10; h="High", l="Low", c="Close")
 
 **Chaikin Oscillator**
@@ -83,7 +83,7 @@ function chaikinoscillator(ohlcv::TimeArray, fast::Integer=3, slow::Integer=10;
     rename(ema(_adl, fast) .- ema(_adl, slow), [:chaikinoscillator])
 end
 
-doc"""
+"""
     macd(ta, fast=12, slow=26, signal=9; wilder=false)
 
 Moving Average Convergence / Divergence
@@ -117,7 +117,7 @@ function macd(ta::TimeArray{T,N},
     merge(merge(osc, dif), sig, colnames=new_cols)
 end
 
-doc"""
+"""
     roc(ta, n)
 
 **Rate of Change**
@@ -138,7 +138,7 @@ function roc(ta::TimeArray, n::Integer)
     rename((ta .- prev) ./ prev, [Symbol("$(c)_roc_$(n)") for c ∈ colnames(ta)])
 end
 
-doc"""
+"""
     aroon(ohlc, n=25; h="High", l="Low")
 
 **Aroon Oscillator**
@@ -166,7 +166,7 @@ function aroon(ohlc::TimeArray, n::Integer=25; h=:High, l=:Low)
     merge(merge(up, dn), osc)
 end
 
-doc"""
+"""
     adx(ohlc, n=14; h="High", l="Low", c="Close")
 
 **Average Directional Movement Index**
@@ -203,7 +203,7 @@ function adx(ohlc::TimeArray, n::Integer=14; h=:High, l=:Low, c=:Close)
     rename(merge(adx, merge(dx, di)), ([:adx, :dx, :di_plus, :di_minus]))
 end
 
-doc"""
+"""
     stochasticoscillator(ohlc, n=14, fast_d=3, slow_d=3; h="High", l="Low", c="Close")
 
 **Stochastic Oscillator**

@@ -1,4 +1,4 @@
-doc"""
+"""
     obv(ohlcv; price="Close", v="Volume")
 
 On Balance Volume
@@ -34,7 +34,7 @@ function obv(ohlcv::TimeArray{T,N}; price=:Close, v=:Volume) where {T,N}
     TimeArray(timestamp(ohlcv), cumsum(vol), [:obv], meta(ohlcv))
 end
 
-doc"""
+"""
     vwap(ohlcv, n; price="Close", v="Volume")
 
 Volume Weight-Adjusted Price
@@ -68,7 +68,7 @@ function williams_ad(x)
     #code here
 end
 
-doc"""
+"""
     adl(ohlcv; h="High", l="Low", c="Close", v="Volume")
 
 **Accumulation/Distribution Line**
