@@ -15,17 +15,11 @@ else
 	chown -R $user /home/$user
 fi
 
-cp /home/admin/$env/raftaar /home/$user/ -R
-cp /home/admin/$env/yojak /home/$user/ -R
+cp /home/admin/$env/raftaar /home/$user/ -R --force
 
 chown -R $user /home/$user/raftaar
-chown -R $user /home/$user/yojak
-
 chgrp -R $user /home/$user/raftaar
-chgrp -R $user /home/$user/yojak
-
 chmod -R u=rx /home/$user/raftaar
-chmod -R u=rx /home/$user/yojak
 
 mkdir /home/$user/.julia/config && cp /home/admin/$env/raftaar/Deploy/.juliarc.jl /home/$user/.julia/config/startup.jl --force
 mkdir /home/$user/.julia/environments/v1.1/ && cp /home/admin/$env/raftaar/Manifest.toml /home/$user/.julia/environments/v1.1/Manifest.toml --force
