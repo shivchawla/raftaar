@@ -284,4 +284,9 @@ function getuniverseindex()
 end
 export getuniverseindex
 
+function getBenchmarkConstituents(index::String)
+    return BackTester.getindexconstituents(index)
+end
+export getBenchmarkConstituents
+
 

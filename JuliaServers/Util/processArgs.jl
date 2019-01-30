@@ -44,7 +44,7 @@ function processargs(parsed_args::Dict{String,Any})
           index = get(parsed_args, "index", "Nifty 50")
           index = index != "" && index!=nothing ? index : "Nifty 50"
           setuniverseindex(index)
-          universeconstituents = getindexconstituents(index)
+          universeconstituents = getBenchmarkConstituents(index)
       end
      
       n_universeconstituents = length(universeconstituents)

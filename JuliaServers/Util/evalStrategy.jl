@@ -17,8 +17,6 @@ include("./handleErrors.jl")
 global parsed_args = Dict{String, Any}()
 
 function evaluate_strategy(args)
-    println("Here is worker :$(myid())")
-
     try 
         Logger.configure(style=:json, modes=[:redis])
         global parsed_args = parse_arguments(args)

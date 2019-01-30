@@ -1,17 +1,19 @@
 using JSON
 using DelimitedFiles
 
-function getindexconstituents(index::String)
+const benchmarkDir = "$(ENV["HOME"])/raftaar/BackTester/Benchmark"
+
+function getindexconstituents(index::String = "Nifty 50")
     if index == ""
         index = "Nifty 50"
     end
 
     universe = Vector{String}()
     try
-        universemap = JSON.parsefile(source_dir*"/../Benchmark/Constituents/universemap.json")
+        universemap = JSON.parsefile("$(benchmarkDir)/Constituents/universemap.json")
         indexfilename = universemap[index]
 
-        (column_data, header_data) = readdlm(source_dir*"/../Benchmark/Constituents/$(indexfilename)", ',', String, header=true)
+        (column_data, header_data) = readdlm("$(benchmarkDir)/Constituents/$(indexfilename)", ',', String, header=true)
         (nrows,ncols) = size(column_data)
         if nrows > 0
             #SYMBOL corresponds to 3rd column    

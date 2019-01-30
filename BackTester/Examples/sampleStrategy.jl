@@ -9,7 +9,7 @@
      # Set intiial cash
     setcash(100000.0)
      # Set Cancel policy to GTC (good till canceled)
-     setcancelpolicy(CancelPolicy(GTC))
+     setcancelpolicy(GTC)
      # Set universe (mandatory before placing any orders)
     setuniverse(["TCS"])
     setbenchmark("TCS")
