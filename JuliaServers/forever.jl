@@ -22,7 +22,7 @@ COMPLETE_BACKTEST_SET  = "backtest-completion-set-$(env)";
 DEFAULT_WAIT_TIME = 5
 
 source_dir = Base.source_dir()
-include("$(source_dir)/evalStrategy.jl")
+include("$(source_dir)/Util/evalStrategy.jl")
 
 backtests_requests = []
 redisClient = nothing
