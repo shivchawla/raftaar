@@ -17,9 +17,9 @@ fname = length(idx_arr) != 0 ? fname_full[(idx_arr[end] + 2):end] : fname_full
 #wrt the temp folder
 const PATH = Base.source_dir()
 
-include(PATH*"/handleErrors.jl")
-include(PATH*"/Run_Algo.jl")
+include(PATH*"/Util/handleErrors.jl")
+include(PATH*"/Util/Run_Algo.jl")
 
 #Reset the initialize/ondata
-include(PATH*"/reset.jl")
+include(PATH*"/Util/reset.jl")
 
