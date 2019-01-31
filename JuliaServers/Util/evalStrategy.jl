@@ -33,9 +33,9 @@ function evaluate_strategy(args)
         return 0
     end
     
-    eval(Meta.parse("fname = nothing"))
+    eval(Meta.parse("codeFile = nothing"))
     try
-        eval(Meta.parse("fname = processargs(parsed_args)"))
+        eval(Meta.parse("codeFile = processargs(parsed_args)"))
     catch err
         println(err)
         error_static("Error parsing arguments from settings panel")
@@ -49,13 +49,7 @@ function evaluate_strategy(args)
         eval(Meta.parse("""include("$(source_dir)/Util/boilerPlate.jl")"""))
         
         info_static("Checking user algorithm for errors")
-        # if (parsed_args["code"] == nothing)
-        #     eval(Meta.parse("""include(parsed_args["file"])"""))
-        # elseif (parsed_args["file"] == nothing)
-        #     eval(Meta.parse("""include_string(parsed_args["code"])"""))
-        # end
-
-        eval(Meta.parse("""include(fname)"""))
+        eval(Meta.parse("""include(codeFile)"""))
         
         st = "run_algo(false)"
         if parsed_args["forward"] 
