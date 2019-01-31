@@ -3,7 +3,7 @@
 # Email: shiv.chawla@aimsquant.com
 # Organization: AIMSQUANT PVT. LTD.
 
-import Base: exit, quit, run
+import Base: exit, run
 using BufferedStreams
 
 #overwriting Base.exit
@@ -25,8 +25,11 @@ function handleexception(err::Any, forward=false)
     showerror(out, err)
     msg = String(take!(out))
     close(out)
-    
+
     st = stacktrace(catch_backtrace())
+
+    println(msg)
+    println(st)
 
     stack_msg = ""
     found_in_stack=false
@@ -62,8 +65,6 @@ function handleexception(err::Any, forward=false)
     end 
 
     msg = replace(msg, "/home/admin/raftaar/" => "..")
-    msg = replace(msg, "/home/jp/raftaar/" => "..")
-    msg = replace(msg, "/home/jp/local/" => "..")
     msg = replace(msg, "BackTester." => "")
     
     Logger.error(msg)

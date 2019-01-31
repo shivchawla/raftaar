@@ -6,6 +6,7 @@ using TimeSeries
 using Logger
 using BackTester
 using Dates
+using Statistics
 
 fname_full = @__FILE__
 dir = Base.source_dir()

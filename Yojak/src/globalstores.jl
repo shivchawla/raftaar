@@ -13,7 +13,7 @@ function __forwardfill(ta)
     for (col, name) in enumerate(colnames(ta))
         noNaNIdx = findlast(x -> !isnan(x), vals[:, col])
         if noNaNIdx < nrows && noNaNIdx > 0
-            vals[noNaNIdx+1:nrows, col] = vals[noNaNIdx, col]
+            vals[noNaNIdx+1:nrows, col] .= vals[noNaNIdx, col]
         end
     end
 
@@ -24,7 +24,7 @@ function getsubset(ta::TimeArray, d::Date, ct::Int=0, offset::Int=5)
 
     # Drop NaN before selecting time period 
     ta = dropnan(ta)
-    timestamps = TimesSeries.timestamp(ta)
+    timestamps = TimeSeries.timestamp(ta)
 
     lastidx = 0
 
@@ -34,7 +34,7 @@ function getsubset(ta::TimeArray, d::Date, ct::Int=0, offset::Int=5)
     for i=0:(offset == -1 ? length(timestamps) : offset)
         
         nd = d - Dates.Day(i)
-        lastidx = findlast(timestamps, nd)
+        lastidx = findlast(x -> x == nd, timestamps)
 
         if lastidx > 0
             break
@@ -174,18 +174,6 @@ function _updateglobaldatastores(key::String, ta::TimeArray, frequency::Symbol)
     end
 end
 
-##NOT IN USE
-function fromglobalstore(secid::Int, key::String)
-    if haskey(_globaldatastores, key)
-        ticker = "$secid"
-        if Symbol(ticker) in __getcolnames(_globaldatastores[key])
-            return _globaldatastores[key][ticker]
-        end 
-    end
-
-    return nothing
-end
-
 # Searches and return TA of available secids
 function fromglobalstores(secids::Vector{Int}, key::String, frequency::Symbol)
     
@@ -257,7 +245,7 @@ function findinglobalstores(secids::Vector{Int},
                                 country::String="IN")      
     
     full_ta = fromglobalstores(secids, datatype, frequency)
-    truenames = full_ta != nothing ? colnames(full_ta) : [""]
+    truenames = full_ta != nothing ? colnames(full_ta) : Symbol[]
 
     #Merge with benchmark data as a filter
     full_ta = full_ta != nothing ? merge(full_ta, to(from(_benchmarkData, Date(startdate)), Date(enddate)), :outer) : nothing
@@ -294,7 +282,7 @@ function findinglobalstores(secids::Vector{Int},
     
     full_ta = fromglobalstores(secids, datatype, frequency)
 
-    truenames = full_ta != nothing ? colnames(full_ta) : [""]
+    truenames = full_ta != nothing ? colnames(full_ta) : Symbol[]
 
     #Merge with benchmark data as a filter
     full_ta = full_ta!=nothing ? merge(full_ta, TimeSeries.tail(to(_benchmarkData, Date(enddate)), horizon), :outer) : nothing

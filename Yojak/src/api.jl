@@ -53,25 +53,31 @@ function _adjust(ta::TimeArray; displaylogs::Bool=true, frequency::Symbol = :Day
     Logger.update_display(displaylogs)
 
     ts = TimeSeries.timestamp(ta)
-    adjustments = _get_adjustments_factors(datacollection(), colnames(ta),
+    adjustments = _get_adjustments_factors(datacollection(), string.(colnames(ta)),
                         DateTime(ts[1] - Dates.Day(10)), DateTime(ts[end]),
                         "EQ", "NSE", "IN")
 
     eff_ta = nothing
     
     for (i, name) in enumerate(colnames(ta))
-        vals = adjustments[name]
+        adjustment_vals = get(adjustments, String(name), Matrix{Any}(nothing, 0, 0))
 
         #Default adjusted ta is same as input ta (used when there is a problem in adjustments)
         _ta = ta[name]
 
-        if vals != Matrix{Any}(0, 0)
-            _adj_ta = TimeArray([Date(dt) for dt in adjustments[name][:,1]], cumprod([abs(Float64(ai)) for ai in vals[:,2]]), Symbol.(["Adj_$(String(name))"]))
+        if adjustment_vals != Matrix{Any}(nothing, 0, 0)
+            _adj_ta = TimeArray([Date(dt) for dt in adjustment_vals[:,1]], cumprod([abs(Float64(ai)) for ai in adjustment_vals[:,2]]), Symbol.(["Adj_$(String(name))"]))
 
             #how to DO metrge in case of intraday data
             if frequency == :Day
-             _ta = merge(ta[name], _adj_ta, :outer)
-                _ta = round.(_ta[name].*__forwardfill(_ta[Symbol("Adj_$(String(name))")]), 2)
+                _ta = merge(ta[name], _adj_ta, :outer)
+                
+                _ta = _ta[name].*__forwardfill(_ta[Symbol("Adj_$(String(name))")])
+                _vals_ta = TimeSeries.values(_ta)
+                _not_nan_idx = .!isnan.(_vals_ta) 
+                _vals_ta[_not_nan_idx] = round.(_vals_ta[_not_nan_idx], digits = 2)
+                _ta = TimeSeries.TimeArray(TimeSeries.timestamp(_ta), _vals_ta, [name])
+            
             else
  
                 _ta_ts = TimeSeries.timestamp(_ta)
@@ -105,7 +111,7 @@ function _adjust(ta::TimeArray; displaylogs::Bool=true, frequency::Symbol = :Day
         end
     end
 
-    eff_ta = TimeSeries.rename(eff_ta, Symbol.(colnames(ta)))
+    eff_ta = TimeSeries.rename(eff_ta, colnames(ta))
     Logger.update_display(true)
     return eff_ta
 end

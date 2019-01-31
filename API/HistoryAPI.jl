@@ -10,6 +10,9 @@ import BackTester: SecuritySymbol, Security
 import YRead: history 
 #history_unadj, getsecurity, getsecurityid, getsecurityids, getsymbol
 
+getindex(ta::TimeSeries.TimeArray, cols::Vector{String}) = ta[Symbol.(cols)]
+getindex(ta::TimeSeries.TimeArray, col::String) = ta[Symbol(col)]
+
 function history(securities::Vector{Security},
                     datatype::String,
                     frequency::Symbol,
@@ -75,7 +78,7 @@ function history(tickers::Array{String,1},
     YRead.history(tickers, datatype, frequency, horizon, getcurrentdatetime(),
             securitytype = securitytype,
             exchange = exchange,
-            country = country, displaylogs=false)[tickers]  
+            country = country, displaylogs=false)[Symbol.(tickers)]  
 end
 
 # Period based History

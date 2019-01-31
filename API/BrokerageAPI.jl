@@ -123,6 +123,8 @@ function placeorder(order::Order)
 end
 export placeorder
 
+liquidate(sym::Symbol) = liquidate(String(sym))
+
 function liquidate(ticker::String)
     __IllegalContextMessage(:liquidate, :initialize)
     setholdingshares(ticker, 0)  
@@ -159,6 +161,7 @@ end
 export liquidateportfolio
 
 
+setholdingpct(sym::Symbol, target::Float64) = setholdingpct(String(sym), target)
 # Order function to set holdings to a specific level in pct/value/shares
 function setholdingpct(ticker::String, target::Float64)
     if !_checkforrebalance()
@@ -239,6 +242,8 @@ end
 
 export setholdingpct
 
+setholdingvalue(sym::Symbol, target::Float64) = setholdingvalue(String(sym), target)
+
 function setholdingvalue(secid::Int, target::Float64)
     if !_checkforrebalance()
         return
@@ -311,6 +316,8 @@ function setholdingvalue(symbol::SecuritySymbol, target::Float64)
     
 end
 export setholdingvalue
+
+setholdingshares(sym::Symbol, target::Int64) = setholdingshares(String(sym), target)
 
 function setholdingshares(secid::Int, target::Int64)
     if !_checkforrebalance()
@@ -394,6 +401,10 @@ function settargetportfolio(port::Dict{SecuritySymbol, Float64})
     settargetportfolio([(k.id, v) for (k,v) in port])
 end
 
+function settargetportfolio(port::Vector{Tuple{Symbol, Float64}})
+    settargetportfolio((String(p[1]), p[2]) for p in port)
+end
+
 function settargetportfolio(port::Vector{Tuple{String, Float64}})
     settargetportfolio([(getsecurity(v[1]).symbol.id, v[2]) for v in port])
 end
@@ -427,6 +438,7 @@ export settargetportfolio
 function hedgeportfolio()
 end
 
+getopenorders(sym::Symbol) = getopenorders(String(sym))
 function getopenorders(ticker::String)
     __IllegalContextMessage(:getopenorders, :initialize)
     deepcopy(getopenorders(algorithm.brokerage, getsecurity(ticker).symbol))
@@ -452,6 +464,8 @@ function getopenorders()
     deepcopy(getopenorders(algorithm.brokerage))
 end
 export getopenorders
+
+cancelopenorders(sym::Symbol) = cancelopenorders(String(sym))
 
 function cancelopenorders(ticker::String)
     __IllegalContextMessage(:cancelopenorders, :initialize)

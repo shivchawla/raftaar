@@ -824,9 +824,9 @@ function _get_adjustments_factors_security(datacollection::Mongoc.Collection,
 
     #data can be empty array due to data issues
     if data != Any[]
-        data[data[:,2].==nothing, 2] = 1.0
-        data[data[:,2].=="", 2] = 1.0
-        data[:,2] = unshift!(data[1:end-1,2], 1.0)
+        data[data[:,2].==nothing, 2] .= 1.0
+        data[data[:,2].=="", 2] .= 1.0
+        data[:,2] = pushfirst!(data[1:end-1,2], 1.0)
     end
 
     return data == Any[] ? Matrix{Any}(0,0) : data

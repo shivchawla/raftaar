@@ -129,7 +129,7 @@ end
 
 function _log(msg::Any, msgtype::MessageType, modes::Vector{Symbol}, style::Symbol, datetime::DateTime)
     
-    if !get(logbook.params, "display", true)
+    if !get(logbook.params, "display", true) && msgtype != ERROR
         return
     end
 
@@ -138,7 +138,7 @@ function _log(msg::Any, msgtype::MessageType, modes::Vector{Symbol}, style::Symb
     end
 
     msg = string(msg)
-    msg = replace(msg, "Raftaar." => "")
+    msg = replace(msg, "BackTester." => "")
 
     maxlength = min(300, length(msg))
     
@@ -321,8 +321,8 @@ function print(str; realtime=true)
 
             #Using "endof" string and NOT "length" length <= endof. 
             # Read Julia documentation on strings 
-            for i=1:chunksize:endof(str)
-                chunk = str[i:min(endof(str), i+chunksize-1)]
+            for i=1:chunksize:lastindex(str)
+                chunk = str[i:min(lastindex(str), i+chunksize-1)]
                 # Base.run(pipeline(pushQueueCmd(channel, JSON.json(Dict{String, Any}("data"=>chunk, "index"=>idx))), devnull))
                 Redis.rpush(logbook.params["redis_client"], channel, JSON.json(Dict{String, Any}("data"=>chunk, "index"=>idx)))
                 idx+=1

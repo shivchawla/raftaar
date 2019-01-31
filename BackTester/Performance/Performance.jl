@@ -551,8 +551,8 @@ function calculateperformance_staticperiods(returns::TimeArray)
     for y = 2007:Dates.year(dates[end])
         past_returns = when(returns, year, y)
         if(length(past_returns) > 0)
-            algo_returns = TimesSeries.values(past_returns["algorithm"])
-            benchmark_returns = TimesSeries.values(past_returns["benchmark"])
+            algo_returns = TimeSeries.values(past_returns["algorithm"])
+            benchmark_returns = TimeSeries.values(past_returns["benchmark"])
 
             ts = TimeSeries.timestamp(past_returns)
             ndays = Int(Dates.value(ts[end] - ts[1])) + 1
@@ -563,8 +563,8 @@ function calculateperformance_staticperiods(returns::TimeArray)
         for m = 1:12
             past_monthly_returns = when(past_returns, month, m)
             if(size(past_monthly_returns.values,1) > 0)
-                algo_returns = TimesSeries.values(past_monthly_returns["algorithm"])
-                benchmark_returns = TimesSeries.values(past_monthly_returns["benchmark"])
+                algo_returns = TimeSeries.values(past_monthly_returns["algorithm"])
+                benchmark_returns = TimeSeries.values(past_monthly_returns["benchmark"])
                 
                 ts = TimeSeries.timestamp(past_monthly_returns)
                 ndays = Int(Dates.value(ts[end] - ts[1])) + 1
