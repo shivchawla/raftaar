@@ -285,7 +285,7 @@ function updatedatastores(datetime::DateTime, ohlcv::Dict{String, TimeArray}, ad
         volume = __getvolume(volumes, Symbol(colname))
         
         #check if price is DataArray NA
-        tradebar =  TradeBar(datetime, open, high, low, close, Int(volume))
+        tradebar =  TradeBar(datetime, open, high, low, close, volume)
 
         ss = security.symbol
         tradebars[ss] = tradebar
@@ -315,8 +315,8 @@ function __getprices(prices, colname)
 end
 
 function __getvolume(volumes, colname)
-    defaultvolume = 0
-    volume = 0
+    defaultvolume = 0.0
+    volume = 0.0
     if colname in colnames(volumes)
         volume = values(volumes[colname])[1]
         volume = !isnan(volume) ? volume : defaultvolume

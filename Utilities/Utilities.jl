@@ -8,6 +8,7 @@ using DataFrames
 using GLM
 using MultivariateStats
 using Statistics
+using LinearAlgebra
 
 function _compute_returns(prices::TimeArray, rettype::Symbol, total::Bool)
     
@@ -101,7 +102,7 @@ function beta_old(tickers, frequency::Symbol, horizon::Int, enddate::DateTime;
 end
 
 function beta(tickers, frequency::Symbol, horizon::Int, enddate::DateTime; 
-                benchmark="CNX_NIFTY", rettype::Symbol=:log, series::String = "Close")
+                benchmark="NIFTY_50", rettype::Symbol=:log, series::String = "Close")
     
     if(length(tickers) == 0) 
         return nothing
@@ -115,14 +116,14 @@ function beta(tickers, frequency::Symbol, horizon::Int, enddate::DateTime;
     m_ta = merge(rets_benchmark, rets_ts, :outer)
 
     ret = values(m_ta)
-    ret[isnan.(ret)] = 0.0
+    ret[isnan.(ret)] .= 0.0
     cv_mat = cov(ret)
     variance = diag(cv_mat)  
     cv = cv_mat[1, 2:end]  
    
     #beta = Cov(ra,rb)/var(rb)
     bta = (1.0/variance[1]) * cv 
-    bta[bta.==0]=1.0
+    bta[bta.==0] .= 1.0
 
     # Comvert to time-series
     nrow = size(bta)[1]

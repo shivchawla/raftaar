@@ -53,7 +53,7 @@ function ondata(data, state)
 
 	println("74")
 	#println("Fetching Prices")
-	returns = cumsum(values(logpricesdiff), dims=1)[end, :]
+	returns = cumsum(values(logpricesdiff), dims=1m by=)[end, :]
 
 	println("75")
 

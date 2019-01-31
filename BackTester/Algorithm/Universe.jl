@@ -16,19 +16,19 @@ struct TradeBar
   high::Float64
   low::Float64
   close::Float64
-  volume::Int64
+  volume::Float64
   change::Float64
 end
 
 
-empty(tradebar::TradeBar) = tradebar.datetime == DateTime(1) && tradebar.open == 0.0 && tradebar.high == 0.0 && tradebar.low == 0.0 && tradebar.close == 0.0 && tradebar.volume == 0
+empty(tradebar::TradeBar) = tradebar.datetime == DateTime(1) && tradebar.open == 0.0 && tradebar.high == 0.0 && tradebar.low == 0.0 && tradebar.close == 0.0 && tradebar.volume == 0.0
 TradeBar(datetime::DateTime, open::Float64, high::Float64, low::Float64, close::Float64) =
-				TradeBar(datetime, open, high, low, close, 0, 0.0)
+				TradeBar(datetime, open, high, low, close, 0.0, 0.0)
 
-TradeBar(datetime::DateTime, open::Float64, high::Float64, low::Float64, close::Float64, volume::Int64) =
+TradeBar(datetime::DateTime, open::Float64, high::Float64, low::Float64, close::Float64, volume::Float64) =
         TradeBar(datetime, open, high, low, close, volume, 0.0)
 
-TradeBar() = TradeBar(DateTime(1), 0.0, 0.0, 0.0, 0.0, 0, 0.0)
+TradeBar() = TradeBar(DateTime(1), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
 
 TradeBar(data::Dict{String, Any}) = TradeBar(DateTime(data["datetime"]),
                                       data["open"],
