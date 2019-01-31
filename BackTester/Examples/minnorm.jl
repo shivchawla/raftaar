@@ -13,13 +13,13 @@ function initialize(state)
 	universe = ["ACC","ADANIPORTS","AMBUJACEM",
 	"ASIANPAINT","AUROPHARMA","AXISBANK","BAJAJ_AUTO",
 	"BANKBARODA","BHEL","BPCL",	"BHARTIARTL","INFRATEL",
-	"BOSCHLTD","CIPLA","COALINDIA","DRREDDY","EICHERMOT",
-	"GAIL","GRASIM","HCLTECH","HDFCBANK","HEROMOTOCO","HINDALCO",
-	"HINDUNILVR","HDFC","ITC","ICICIBANK","IDEA",
-	"INDUSINDBK","INFY","KOTAKBANK","LT","LUPIN","M_M",
-	"MARUTI","NTPC","ONGC","POWERGRID","RELIANCE","SBIN",
-	"SUNPHARMA","TCS","TATAMTRDVR","TATAMOTORS","TATAPOWER",
-	"TATASTEEL","TECHM","ULTRACEMCO","WIPRO","YESBANK","ZEEL"]
+	"BOSCHLTD","CIPLA","COALINDIA","DRREDDY","EICHERMOT"]
+	# "GAIL","GRASIM","HCLTECH","HDFCBANK","HEROMOTOCO","HINDALCO",
+	# "HINDUNILVR","HDFC","ITC","ICICIBANK","IDEA",
+	# "INDUSINDBK","INFY","KOTAKBANK","LT","LUPIN","M_M",
+	# "MARUTI","NTPC","ONGC","POWERGRID","RELIANCE","SBIN",
+	# "SUNPHARMA","TCS","TATAMTRDVR","TATAMOTORS","TATAPOWER",
+	# "TATASTEEL","TECHM","ULTRACEMCO","WIPRO","YESBANK","ZEEL"]
 	# NIFTY 50 stock universe as of 25/01/2017
 	# This universe has Survivorship bias
 	# Set universe (mandatory before placing any orders)
@@ -45,7 +45,7 @@ function ondata(data, state)
 	
 	vs = values(priceTA[1])./values(priceTA)
 	
-	coeff= mean(vs, 1)
+	coeff= mean(vs, dims=1)
 	
 	# Create vector with two columns (Name and Returns) 
 	rets = [colnames(priceTA) vec(coeff)]
@@ -82,9 +82,6 @@ function ondata(data, state)
 	if sum(flag) == nstocks
 		initial = uniform
 	end
-	
-	println(nav)
-	println(initial)
 	
 	#Optimize
 	(obj, opt_port, status) = OptimizeAPI.optimize(universe, 
