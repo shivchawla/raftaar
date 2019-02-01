@@ -8,6 +8,7 @@ using Utilities
 using MultivariateStats
 using Dates
 using LinearAlgebra
+using Statistics
 
 import MultivariateStats: FactorAnalysis
 

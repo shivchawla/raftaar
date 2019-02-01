@@ -11,6 +11,8 @@ end
 BACKTEST_QUEUE = "backtest-request-queue-$(env)"
 THIS_PROCESS_BACKTEST_SET = "backtest-request-set-julia-$(port)"
 COMPLETE_BACKTEST_SET  = "backtest-completion-set-$(env)";
+BACKTEST_REALTIME_CHANNEL_PREFIX = "backtest-realtime-"
+BACKTEST_FINAL_CHANNEL_PREFIX = "backtest-final-"
 DEFAULT_WAIT_TIME = 5
 
 source_dir = Base.source_dir()
@@ -110,6 +112,12 @@ function removeActiveRequestOnRestart()
                     if backtestId != ""
                         #Delete from active set
                         Redis.hdel(redisClient, THIS_PROCESS_BACKTEST_SET, backtestId)
+
+                        #Delete all realtime data in realtime channel for this request
+                        Redis.del(redisClient, BACKTEST_REALTIME_CHANNEL_PREFIX*backtestId)
+
+                        #Delete all static data in realtime channel for this request
+                        Redis.del(redisClient, BACKTEST_FINAL_CHANNEL_PREFIX*backtestId)
 
                         #Remove julia port related info
                         delete!(request, "juliaPort")
