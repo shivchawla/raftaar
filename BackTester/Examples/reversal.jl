@@ -11,15 +11,15 @@ function initialize(state)
 	# NIFTY 50 stock universe as of 25/01/2017
 	# This universe has Survivorship bias
 	universe = ["ACC","ADANIPORTS","AMBUJACEM",
-	"ASIANPAINT","AUROPHARMA","AXISBANK","BAJAJ_AUTO"]#,
-	# "BANKBARODA","BHEL","BPCL",	"BHARTIARTL","INFRATEL",
-	# "BOSCHLTD","CIPLA","COALINDIA","DRREDDY","EICHERMOT",
-	# "GAIL","GRASIM","HCLTECH","HDFCBANK","HEROMOTOCO","HINDALCO",
-	# "HINDUNILVR","HDFC","ITC","ICICIBANK","IDEA",
-	# "INDUSINDBK","INFY","KOTAKBANK","LT","LUPIN","M_M",
-	# "MARUTI","NTPC","ONGC","POWERGRID","RELIANCE","SBIN",
-	# "SUNPHARMA","TCS","TATAMTRDVR","TATAMOTORS","TATAPOWER",
-	# "TATASTEEL","TECHM","ULTRACEMCO","WIPRO","YESBANK","ZEEL"]
+	"ASIANPAINT","AUROPHARMA","AXISBANK","BAJAJ-AUTO",
+	"BANKBARODA","BHEL","BPCL",	"BHARTIARTL","INFRATEL",
+	"BOSCHLTD","CIPLA","COALINDIA","DRREDDY","EICHERMOT",
+	"GAIL","GRASIM","HCLTECH","HDFCBANK","HEROMOTOCO","HINDALCO",
+	"HINDUNILVR","HDFC","ITC","ICICIBANK","IDEA",
+	"INDUSINDBK","INFY","KOTAKBANK","LT","LUPIN","M&M",
+	"MARUTI","NTPC","ONGC","POWERGRID","RELIANCE","SBIN",
+	"SUNPHARMA","TCS","TATAMTRDVR","TATAMOTORS","TATAPOWER",
+	"TATASTEEL","TECHM","ULTRACEMCO","WIPRO","YESBANK","ZEEL"]
 	
 	# Set Cancel policy to EOD 
 	# All open order are canceled at End of Day
@@ -38,64 +38,46 @@ end
 # every DAY/WEEK/MONTH (depends on rebalance frequency)
 # Default rebalance Frequency: Daily
 function ondata(data, state)
-
-	println("71")
+	
 	# Get Universe
 	universe = getuniverse()
 	
-	println("72")
 	# Fetch prices for last 22 days
-	prices = history(universe, "Close", :Day, 22)
-
-	println("73")
+	prices = dropnan(history(universe, "Close", :Day, 22), :any)
+	
+	# Logic to calculate returns over last month
+	# Output: TimeArray
+	# http://timeseriesjl.readthedocs.io/en/latest/
 	logpricesdiff = diff(log.(prices))
 	
-
-	println("74")
-	#println("Fetching Prices")
 	returns = cumsum(values(logpricesdiff), dims=1)[end, :]
 
-	println("75")
-
+	# Create vector with two columns (Name and Returns) 
 	rets = [colnames(prices) vec(returns)]
 
-	println("76")
-
 	# Sorted returns
-	sortedrets = sortslices(rets, dims=1, rev=true)
-	#info(string(sortedrets))
-
-	println("77")
+	sortedrets = sortslices(rets, dims=1, by=x->(x[2]))
 	
 	# Get 5 names with lowest retursn
-	topnames = sortedrets[1:5, 1]
-
-	println("78")
+	topnames = sortedrets[1: min(5, size(sortedrets)[1]), 1]
 
 	#Liquidate from portfolio if not in bottom 5 anymore
-	for (stock, positions) in state.account.portfolio.positions
-		if (stock.ticker in topnames)
+	for (stock, position) in state.account.portfolio.positions
+		if stock.ticker in String.(topnames)
 			continue
 		else	
 			setholdingpct(stock, 0.0)
 		end
 	end
-
-	println("79")
 	
-	#info("$(length(topnames))")
 	# Create momemtum portfolio
 	for (i,stock) in enumerate(topnames)
-		setholdingpct(stock, 1.0/length(topnames)) # -0.2)#(6-i)*(1.0/15.0))
+		setholdingpct(stock, 1.0/length(topnames)) 
 	end
-
-	println("80")
 	
 	# Track the portfolio value
 	track("Portfolio Value", state.account.netvalue)
 	
 	# Output information to console
-	Logger.info("Portofolio value = $(state.account.netvalue)")
-
+	Logger.info("Portfolio Value = $(state.account.netvalue)")
 end
-        

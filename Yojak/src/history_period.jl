@@ -33,7 +33,7 @@ function _history_unadj(securitycollection::Mongoc.Collection,
             continue
         else
             #fetch data from database
-            data = Array{Any,2}(undef, 0,0)
+            data = Array{Any,2}(undef,0,0)
             nrows = 0
             while (priority > 0) && (nrows == 0)
                 
@@ -92,7 +92,7 @@ function _history_unadj(securitycollection::Mongoc.Collection,
     
     if secid != -1
         #fetch data from database
-        data = Array{Any,2}(undef, 0,0)
+        data = Array{Any,2}(undef,0,0)
         nrows = 0
         while priority > 0 && nrows == 0
             
@@ -143,7 +143,7 @@ function _history(securitycollection::Mongoc.Collection,
         else
             #fetch data from database
             nrows = 0
-            data = Array{Any,2}(0,0)
+            data = Array{Any,2}(undef,0,0)
 
             while priority > 0 && nrows == 0
                 columns = (priority >= 2) && (frequency == :Day) ? [datatype, "Adjustment Factor", "Adjustment Type"] : [datatype]
@@ -208,7 +208,7 @@ function _history(securitycollection::Mongoc.Collection,
     else
         #fetch data from database
         nrows = 0
-        data = Array{Any,2}(0,0)
+        data = Array{Any,2}(undef,0,0)
 
         while priority > 0 && nrows == 0
             columns = priority >= 2 ? append!(datatypes, ["Adjustment Factor", "Adjustment Type"]) : [datatypes]

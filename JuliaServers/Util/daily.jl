@@ -189,9 +189,6 @@ function mainfnc(date::Date, counter::Int, open, high, low, close, volume, adjus
 
   _updatependingorders_splits()
 
-  #Internal function to execute pending orders using todays's close
-  _updatependingorders_price()
-
   _updateaccount_price()
 
   #Internal function to update portfolio value using today's close
@@ -202,11 +199,6 @@ function mainfnc(date::Date, counter::Int, open, high, low, close, volume, adjus
   #and for all the stocks with pending orders.
 
   #beforeclose()
-
-  #this should only be called once a day in case of high frequency data
-  _updatedailyperformance()
-
-  _updatestate()
 
   #once orders are placed and performance is updated based on last know portfolio,
   #call the user defined
@@ -227,6 +219,14 @@ function mainfnc(date::Date, counter::Int, open, high, low, close, volume, adjus
     handleexception(err, forward)
     return false
   end
+
+  #Internal function to execute pending orders using todays's close
+  _updatependingorders_price()
+  _updateaccount_price()
+ 
+  #this should only be called once a day in case of high frequency data
+  _updatedailyperformance()
+  _updatestate()
 
   if !forward
       Logger.update_display(true)

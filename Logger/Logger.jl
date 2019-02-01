@@ -13,7 +13,6 @@ using JSON
 import Redis
 
 mutable struct  LogBook
-    mode::Symbol
     ## Key needs to be string as db can't handle fields with dots
     container::Dict{String, Dict{String, Vector{String}}}
     savelimit::Int
@@ -22,7 +21,6 @@ mutable struct  LogBook
 end
 
 LogBook() = LogBook(
-                :json, 
                 Dict{String, Vector{String}}(), 
                 20, 
                 Dict{String, Any}(

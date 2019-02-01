@@ -323,7 +323,7 @@ function NdArray(data::Array{Array{Any,1}}, index::Array{Int,1})
     len = length(data)
     
     if len == 0
-        return Array{Any}(0,0)
+        return Array{Any}(undef,0,0)
     end
 
     ncols = length(index)
@@ -342,7 +342,7 @@ function NdArray(data::Array{Any,1}, index::Array{Int,1})
     len = length(data)
     
     if len == 0
-        return Array{Any}(0,0)
+        return Array{Any}(undef,0,0)
     end
 
     ncols = length(index)
@@ -602,7 +602,7 @@ function aggregatedata(datacollection::Mongoc.Collection,
             columns[columns.=="Volume"] = "Total Trade Quantity"
         end
         
-        data = Array{Any}(undef, 0,0)
+        data = Array{Any}(undef,0,0)
 
         while (edate_year >= sdate_year) 
             
@@ -629,7 +629,7 @@ function aggregatedata(datacollection::Mongoc.Collection,
             columns[columns.=="Volume"] = "Total Trade Quantity"
         end
         
-        data = Array{Any}(undef, 0,0)
+        data = Array{Any}(undef,0,0)
 
         while (edate_date >= sdate_date) 
             
@@ -829,7 +829,7 @@ function _get_adjustments_factors_security(datacollection::Mongoc.Collection,
         data[:,2] = pushfirst!(data[1:end-1,2], 1.0)
     end
 
-    return data == Any[] ? Matrix{Any}(0,0) : data
+    return data == Any[] ? Matrix{Any}(undef,0,0) : data
 end
 
 

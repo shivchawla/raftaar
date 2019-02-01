@@ -196,11 +196,17 @@ function updateperformanceratios(performancetracker::PerformanceTracker)
     s_idx = 1
 
     df = DataFrame(X = benchmarkreturns[s_idx:end], Y = algorithmreturns[s_idx:end])
-    OLS = fit(LinearModel, @formula(Y ~ X), df)
-    coefficients = coef(OLS)
-    latestperformance.ratios.beta = coefficients[2]
-    latestperformance.ratios.alpha = coefficients[1]
-    latestperformance.ratios.stability = r2(OLS)
+    try
+        if(size(df, 1) > 2)
+            OLS = fit(LinearModel, @formula(Y ~ X), df)
+            coefficients = coef(OLS)
+            latestperformance.ratios.beta = coefficients[2]
+            latestperformance.ratios.alpha = coefficients[1]
+            latestperformance.ratios.stability = r2(OLS)
+        end
+    catch err
+        println(err)
+    end
 
     trkerr = sqrt(252) * std(algorithmreturns[s_idx:end] - benchmarkreturns[s_idx:end])
     excessret = 252 * mean(algorithmreturns[s_idx:end] - benchmarkreturns[s_idx:end])
