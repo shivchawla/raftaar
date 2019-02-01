@@ -17,7 +17,7 @@ function minimumloss(symbols,
       
     (m, x_l, x_s) = __setupmodel(constraints, nstocks, initialportfolio, linearrestrictions)
     returns = values(price_returns(symbols, "Close", :Day, window, date))
-    returns[isnan(returns)] = 0.0 
+    returns[isnan.(returns)] .= 0.0 
 
     (nrows, ncols) = size(returns)
 

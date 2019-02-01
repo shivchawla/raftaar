@@ -21,7 +21,7 @@ function meanvariance(symbols,
     
     (m, x_l, x_s) = __setupmodel(constraints, nstocks, initialportfolio, linearrestrictions)
     returns = values(price_returns(symbols, "Close", :Day, window, date))
-    returns[isnan(returns)] = 0.0  
+    returns[isnan.(returns)] .= 0.0  
 
     (nrows, ncols) = size(returns)
 
@@ -51,7 +51,7 @@ function meanvariance(symbols,
             #Add returns constraints
             # 1. Convrt returns to year units
             if(length(returnsforecast) == 0)
-                returns*= 252/window
+                returns *= 252/window
                 @constraint(m, sum(returns * (x_l + x_s)) >= targetret)
             else
                 @constraint(m, sum(returnsforecast' * (x_l + x_s)) >= targetret)
@@ -74,11 +74,11 @@ function meanvariance(symbols,
             @variable(m, zeta[1:nfactors])
             L = loadings(M) #(nstocks X nfactors)
             
-            L[isnan.(L)] = 0.0
+            L[isnan.(L)] .= 0.0
             @constraint(m, zeta - L'*(x_l+x_s) .== 0)
             
             diagonal = diag(cov(M))
-            diagonal[isnan.(diagonal)]=0.0
+            diagonal[isnan.(diagonal)] .= 0.0
 
             # Minimize sum of systematic + idiosycratic risk
             # systematic = risk computed using factors
@@ -130,7 +130,7 @@ function meanvariance2(symbols,
     
     (m, x_l, x_s) = __setupmodel(constraints, nstocks, initialportfolio, linearrestrictions)
     returns = values(price_returns(symbols, "Close", :Day, window, date))
-    returns[isnan(returns)] = 0.0
+    returns[isnan.(returns)] .= 0.0
 
     #Annualized returns
     returns*=252/window  
@@ -181,11 +181,11 @@ function meanvariance2(symbols,
             @variable(m, zeta[1:nfactors])
             L = loadings(M) #(nstocks X nfactors)
             
-            L[isnan.(L)] = 0.0
+            L[isnan.(L)] .= 0.0
             @constraint(m, zeta - L'*(x_l+x_s) .== 0)
             
             diagonal = diag(cov(M))
-            diagonal[isnan.(diagonal)]=0.0
+            diagonal[isnan.(diagonal)] .= 0.0
 
             # Minimize sum of systematic + idiosycratic risk
             # systematic = risk computed using factors

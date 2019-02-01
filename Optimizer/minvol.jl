@@ -17,7 +17,7 @@ function minimumvolatility_raw(symbols,
     
     (m, x_l, x_s) = __setupmodel(constraints, nstocks, initialportfolio, linearrestrictions)
     returns = values(price_returns(symbols, "Close", :Day, window, date))
-    returns[isnan(returns)] = 0.0  
+    returns[isnan.(returns)] .= 0.0  
 
     (nrows, ncols) = size(returns)
 
@@ -79,7 +79,7 @@ function minimumvolatility(symbols,
     
     (m, x_l, x_s) = __setupmodel(constraints, nstocks, initialportfolio, linearrestrictions)
     returns = values(price_returns(symbols, "Close", :Day, window, date))
-    returns[isnan.(returns)] = 0.0  
+    returns[isnan.(returns)] .= 0.0  
 
     (nrows, ncols) = size(returns)
 
@@ -122,11 +122,11 @@ function minimumvolatility(symbols,
             @variable(m, zeta[1:nfactors])
             L = loadings(M) #(nstocks X nfactors)
             
-            L[isnan.(L)] = 0.0
+            L[isnan.(L)] .= 0.0
             @constraint(m, zeta - L'*(x_l+x_s) .== 0)
             
             diagonal = diag(cov(M))
-            diagonal[isnan.(diagonal)]=0.0
+            diagonal[isnan.(diagonal)] .= 0.0
 
             # Minimize sum of systematic + idiosycratic risk
             # systematic = risk computed using factors

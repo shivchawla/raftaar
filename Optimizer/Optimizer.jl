@@ -7,6 +7,7 @@ using Logger
 using Utilities
 using MultivariateStats
 using Dates
+using LinearAlgebra
 
 import MultivariateStats: FactorAnalysis
 

@@ -222,7 +222,7 @@ function __setupmodel(constraints::Constraints, nstocks::Int, initialportfolio::
         upper = restriction.upper
 
         #allow only non NaN coefficients
-        coeff[isnan.(coeff)] = 0.0
+        coeff[isnan.(coeff)] .= 0.0
         @constraint(m, lower <= sum(coeff.*(x_l+x_s)) <= upper)
     end
 
