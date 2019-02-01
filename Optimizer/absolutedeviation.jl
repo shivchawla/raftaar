@@ -20,7 +20,7 @@ function minimumabsolutedeviation(symbols,
 
     returns = price_returns(symbols, "Close", :Day, window, date)
     returns = values(returns)
-    returns[isnan.(returns)] = 0.0
+    returns[isnan.(returns)] .= 0.0
    
     (nrows, ncols) = size(returns)
 
@@ -41,8 +41,8 @@ function minimumabsolutedeviation(symbols,
     #Implementing positivity of objective function components
     #Variable u_plus and u_minus to implement absolute objective function
     
-    @variable(m, up[1:window] >= 0)    
-    @variable(m, ul[1:window] >= 0)
+    @variable(m, up[1:window] .>= 0)    
+    @variable(m, ul[1:window] .>= 0)
 
     @constraint(m, up - ul - returns * (x_l + x_s) + (1.0/window) * sum(returns * (x_l + x_s)) .>= 0)
     @constraint(m, up - ul - returns * (x_l + x_s) + (1.0/window) * sum(returns * (x_l + x_s)) .>= 0)

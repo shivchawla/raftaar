@@ -96,9 +96,9 @@ function modifyvariable(vec::Vector{Float64}, transform::Transform)
     if transform == Transform(Linear)
         return vec
     elseif transform == Transform(CubeRoot)
-        return cbrt(vec)
+        return cbrt.(vec)
     elseif transform == Transform(Logorithm)
-        return log(vec)
+        return log.(vec)
     end
 end
 
@@ -241,9 +241,9 @@ function __handleoutput(symbols, t, status, default, roundbelow)
         wts = getvalue(x_l) + getvalue(x_s)
 
         if (roundbelow != 0.0)
-            wts[abs(wts).<=roundbelow] = 0.0
-            s = sum(abs(wts))
-            wts = wts./s
+            wts[abs(wts).<=roundbelow] .= 0.0
+            s = sum(abs.(wts))
+            wts = wts/s
         end
 
         port = [(symbols[i], wts[i]) for i = 1:nstocks]
