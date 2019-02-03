@@ -241,7 +241,7 @@ function __handleoutput(symbols, t, status, default, roundbelow)
         wts = getvalue(x_l) + getvalue(x_s)
 
         if (roundbelow != 0.0)
-            wts[abs(wts).<=roundbelow] .= 0.0
+            wts[abs.(wts).<=roundbelow] .= 0.0
             s = sum(abs.(wts))
             wts = wts/s
         end

@@ -140,9 +140,10 @@ end
 
 function getlatestperformance(performancetracker::PerformanceTracker)
     # lastdate = sort(collect(keys(performancetracker)))[end]
-    lastdate = maximum(keys(performancetracker))
-
-    return performancetracker[lastdate]
+    if length(keys(performancetracker)) > 0
+        lastdate = maximum(keys(performancetracker))
+        return performancetracker[lastdate]
+    end
 end
 
 
@@ -585,13 +586,12 @@ end
 Function to compute annual returns
 """
 function calculateannualreturns(returns::Vector{Float64}, scale::Int=252, period::Int=0)
-    tr = (cumprod(1.0 .+ returns))[end] - 1
 
+    tr = (cumprod(1.0 .+ returns))[end] - 1
     #Use scale and period to scale daily returns to annual returns
     len = period == 0 ? length(returns) : period
-    
-    adr = (1 .+ tr)^(1/len) - 1
-    ayr = (1 .+ adr)^(scale) - 1
+    ayr = (1 + tr)^(scale/len) - 1
+   
     return round(ayr, digits = 4)
     
 end

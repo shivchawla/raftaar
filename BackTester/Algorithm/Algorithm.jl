@@ -208,14 +208,17 @@ function addvariable!(variabletracker::VariableTracker, name::String, value::Flo
         variabletracker[date] = Dict{String,Any}()
     end
 
-    variabletracker[date][name] = value
+    variabletracker[date][name] = round(value, digits = 2)
 
 end
 
 function updatestate(algorithm::Algorithm)
     algorithm.state.account = deepcopy(algorithm.account)
     #algorithm.state.portfolio = deepcopy(algorithm.portfolio)
-    algorithm.state.performance = deepcopy(getlatestperformance(algorithm.performancetracker))
+    latestperformance = getlatestperformance(algorithm.performancetracker)
+    if latestperformance != nothing
+        algorithm.state.performance = deepcopy(latestperformance)
+    end
 end
 export updatestate
 

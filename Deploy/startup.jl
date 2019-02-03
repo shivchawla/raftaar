@@ -1,3 +1,6 @@
+using Pkg
+Pkg.resolve()
+
 user = ENV["USER"]
 push!(LOAD_PATH, "/home/$user/raftaar/BackTester/")
 push!(LOAD_PATH, "/home/$user/raftaar/Yojak/src/")

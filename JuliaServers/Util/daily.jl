@@ -191,6 +191,9 @@ function mainfnc(date::Date, counter::Int, open, high, low, close, volume, adjus
 
   _updateaccount_price()
 
+  #Pre-execution state 
+  _updatestate()
+
   #Internal function to update portfolio value using today's close
   #What if there is no price and it doesnn't trade anymore?
 

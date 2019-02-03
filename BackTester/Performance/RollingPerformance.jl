@@ -230,11 +230,17 @@ function computereturns(accounttracker, cashtracker)
         netvalue = startingcaptital
 
         for i in 1:length(sortedkeys)
+
             date = sortedkeys[i]
             oldnetvalue = netvalue
 
             netvalue = accounttracker[date].netvalue
-            newfunds = get(cashtracker, date, 0.0)
+            
+            newfunds = 0
+            if i > 1 #seedcash is already part of netvalue on day 1
+                newfunds = get(cashtracker, date, 0.0)
+            end
+
             adjustednetvalue = netvalue - newfunds
 
             rt = oldnetvalue > 0.0 ? (netvalue - newfunds - oldnetvalue)/ oldnetvalue : 0.0

@@ -30,9 +30,15 @@ function price_returns(tickers, series::String, frequency::Symbol, horizon::Int,
         return nothing
     end
     
+    if length(tickers) == 1 && tickers[1] == "NIFTY_50"
+        strict = false
+    end
+
     #Fetch prices for horizon    
     prices = YRead.history(tickers, series, :Day, horizon, enddate, displaylogs=false, strict=strict)
-    _compute_returns(prices, rettype, total) 
+    if prices != nothing
+        _compute_returns(prices, rettype, total) 
+    end
 end
 export price_returns
 
