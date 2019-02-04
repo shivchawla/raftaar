@@ -17,9 +17,12 @@ fi
 
 cp /home/admin/$env/raftaar /home/$user/ -R --force
 
+mkdir -p /home/$user/raftaar/tmp
+
 chown -R $user /home/$user/raftaar
 chgrp -R $user /home/$user/raftaar
 chmod -R u=rx /home/$user/raftaar
+chmod -R u=rwx /home/$user/raftaar/tmp
 
 chown -R $user /home/$user/.julia
 chgrp -R $user /home/$user/.julia

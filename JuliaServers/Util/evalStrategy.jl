@@ -51,6 +51,8 @@ function evaluate_strategy(args)
         info_static("Checking user algorithm for errors")
         eval(Meta.parse("""include(codeFile)"""))
         
+        rm(codeFile)
+        
         st = "run_algo(false)"
         if parsed_args["forward"] 
             st = "run_algo(true)"
