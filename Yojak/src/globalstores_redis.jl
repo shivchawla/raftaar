@@ -222,6 +222,8 @@ function _updateglobaldatastores(ta::TimeArray, datatype::String, frequency::Sym
         #Update incoming ta with existing ta
         if _ta_this != nothing
            _ta_this = _mergeWithExisting(_ta_this, datatype, frequency)
+        else
+            continue
         end
 
         _ta_this_values = _ta_this != nothing ? values(_ta_this) : nothing
@@ -234,10 +236,25 @@ function _updateglobaldatastores(ta::TimeArray, datatype::String, frequency::Sym
         vs = _ta_this_values[:, 1]
         ts = _ta_this_timestamp
 
+        #Filter out nothing
+        idx_not_nothing = vs .!= nothing
+        vs = vs[idx_not_nothing]
+        ts = ts[idx_not_nothing]
+
+        #Filter out NaN
+        idx_not_nan = .!isnan.(vs)
+        vs = Float64.(vs[idx_not_nan])
+        ts = ts[idx_not_nan]
+        
         value = Vector{String}(undef, length(ts))
         for (j, dt) in enumerate(ts)
             value[j] = JSON.json(Dict("Date" => dt, "Value" => vs[j]))
         end
+
+        # println("Finally pushing")
+        # println(name)
+        # println(vs)
+        # println(ts)
 
         Redis.del(redisClient(), key) 
         Redis.lpush(redisClient(), key, value)
@@ -253,16 +270,51 @@ function fromglobalstores(names::Vector{String}, datatype::String, frequency::Sy
         value = Redis.lrange(redisClient(), key, 0, -1)
 
         if length(value) > 0 
+            # println("Name: $(name)")
             parsed = JSON.parse.(value)
             vs = (get.(parsed, "Value", NaN))
+            
             ts = nothing
             if frequency == :Day
                 ts = Date.(get.(parsed, "Date", Date(1)))
             else
                 ts = DateTime.(get.(parsed, "Date", DateTime(1)))
             end
+            
+            # println("VS-1")
+            # println(vs)
+
+            #Filter out Nothing
+            idx_not_nothing = vs .!= nothing
+            vs = vs[idx_not_nothing]
+            ts = ts[idx_not_nothing]
+
+            # println("VS-2")
+            # println(vs)
+
+            #Filter out Nan
+            idx_not_nan = .!isnan.(vs)
+            vs = Float64.(vs[idx_not_nan])
+            ts = ts[idx_not_nan]
+
+            # println("VS-3")
+            # println(vs)
 
             _ta = TimeArray(ts, vs, [Symbol(name)])
+
+            # # println("_Ta")
+            # if _ta != nothing
+            #     println(_ta)
+            # else
+            #     println("_ta is nothing")
+            # end
+
+            # println("Ta")
+            # if ta != nothing
+            #     println(ta)
+            # else
+            #     println("ta is nothing")
+            # end
 
             if ta == nothing
                 ta = _ta

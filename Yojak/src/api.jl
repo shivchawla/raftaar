@@ -542,6 +542,12 @@ function history_unadj(secids::Vector{Int},
                         country, strict)
 
 
+    # println("More")
+    # println(secids)
+    # println(more_ta)
+    # println(timestamp(more_ta))
+    # println(values(more_ta))
+
     if (more_ta != nothing)
         _updateglobaldatastores(more_ta, datatype, frequency)
     end
