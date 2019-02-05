@@ -13,11 +13,11 @@ function initialize(state)
 end
 
 function longEntryCondition()
-	return (SMA(horizon=100) .> SMA(horizon=500)) .& (SMA(horizon=200) .> SMA(horizon=1000))
+	return (SMA(horizon=100) > SMA(horizon=500)) & (SMA(horizon=200) > SMA(horizon=1000))
 end
 
 function longExitCondition()
-	return (SMA(horizon=100) .< SMA(horizon=500)) .| (SMA(horizon=200) .< SMA(horizon=1000))
+	return (SMA(horizon=100) < SMA(horizon=500)) | (SMA(horizon=200) < SMA(horizon=1000))
 end
 
 shortEntryCondition() = nothing

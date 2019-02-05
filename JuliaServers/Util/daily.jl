@@ -1,35 +1,67 @@
-function __toPricesTA(prices, date)
-  currentprices = nothing
-  try
-    currentprices = prices[date]
-  catch err
-  end
-
-  if (currentprices == nothing)
-    #Logger.warn("Price Data is missing")
-    names = push!([d.symbol.ticker for d in getuniverse(validprice=false)], API.getbenchmark().ticker)
-    currentprices = TimeArray([date], zeros(1, length(names)), names)
-  end
-
-  return currentprices
+function _filterTA(ta::TimeArray, date::Date)
+  return ta[Date.(TimeSeries.timestamp(ta)) .== date]
 end
 
-function __toVolumeTA(volume, date)
-  try
-    currentvolume = volume[date]
-  catch err
-  end
-
-  if (currentvolume == nothing)
-    #Logger.warn("Volume data is missing")
-    #Logger.warn("Assuming default volume of 10mn")
-    names = push!([d.symbol.ticker for d in getuniverse(validprice=false)], API.getbenchmark().ticker)
-    currentvolume = TimeArray([date], zeros(1, length(names)), names)
-  end
-
-  return currentvolume
+function _filterTA(ohlcv, date::Date)
+    output = Dict{String, TimeArray}()
+    
+    for (key, value) in ohlcv
+      output[key] = value != nothing ? _filterTA(value, date) : nothing
+    end
+    
+    return output
 end
 
+
+function _fetch_EOD_prices(universeIds, startdate::DateTime, enddate::DateTime)
+    closeprices_EOD = YRead.history_unadj(universeIds, "Close", :Day, DateTime(startdate), DateTime(enddate), displaylogs = false)
+
+    # println("closeprices_EOD")
+    # println(closeprices_EOD)
+
+    openprices_EOD = YRead.history_unadj(universeIds, "Open", :Day, DateTime(startdate), DateTime(enddate), displaylogs = false)
+    if openprices_EOD == nothing
+        #Logger.warn_static("Open Price Data not available from $(startdate) to $(enddate)")
+        openprices_EOD = closeprices_EOD
+    end
+
+    # println("openprices_EOD")
+    # println(openprices_EOD)
+
+    highprices_EOD = YRead.history_unadj(universeIds, "High", :Day, DateTime(startdate), DateTime(enddate), displaylogs = false)
+    if highprices_EOD == nothing
+        #Logger.warn_static("High Price Data not available from $(startdate) to $(enddate)")
+        highprices_EOD = closeprices_EOD
+    end
+
+    # println("highprices_EOD")
+    # println(highprices_EOD)
+
+    lowprices_EOD = YRead.history_unadj(universeIds, "Low", :Day, DateTime(startdate), DateTime(enddate), displaylogs = false)
+    if lowprices_EOD == nothing
+        #Logger.warn_static("Low Price Data not available from $(startdate) to $(enddate)")
+        lowprices_EOD = closeprices_EOD
+    end
+
+    # println("lowprices_EOD")
+    # println(lowprices_EOD)
+
+    vol_EOD = YRead.history_unadj(universeIds, "Volume", :Day, DateTime(startdate), DateTime(enddate), displaylogs = false)      
+    
+    if vol_EOD == nothing
+        Logger.warn_static("No EOD volume data available for any stock in the universe")
+    end
+
+    # println("vol_EOD")
+    # println(vol_EOD)
+
+    return Dict(
+        "Open" => openprices_EOD, 
+        "High" => highprices_EOD,
+        "Low" => lowprices_EOD,
+        "Close" => closeprices_EOD,
+        "Volume" => vol_EOD);
+end
 
 function _run_algo_day(startdate::Date = getstartdate(), enddate::Date = getenddate(), forward::Bool = false) 
     try
@@ -58,34 +90,13 @@ function _run_algo_day(startdate::Date = getstartdate(), enddate::Date = getendd
           return false
       end
 
-      closeprices = YRead.history_unadj(universeIds, "Close", :Day, DateTime(startdate), DateTime(enddate), displaylogs = false)
+      ohlcvEOD = _fetch_EOD_prices(universeIds, DateTime(startdate), DateTime(enddate))
+
+      closeprices = get(ohlcvEOD, "Close", nothing)
       if closeprices == nothing
-          Logger.warn_static("Close Price Data not available from $(startdate) to $(enddate)")
-          Logger.warn_static("Aborting test")
-          return false
-      end
-
-      openprices = YRead.history_unadj(universeIds, "Open", :Day, DateTime(startdate), DateTime(enddate), displaylogs = false)
-      if openprices == nothing
-          #Logger.warn_static("Open Price Data not available from $(startdate) to $(enddate)")
-          openprices = closeprices
-      end
-
-      highprices = YRead.history_unadj(universeIds, "High", :Day, DateTime(startdate), DateTime(enddate), displaylogs = false)
-      if highprices == nothing
-          #Logger.warn_static("High Price Data not available from $(startdate) to $(enddate)")
-          highprices = closeprices
-      end
-
-      lowprices = YRead.history_unadj(universeIds, "Low", :Day, DateTime(startdate), DateTime(enddate), displaylogs = false)
-      if lowprices == nothing
-          #Logger.warn_static("Low Price Data not available from $(startdate) to $(enddate)")
-          lowprices = closeprices
-      end
-
-      vol = YRead.history_unadj(universeIds, "Volume", :Day, DateTime(startdate), DateTime(enddate), displaylogs = false)      
-      if vol == nothing
-          Logger.warn_static("No volume data available for any stock in the universe")
+        Logger.warn_static("Close Price EOD Data not available from $(startdate) to $(enddate)")
+        Logger.warn_static("Aborting test")
+        return false
       end
 
       #Join benchmark data with close prices
@@ -131,8 +142,9 @@ function _run_algo_day(startdate::Date = getstartdate(), enddate::Date = getendd
 
       Logger.info_static("Running algorithm for each timestamp")
       success = true
+      
       for (i, date) in enumerate(sort(collect(keys(labels))))
-          success = mainfnc(Date(date), i, openprices, highprices, lowprices, closeprices, vol, adjustments, forward)
+          success = mainfnc(Date(date), ohlcvEOD, adjustments, forward)
           
           if(!success)
               break
@@ -155,7 +167,7 @@ function _run_algo_day(startdate::Date = getstartdate(), enddate::Date = getendd
     end
 end
 
-function mainfnc(date::Date, counter::Int, open, high, low, close, volume, adjustments, forward; dynamic::Bool = false)
+function mainfnc(date::Date, ohlcv, adjustments, forward; dynamic::Bool = false)
   
   currentData = Dict{String, TimeArray}()
 
@@ -167,12 +179,8 @@ function mainfnc(date::Date, counter::Int, open, high, low, close, volume, adjus
   else
     setcurrentdate(date)
 
-    currentData["Open"] = __toPricesTA(open, date)
-    currentData["High"] = __toPricesTA(high, date)
-    currentData["Low"] = __toPricesTA(low, date)
-    currentData["Close"] = __toPricesTA(close, date)
-    currentData["Volume"] = __toVolumeTA(volume, date)
-
+    currentData = _filterTA(ohlcv, date)
+  
     updatedatastores(DateTime(date), currentData, adjustments)
   end
 

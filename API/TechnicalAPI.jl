@@ -34,6 +34,9 @@ function Base.:>(c1::Indicators, c2::Indicators)
     keys_c1 = collect(keys(c1))
     keys_c2 = collect(keys(c2))
 
+    # println("Greater than")
+    # println(keys_c1)
+
     if length(setdiff(keys_c1, keys_c2)) != 0
       throw("Unequal entities")
     end
@@ -42,6 +45,9 @@ function Base.:>(c1::Indicators, c2::Indicators)
     for key in keys_c1
       output[key] = rename(c1[key] .> c2[key], [Symbol(key)])
     end
+
+    # println("Conditions")
+    # println(output)
 
     return output
 end
@@ -134,6 +140,10 @@ function setupMinuteDataStore(open, high, low, close, volume)
     global minuteDataStore["Volume"] = volume
 end
 
+function setupMinuteDataStore(ohlcv)
+    global minuteDataStore = ohlcv
+end
+
 function _getTA(;price::String="Close", frequency::String="1m", horizon = 10)
     ta = nothing
     
@@ -166,19 +176,20 @@ function SMA(;horizon = 1000, frequency="1m", price="Close")
     
     if ta != nothing
   	
-  	  println(ta)
-
       _sma = sma(ta, horizon)
 
-      println("Colnames: $(TimeSeries.colnames(_sma))")
-      println(_sma)
+      # println("Colnames: $(TimeSeries.colnames(_sma))")
+      # println(_sma)
         
       for name in names
-        println("name: $(name)")
+        # println("name: $(name)")
         
         output[name] = rename(_sma[Symbol("$(name)_sma_$(horizon)")], [Symbol(name)])
       end
     end
+
+    # println("Final SMA")
+    # println(output)
 
     return output
 end

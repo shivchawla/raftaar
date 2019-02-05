@@ -119,16 +119,15 @@ function _computecurrentperformance(firstperformance::Performance, lastperforman
 
     performance.returns.totalreturn =  (1 + lastTotalReturn) * (1 + performance.returns.dailyreturn) - 1
     
-    if ( 1 + lastTotalReturn > lastPeakTotalReturn)
+    if (1 + performance.returns.totalreturn) > lastPeakTotalReturn
         performance.returns.peaktotalreturn =  1 + performance.returns.totalreturn
     else 
         performance.returns.peaktotalreturn = lastPeakTotalReturn
     end
 
-
     performance.deviation.squareddailyreturn =  performance.returns.dailyreturn * performance.returns.dailyreturn
     performance.drawdown.currentdrawdown = (performance.returns.peaktotalreturn - (1+ performance.returns.totalreturn)) / performance.returns.peaktotalreturn
-    
+
     lastMaxDrawdown = _nanAdjusted(lastperformance.drawdown.maxdrawdown)
 
     if (performance.drawdown.currentdrawdown > lastMaxDrawdown) 
@@ -136,7 +135,7 @@ function _computecurrentperformance(firstperformance::Performance, lastperforman
     else
         performance.drawdown.maxdrawdown = lastMaxDrawdown
     end
-    
+
     lastSumDailyReturn = _nanAdjusted(lastperformance.deviation.sumdailyreturn)
     lastSumSquaredDailyReturn = _nanAdjusted(lastperformance.deviation.sumsquareddailyreturn)
 
@@ -177,11 +176,7 @@ end
 
 function updateperformanceratios(performancetracker::PerformanceTracker)
     sorteddates = sort(collect(keys(performancetracker)))
-
-    if (length(sorteddates) < 5)
-        return
-    end
-    
+ 
     #Initialize returns vector
     algorithmreturns = Vector{Float64}(undef, length(sorteddates))
     benchmarkreturns = Vector{Float64}(undef, length(sorteddates))
@@ -195,17 +190,19 @@ function updateperformanceratios(performancetracker::PerformanceTracker)
 
     s_idx = 1
 
-    df = DataFrame(X = benchmarkreturns[s_idx:end], Y = algorithmreturns[s_idx:end])
-    try
-        if(size(df, 1) > 2)
-            OLS = fit(LinearModel, @formula(Y ~ X), df)
-            coefficients = coef(OLS)
-            latestperformance.ratios.beta = coefficients[2]
-            latestperformance.ratios.alpha = coefficients[1]
-            latestperformance.ratios.stability = r2(OLS)
+    if (length(sorteddates) > 5)
+        df = DataFrame(X = benchmarkreturns[s_idx:end], Y = algorithmreturns[s_idx:end])
+        try
+            if(size(df, 1) > 2)
+                OLS = fit(LinearModel, @formula(Y ~ X), df)
+                coefficients = coef(OLS)
+                latestperformance.ratios.beta = coefficients[2]
+                latestperformance.ratios.alpha = coefficients[1]
+                latestperformance.ratios.stability = r2(OLS)
+            end
+        catch err
+            println(err)
         end
-    catch err
-        println(err)
     end
 
     trkerr = sqrt(252) * std(algorithmreturns[s_idx:end] - benchmarkreturns[s_idx:end])

@@ -28,7 +28,7 @@ end
 
 function _populateBenchmarkStore(frequency)
 
-    if !_isBenchmarkEODDataInitialized && frequency == :Day
+    if frequency == :Day && !_isBenchmarkEODDataInitialized
         Logger.update_display(false)
         bnch_ta = _history_unadj(securitycollection(), datacollection(), 
                                 [getsecurity("NIFTY_50").symbol.id], 
@@ -40,10 +40,11 @@ function _populateBenchmarkStore(frequency)
          
         bnch_ta = TimeSeries.rename(bnch_ta, Symbol.(["_NIFTY_50_filter"]))
 
-        setupbenchmarkstores(bnch_ta)
+        setupbenchmarkstores(bnch_ta, frequency)
 
         global _isBenchmarkEODDataInitialized = true
         Logger.update_display(true)
+    
     end
         
 end
@@ -452,15 +453,17 @@ function history_unadj(secids::Vector{Int},
         return nothing
     end
 
-    ta = findinglobalstores(secids, "Unadj_"*datatype, frequency, 
+    ta = findinglobalstores(secids, datatype, frequency, 
                                 horizon, enddate,
                                 offset = -1,
                                 removeNaN = true,
                                 securitytype = securitytype,
                                 exchange = exchange,
                                 country = country)
+
     
     cols = Int[Meta.parse(String(name)) for name in __getcolnames(ta)]
+
 
     if length(setdiff(secids, cols)) == 0 && compareSizeWithBenchmark(ta, enddate = enddate, horizon = horizon) != -1
         Logger.update_display(true)
@@ -476,23 +479,18 @@ function history_unadj(secids::Vector{Int},
                             exchange,
                             country, strict) 
 
-    if frequency == :Day
-
-        if (more_ta != nothing)
-            _updateglobaldatastores("Unadj_"*datatype, more_ta, frequency)
-        end
-
-        #finally get from updated global stores
-        ta = findinglobalstores(secids, "Unadj_"*datatype, frequency,
-                                    horizon, enddate,
-                                    offset = offset,
-                                    forwardfill = forwardfill,
-                                    securitytype = securitytype,
-                                    exchange = exchange,
-                                    country = country)
-    else 
-        ta = more_ta
+    if (more_ta != nothing)
+        _updateglobaldatastores(more_ta, datatype, frequency)
     end
+
+    #finally get from updated global stores
+    ta = findinglobalstores(secids, datatype, frequency,
+                                horizon, enddate,
+                                offset = offset,
+                                forwardfill = forwardfill,
+                                securitytype = securitytype,
+                                exchange = exchange,
+                                country = country)
 
     ta = __fillmissingdata(ta, secids)
 
@@ -520,7 +518,7 @@ function history_unadj(secids::Vector{Int},
         return nothing
     end
 
-    ta = findinglobalstores(secids, "Unadj_"*datatype, frequency,
+    ta = findinglobalstores(secids, datatype, frequency,
                                 startdate, enddate,
                                 removeNaN = true, 
                                 securitytype = securitytype,
@@ -543,25 +541,20 @@ function history_unadj(secids::Vector{Int},
                         exchange,
                         country, strict)
 
-    if frequency == :Day
 
-        if (more_ta != nothing)
-            _updateglobaldatastores("Unadj_"*datatype, more_ta, frequency)
-        end
-        
-        #finally get from updated global stores
-        ta = findinglobalstores(secids, "Unadj_"*datatype, frequency,
-                                    startdate, enddate,
-                                    forwardfill = forwardfill,
-                                    securitytype = securitytype,
-                                    exchange = exchange,
-                                    country = country) 
-    else
-        ta = more_ta
-    end  
+    if (more_ta != nothing)
+        _updateglobaldatastores(more_ta, datatype, frequency)
+    end
+
+    #finally get from updated global stores
+    ta = findinglobalstores(secids, datatype, frequency,
+                                startdate, enddate,
+                                forwardfill = forwardfill,
+                                securitytype = securitytype,
+                                exchange = exchange,
+                                country = country) 
 
     ta = __fillmissingdata(ta, secids)
-
 
     Logger.update_display(true)
     return __renamecolumns(ta)

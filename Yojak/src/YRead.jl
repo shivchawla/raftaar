@@ -9,11 +9,11 @@ using Dates
 import Logger: info, warn
 import TimeSeries: TimeArray
 import Base: convert
+import Redis
 
 const dict = Dict{String, Any}()
 
-function configure(cl::Mongoc.Client; database::String = "dbYojak_dev", priority::Int = 1, strict::Bool = true)
-    
+function configureMongo(cl::Mongoc.Client; database::String = "dbYojak_dev", priority::Int = 1, strict::Bool = true)    
     global dict
     dict["client"] = cl
     dict["db"] = database
@@ -21,11 +21,16 @@ function configure(cl::Mongoc.Client; database::String = "dbYojak_dev", priority
     dict["strict"] = strict
 end
 
+function configureRedis(cl::Redis.RedisConnection)    
+    global dict
+    dict["redis_client"] = cl
+end
+
 println(dict)
 securitycollection() = dict["client"][dict["db"]]["security_test"]
 datacollection() = dict["client"][dict["db"]]["data_test"]
 minutedatacollection() = dict["client"][dict["db"]]["data_minute"]
-
+redisClient() = dict["redis_client"]
 
 const PRIORITY = 1
 const STRICT = false
@@ -59,7 +64,7 @@ include("quandl.jl")
 include("EODH.jl")
 include("dbread.jl")
 include("history.jl")
-include("globalstores.jl")
+include("globalstores_redis.jl")
 include("api.jl")
 
 end

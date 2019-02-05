@@ -37,7 +37,7 @@ function setdatastores(connections)
         ydatabase = get(yojak_conn, "database", "dbYojak_develop")
        
         yclient = connect(yhost, yport, yuser, ypass)
-        YRead.configure(yclient, database = ydatabase, priority = priority)
+        YRead.configureMongo(yclient, database = ydatabase, priority = priority)
     catch err
         println(err)  
     end
@@ -54,8 +54,10 @@ function setredisconnection(connections)
         rport = get(redis_conn, "port", "13472")
 
         delete!(connections, "redis")
-           
-        Logger.setredisclient(getredisclient(rhost, rport, rpass))    
+        cl = getredisclient(rhost, rport, rpass)
+
+        Logger.setredisclient(cl)
+        YRead.configureRedis(cl)   
     catch err
         println(err)
     end

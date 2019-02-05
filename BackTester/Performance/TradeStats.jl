@@ -112,38 +112,38 @@ function computeTradeStats(trades::Vector{Trade}, currentDate::DateTime)
         tradeStats.lossCount = sum(pnl .< 0)
 
         #Total Pnl
-        tradeStats.totalPnl = sum(pnl)
-        tradeStats.totalProfit = sum(pnl[pnl .> 0])
-        tradeStats.totalLoss = sum(pnl[pnl .< 0])
+        tradeStats.totalPnl = round(sum(pnl), digits = 2)
+        tradeStats.totalProfit = round(sum(pnl[pnl .> 0]), digits = 2)
+        tradeStats.totalLoss = round(sum(pnl[pnl .< 0]), digits = 2)
 
         #Max Loss/Profit
         maxPnlTrade = trades[(pnl .== maximum(pnl)) .& (pnl .> 0)]
         minPnlTrade = trades[(pnl .== minimum(pnl)) .& (pnl .< 0)]
 
         if length(maxPnlTrade) > 0
-            tradeStats.maxProfit = Dict(maxPnlTrade[1].symbol => maxPnlTrade[1].pnl)
+            tradeStats.maxProfit = Dict(maxPnlTrade[1].symbol => round(maxPnlTrade[1].pnl, digits = 2))
         end
 
         if length(minPnlTrade) > 0
-            tradeStats.maxLoss = Dict(minPnlTrade[1].symbol => minPnlTrade[1].pnl)
+            tradeStats.maxLoss = Dict(minPnlTrade[1].symbol => round(minPnlTrade[1].pnl, digits = 2))
         end
 
         #Avg Loss/Profit
-        tradeStats.avgPnl = mean(pnl)
-        tradeStats.avgProfit = mean(pnl[pnl .> 0])
-        tradeStats.avgLoss = mean(pnl[pnl .< 0])
+        tradeStats.avgPnl = round(mean(pnl), digits = 2)
+        tradeStats.avgProfit = round(mean(pnl[pnl .> 0]), digits = 2)
+        tradeStats.avgLoss = round(mean(pnl[pnl .< 0]), digits = 2)
         
         #Avg Holding Period
         startDate  = [trade.startDate == DateTime(1) ? currentDate : trade.startDate for trade in trades]
         endDate  = [trade.endDate == DateTime(1) ? currentDate : trade.endDate for trade in trades]
         
         duration  = [Dates.value((trade.endDate == DateTime(1) ? currentDate : trade.endDate)  - (trade.startDate == DateTime(1) ? date : trade.startDate))/86400000 for trade in trades]
-        tradeStats.avgHoldingPeriod = mean(duration[duration .>0])
+        tradeStats.avgHoldingPeriod = round(mean(duration[duration .>0]), digits = 2)
         #Profit Factor
-        tradeStats.profitFactor = abs(tradeStats.totalLoss) > 0.001 ? tradeStats.totalProfit/tradeStats.totalLoss : NaN
+        tradeStats.profitFactor = abs(tradeStats.totalLoss) > 0.001 ? round(tradeStats.totalProfit/tradeStats.totalLoss, digits = 2) : NaN
 
         #Success Ratio
-        tradeStats.successRatio = tradeStats.winCount/tradeStats.count
+        tradeStats.successRatio = round(tradeStats.winCount/tradeStats.count, digits = 4)
 
         #MAE/MFE
         tradeStats.avgMae = 0
@@ -151,7 +151,7 @@ function computeTradeStats(trades::Vector{Trade}, currentDate::DateTime)
         tradeStats.maxMae = Dict{SecuritySymbol, Float64}()
         tradeStats.maxMfe = Dict{SecuritySymbol, Float64}()
 
-        tradeStats.totalTradeValue = sum([trade.totalValue for trade in trades])
+        tradeStats.totalTradeValue = round(sum([trade.totalValue for trade in trades]), digits = 2)
 
     end
 

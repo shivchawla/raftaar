@@ -10,6 +10,15 @@ function _filterConditionsForDate(conditions::Conditions, date::Date)
     return filteredConditions
 end
 
+function _filterConditionsForDate(LONGENTRY, LONGEXIT, SHORTENTRY, SHORTEXIT, date::Date)
+    Dict(
+        "LONGENTRY" => (LONGENTRY != nothing ? _filterConditionsForDate(LONGENTRY, date) : nothing), 
+        "LONGEXIT" => (LONGEXIT != nothing ? _filterConditionsForDate(LONGEXIT, date) : nothing), 
+        "SHORTENTRY" => (SHORTENTRY != nothing ? _filterConditionsForDate(SHORTENTRY, date) : nothing), 
+        "SHORTEXIT" => (SHORTEXIT != nothing ? _filterConditionsForDate(SHORTEXIT, date) : nothing)
+    ) 
+end
+
 function _computeTradeTimePerTicker(name, entryTA, exitTA, prices, direction::String, stopLoss::Float64, profitTarget::Float64)
   allPos = getallpositions()
 
@@ -36,20 +45,16 @@ function _computeTradeTimePerTicker(name, entryTA, exitTA, prices, direction::St
   
   tradeDates = []
 
-  # entryts = []
-  # exitts = []
   allEntryDates = [] 
   allExitDates = [] 
 
   if entryTA != nothing
     entryTA = entryTA[entryTA .== true]
-    # entryts = TimeSeries.timestamp(entryTA)
     allEntryDates = TimeSeries.timestamp(entryTA) 
   end
   
   if exitTA != nothing
     exitTA = exitTA[exitTA .== true]
-    # exitts = TimeSeries.timestamp(exitTA)
     allExitDates = TimeSeries.timestamp(exitTA)
   end
 
@@ -225,7 +230,6 @@ function _computeTradeTimes(date::Date, ENTRY, EXIT, prices;direction::String = 
   exitNames = EXIT != nothing ? collect(keys(EXIT)) : []
 
   allTradingMinutes = []
-  # hasLongPosition = Dict()
   for name in unique([entryNames; exitNames])
     pricesThisTicker = Dict(k => v[Symbol(name)] for (k,v) in prices)
     allTradingMinutes = [allTradingMinutes; _computeTradeTimePerTicker(name, get(ENTRY, name, nothing), get(EXIT, name, nothing), pricesThisTicker, direction, stopLoss, profitTarget)]
@@ -233,10 +237,6 @@ function _computeTradeTimes(date::Date, ENTRY, EXIT, prices;direction::String = 
 
   return allTradingMinutes
   
-end
-
-function _filterTA(ta, date)
-  return ta != nothing ? ta[Date.(TimeSeries.timestamp(ta)) .== date] : nothing
 end
 
 function _after_start(date::Date, eodPrices, adjustments, forward; dynamic::Bool = false)
@@ -373,6 +373,114 @@ function _process_conditions(date::Date, prices, conditions, options, forward; d
   return true
 end
 
+
+function _fetch_minute_prices(universeIds, startdate::DateTime, enddate::DateTime)
+    closeprices = YRead.history(universeIds, "Close", Symbol("1m"), DateTime(startdate) - Dates.Month(1), DateTime(enddate), displaylogs = false)
+    # println("closeprices_minute")
+    # println(closeprices)
+
+    openprices = YRead.history(universeIds, "Open", Symbol("1m"), DateTime(startdate) - Dates.Month(1), DateTime(enddate), displaylogs = false)
+    if openprices == nothing
+        #Logger.warn_static("Open Price Data not available from $(startdate) to $(enddate)")
+        openprices = closeprices
+    end
+
+    # println("openprices_minute")
+    # println(openprices)
+ 
+
+    highprices = YRead.history(universeIds, "High", Symbol("1m"), DateTime(startdate) - Dates.Month(1), DateTime(enddate), displaylogs = false)
+    if highprices == nothing
+        #Logger.warn_static("High Price Data not available from $(startdate) to $(enddate)")
+        highprices = closeprices
+    end
+
+    # println("highprices_minute")
+    # println(highprices)
+ 
+
+    lowprices = YRead.history(universeIds, "Low", Symbol("1m"), DateTime(startdate) - Dates.Month(1), DateTime(enddate), displaylogs = false)
+    if lowprices == nothing
+        #Logger.warn_static("Low Price Data not available from $(startdate) to $(enddate)")
+        lowprices = closeprices
+    end
+
+    # println("lowprices_minute")
+    # println(lowprices)
+ 
+    vol = YRead.history(universeIds, "Volume", Symbol("1m"), DateTime(startdate) - Dates.Month(1), DateTime(enddate), displaylogs = false)      
+    
+    if vol == nothing
+        Logger.warn_static("No volume data available for any stock in the universe")
+    end
+
+    # println("vol_minute")
+    # println(vol)
+
+    closeprices_unadj = YRead.history_unadj(universeIds, "Close", Symbol("1m"), DateTime(startdate) - Dates.Month(1), DateTime(enddate), displaylogs = false)
+    if closeprices_unadj == nothing
+        Logger.warn_static("Close Price Data not available from $(startdate) to $(enddate)")
+        Logger.warn_static("Aborting test")
+        return false
+    end
+
+    # println("closeprices_minute")
+    # println(closeprices)
+
+    openprices_unadj = YRead.history_unadj(universeIds, "Open", Symbol("1m"), DateTime(startdate) - Dates.Month(1), DateTime(enddate), displaylogs = false)
+    if openprices_unadj == nothing
+        #Logger.warn_static("Open Price Data not available from $(startdate) to $(enddate)")
+        openprices_unadj = closeprices_unadj
+    end
+
+    # println("openprices_minute")
+    # println(openprices)
+ 
+
+    highprices_unadj = YRead.history_unadj(universeIds, "High", Symbol("1m"), DateTime(startdate) - Dates.Month(1), DateTime(enddate), displaylogs = false)
+    if highprices_unadj == nothing
+        #Logger.warn_static("High Price Data not available from $(startdate) to $(enddate)")
+        highprices_unadj = closeprices_unadj
+    end
+
+    # println("highprices_minute")
+    # println(highprices_unadj)
+ 
+
+    lowprices_unadj = YRead.history_unadj(universeIds, "Low", Symbol("1m"), DateTime(startdate) - Dates.Month(1), DateTime(enddate), displaylogs = false)
+    if lowprices_unadj == nothing
+        #Logger.warn_static("Low Price Data not available from $(startdate) to $(enddate)")
+        lowprices_unadj = closeprices_unadj
+    end
+
+    # println("lowprices_minute")
+    # println(lowprices_unadj)
+ 
+    vol_unadj = YRead.history_unadj(universeIds, "Volume", Symbol("1m"), DateTime(startdate) - Dates.Month(1), DateTime(enddate), displaylogs = false)      
+    
+    if vol_unadj == nothing
+        Logger.warn_static("No volume data available for any stock in the universe")
+    end
+
+    # println("vol_minute")
+    # println(vol_unadj)
+
+    return Dict(
+      "Adjusted" => 
+        Dict("Open" => openprices, 
+            "High" => highprices, 
+            "Low" => lowprices, 
+            "Close" => closeprices, 
+            "Volume" => vol),
+      "Unadjusted" => 
+      Dict("Open" => openprices_unadj, 
+        "High" => highprices_unadj, 
+        "Low" => lowprices_unadj, 
+        "Close" => closeprices_unadj, 
+        "Volume" => vol_unadj)
+      )
+end
+
 function _run_algo_minute(startdate::Date = getstartdate(), enddate::Date = getenddate(), forward::Bool = false)
     try
       Logger.info_static("Fetching data")
@@ -392,8 +500,8 @@ function _run_algo_minute(startdate::Date = getstartdate(), enddate::Date = gete
           return false
       end
 
-      println("benchmarkdata_EOD")
-      println(benchmarkdata_EOD)
+      # println("benchmarkdata_EOD")
+      # println(benchmarkdata_EOD)
 
       # Get all ids for stocks in universe 
       universeIds = [security.symbol.id  for security in getuniverse(validprice=false)]
@@ -403,111 +511,30 @@ function _run_algo_minute(startdate::Date = getstartdate(), enddate::Date = gete
           return false
       end
 
-
-      closeprices_EOD = YRead.history_unadj(universeIds, "Close", :Day, DateTime(startdate), DateTime(enddate), displaylogs = false)
-      if closeprices_EOD == nothing
-          Logger.warn_static("Close Price EOD Data not available from $(startdate) to $(enddate)")
-          Logger.warn_static("Aborting test")
-          return false
-      end
-
-      println("closeprices_EOD")
-      println(closeprices_EOD)
-
-
-      openprices_EOD = YRead.history_unadj(universeIds, "Open", :Day, DateTime(startdate), DateTime(enddate), displaylogs = false)
-      if openprices_EOD == nothing
-          #Logger.warn_static("Open Price Data not available from $(startdate) to $(enddate)")
-          openprices_EOD = closeprices_EOD
-      end
-
-      println("openprices_EOD")
-      println(openprices_EOD)
-
-      highprices_EOD = YRead.history_unadj(universeIds, "High", :Day, DateTime(startdate), DateTime(enddate), displaylogs = false)
-      if highprices_EOD == nothing
-          #Logger.warn_static("High Price Data not available from $(startdate) to $(enddate)")
-          highprices_EOD = closeprices_EOD
-      end
-
-      println("highprices_EOD")
-      println(highprices_EOD)
-
-
-      lowprices_EOD = YRead.history_unadj(universeIds, "Low", :Day, DateTime(startdate), DateTime(enddate), displaylogs = false)
-      if lowprices_EOD == nothing
-          #Logger.warn_static("Low Price Data not available from $(startdate) to $(enddate)")
-          lowprices_EOD = closeprices_EOD
-      end
-
-      println("lowprices_EOD")
-      println(lowprices_EOD)
-
-
-      vol_EOD = YRead.history_unadj(universeIds, "Volume", :Day, DateTime(startdate), DateTime(enddate), displaylogs = false)      
+      ohlcvEOD = _fetch_EOD_prices(universeIds, DateTime(startdate), DateTime(enddate))
+      ohlcv = _fetch_minute_prices(universeIds, DateTime(startdate), DateTime(enddate))
       
-      if vol_EOD == nothing
-          Logger.warn_static("No EOD volume data available for any stock in the universe")
-      end
-
-      println("vol_EOD")
-      println(vol_EOD)
-
-      closeprices = YRead.history_unadj(universeIds, "Close", Symbol("1m"), DateTime(startdate) - Dates.Month(1), DateTime(enddate), displaylogs = false)
-      if closeprices == nothing
-          Logger.warn_static("Close Price Data not available from $(startdate) to $(enddate)")
-          Logger.warn_static("Aborting test")
-          return false
-      end
-
-      println("closeprices_minute")
-      println(closeprices)
-
-      openprices = YRead.history_unadj(universeIds, "Open", Symbol("1m"), DateTime(startdate) - Dates.Month(1), DateTime(enddate), displaylogs = false)
-      if openprices == nothing
-          #Logger.warn_static("Open Price Data not available from $(startdate) to $(enddate)")
-          openprices = closeprices
-      end
-
-      println("openprices_minute")
-      println(openprices)
-   
-
-      highprices = YRead.history_unadj(universeIds, "High", Symbol("1m"), DateTime(startdate) - Dates.Month(1), DateTime(enddate), displaylogs = false)
-      if highprices == nothing
-          #Logger.warn_static("High Price Data not available from $(startdate) to $(enddate)")
-          highprices = closeprices
-      end
-
-      println("highprices_minute")
-      println(highprices)
-   
-
-      lowprices = YRead.history_unadj(universeIds, "Low", Symbol("1m"), DateTime(startdate) - Dates.Month(1), DateTime(enddate), displaylogs = false)
-      if lowprices == nothing
-          #Logger.warn_static("Low Price Data not available from $(startdate) to $(enddate)")
-          lowprices = closeprices
-      end
-
-      println("lowprices_minute")
-      println(lowprices)
-   
-
-      vol = YRead.history_unadj(universeIds, "Volume", Symbol("1m"), DateTime(startdate) - Dates.Month(1), DateTime(enddate), displaylogs = false)      
-      
-      if vol == nothing
-          Logger.warn_static("No volume data available for any stock in the universe")
-      end
-
-      println("vol_minute")
-      println(vol)
-   
       #Join benchmark data with close prices
       #Right join (benchmark data comes from NSE database and excludes the holidays)
+      closeprices_EOD = get(ohlcvEOD, "Close", nothing)
+      if closeprices_EOD == nothing
+        Logger.warn_static("Close Price EOD Data not available from $(startdate) to $(enddate)")
+        Logger.warn_static("Aborting test")
+        return false
+      end
+
+      closeprices = get(get(ohlcv, "Adjusted", Dict{String, TimeArray}()), "Close", nothing)
+      if closeprices == nothing
+        Logger.warn_static("Close Price Data (Minute) not available from $(startdate) to $(enddate)")
+        Logger.warn_static("Aborting test")
+        return false
+      end
+
       closeprices_EOD = !isempty(closeprices_EOD) && !isempty(benchmarkdata_EOD) ? merge(closeprices_EOD, benchmarkdata_EOD, :right) : closeprices_EOD
       labels = Dict{String,Float64}()
 
-      println("WTFFF")
+      # println("WTFFF")
+
       bvals = values(closeprices_EOD[Symbol(benchmark.ticker)])
       for (i, dt) in enumerate(TimeSeries.timestamp(closeprices_EOD))
         val = bvals[i]
@@ -524,7 +551,7 @@ function _run_algo_minute(startdate::Date = getstartdate(), enddate::Date = gete
         labels[string(dt)] = val
       end
 
-      println("WTFFF-2")
+      # println("WTFFF-2")
 
       #Set benchmark value and Output labels from graphs
       setbenchmarkvalues(labels)
@@ -539,7 +566,8 @@ function _run_algo_minute(startdate::Date = getstartdate(), enddate::Date = gete
 
       adjustments = YRead.getadjustments(universeIds, DateTime(startdate), DateTime(enddate), displaylogs = false)
 
-      TechnicalAPI.setupMinuteDataStore(openprices, highprices, lowprices, closeprices, vol)
+      #Setup technical datastores with adjusted prices
+      TechnicalAPI.setupMinuteDataStore(get(ohlcv, "Adjusted", Dict{String, TimeArray}()))
 
       Logger.info_static("Evaluating ENTRY/EXIT criteria")
 
@@ -585,34 +613,20 @@ function _run_algo_minute(startdate::Date = getstartdate(), enddate::Date = gete
           
           date = Date(dateString)
 
+          # println("NOw...")
           setcurrentdate(date)
           
-          println("_after_start")
+          ohlcvMinuteToday = _filterTA(get(ohlcv, "Unadjusted", Dict{String, TimeArray}()), date)
+                  
+          # println("_after_start")
           #update account/pending order before the start of new date
-          _after_start(date, 
-              Dict{String, TimeArray}(
-                "Open" => __toPricesTA(openprices_EOD, date), 
-                "High" => __toPricesTA(highprices_EOD, date), 
-                "Low" => __toPricesTA(lowprices_EOD, date),
-                "Close" => __toPricesTA(closeprices_EOD, date),
-                "Volume" => __toVolumeTA(vol_EOD, date)),
-              adjustments,
-              forward)
+          _after_start(date, ohlcvMinuteToday, adjustments, forward)
 
-          println("_process_conditions")
-          
+          # println("_process_conditions")
+          todayTradeConditions = _filterConditionsForDate(LONGENTRY, LONGEXIT, SHORTENTRY, SHORTEXIT, date)
+
           success = _process_conditions(date, 
-              Dict{String, TimeArray}(
-                "Open" => _filterTA(openprices, date), 
-                "High" => _filterTA(highprices, date),
-                "Low" =>  _filterTA(lowprices, date),
-                "Close" =>  _filterTA(closeprices, date),
-                "Volume" =>  _filterTA(vol, date)),
-              Dict(
-                "LONGENTRY" => (LONGENTRY != nothing ? _filterConditionsForDate(LONGENTRY, date) : nothing), 
-                "LONGEXIT" => (LONGEXIT != nothing ? _filterConditionsForDate(LONGEXIT, date) : nothing), 
-                "SHORTENTRY" => (SHORTENTRY != nothing ? _filterConditionsForDate(SHORTENTRY, date) : nothing), 
-                "SHORTEXIT" => (SHORTEXIT != nothing ? _filterConditionsForDate(SHORTEXIT, date) : nothing)), 
+              ohlcvMinuteToday, todayTradeConditions,
               Dict("stopLoss" =>  getStopLoss(), "profitTarget" => getProfitTarget()),
               forward)
 
@@ -620,16 +634,11 @@ function _run_algo_minute(startdate::Date = getstartdate(), enddate::Date = gete
               break
           end
 
-          println("_before_close")
-          _before_close(date, 
-              Dict{String, TimeArray}(
-                "Open" => __toPricesTA(openprices_EOD, date), 
-                "High" => __toPricesTA(highprices_EOD, date), 
-                "Low" => __toPricesTA(lowprices_EOD, date),
-                "Close" => __toPricesTA(closeprices_EOD, date),
-                "Volume" => __toVolumeTA(vol_EOD, date)),
-              adjustments,
-              forward)
+          # println("Filtering EOD")
+          ohlcvEODToday = _filterTA(ohlcvEOD, date)
+
+          # println("_before_close")
+          _before_close(date, ohlcvEODToday, adjustments, forward)
       end #end for loop
 
       if success
