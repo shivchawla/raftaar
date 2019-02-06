@@ -143,7 +143,6 @@ function _mergeWithExisting(ta::TimeArray, datatype::String, frequency::Symbol)
         val_old = values(merged_common_ta_ticker[ticker])
         val_new = values(merged_common_ta_ticker[Symbol(String(ticker)*"_1")])
 
-
         nrows = length(val_new) #???
         vals = zeros(nrows, 1)
         for i = 1:nrows
@@ -265,6 +264,11 @@ end
 function fromglobalstores(names::Vector{String}, datatype::String, frequency::Symbol)
     
     ta = nothing
+    all_vs = []
+    all_ts = []
+    uniq_ts = frequency == :Day ? Date[] : DateTime[]
+    all_names = Symbol[]
+
     for name in names
         key = "$(name)_$(string(frequency))_$(datatype)"
         value = Redis.lrange(redisClient(), key, 0, -1)
@@ -300,7 +304,7 @@ function fromglobalstores(names::Vector{String}, datatype::String, frequency::Sy
             # println("VS-3")
             # println(vs)
 
-            _ta = TimeArray(ts, vs, [Symbol(name)])
+            #_ta = TimeArray(ts, vs, [Symbol(name)])
 
             # # println("_Ta")
             # if _ta != nothing
@@ -316,13 +320,37 @@ function fromglobalstores(names::Vector{String}, datatype::String, frequency::Sy
             #     println("ta is nothing")
             # end
 
-            if ta == nothing
-                ta = _ta
-            else 
-                ta = merge(ta, _ta, :outer)
+            push!(all_ts, ts)
+            append!(uniq_ts, ts)
+            push!(all_vs, vs) 
+            push!(all_names, Symbol(name))           
+
+            # if ta == nothing
+            #     ta = _ta
+            # else 
+            #     ta = merge(ta, _ta, :outer)
+            # end
+        end
+    end
+
+    #Now process TA from all values
+    uniq_ts = sort(unique(uniq_ts))
+    vals = Matrix{Float64}(undef, length(uniq_ts), length(all_names))
+
+    for (i, name) in enumerate(all_names)
+
+        #Initialize all values as NaN for the column
+        vals[:,i] .= NaN
+        
+        for (j, dt) in enumerate(all_ts[i])
+            idx = findall(isequal(dt), uniq_ts)
+            if idx!=nothing && length(idx) !=0
+                vals[idx[1], i] = all_vs[i][j]
             end
         end
     end
+
+    ta = TimeArray(uniq_ts, vals, all_names)
 
     return ta
 end

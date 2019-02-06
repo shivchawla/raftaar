@@ -66,7 +66,7 @@ function getindex(ta::TimeArray, names::Vector{Symbol})
     TimeArray(TimeSeries.timestamp(ta), TimeSeries.values(ta)[:,ns], names, TimeSeries.meta(ta))
 end
 
-function setupbenchmarkstores(ta::TimeArray)
+function setupbenchmarkstores(ta::TimeArray, frequency::Symbol)
     global _benchmarkData = ta
 end
 
@@ -79,7 +79,7 @@ function compareSizeWithBenchmark(ta; startdate::DateTime = now(), enddate::Date
 end
 
 
-function _updateglobaldatastores(key::String, ta::TimeArray, frequency::Symbol)
+function _updateglobaldatastores(ta::TimeArray, key::String, frequency::Symbol)
     
     if frequency != :Day
         return
