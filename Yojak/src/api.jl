@@ -445,6 +445,9 @@ function history_unadj(secids::Vector{Int},
                         strict::Bool=true,
                         forwardfill::Bool=false) 
     
+    # println("Date: $(enddate)")
+    # println("Horizon: $(horizon)")
+
     _populateBenchmarkStore(frequency)
 
     Logger.update_display(displaylogs)
@@ -460,15 +463,19 @@ function history_unadj(secids::Vector{Int},
                                 securitytype = securitytype,
                                 exchange = exchange,
                                 country = country)
-
     
     cols = Int[Meta.parse(String(name)) for name in __getcolnames(ta)]
 
+    # println("Cols: $(cols)")
+    # println("Secids: $(secids)")
 
     if length(setdiff(secids, cols)) == 0 && compareSizeWithBenchmark(ta, enddate = enddate, horizon = horizon) != -1
         Logger.update_display(true)
         return __renamecolumns(ta)
     end
+
+    # println("Condition 1: $(length(setdiff(secids, cols)) == 0)")
+    # println("Condition 2: $(compareSizeWithBenchmark(ta, enddate = enddate, horizon = horizon) != -1)")
 
     more_ta = _history_unadj(securitycollection(), 
                             frequency == :Day ? datacollection() : minutedatacollection(),
@@ -479,9 +486,11 @@ function history_unadj(secids::Vector{Int},
                             exchange,
                             country, strict) 
 
+
     if (more_ta != nothing)
         _updateglobaldatastores(more_ta, datatype, frequency)
     end
+
 
     #finally get from updated global stores
     ta = findinglobalstores(secids, datatype, frequency,

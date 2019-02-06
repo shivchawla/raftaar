@@ -1,12 +1,16 @@
 using Mongoc
 using YRead
 using Dates
+import Redis
 
 client = Mongoc.Client("mongodb://127.0.0.1:27017")
-YRead.configure(client, database="dbYojak_develop", priority=3)
+redisClient = Redis.RedisConnection(host="127.0.0.1", port=13472, password="", db=0)
 
-YRead.history_unadj(["YESBANK"], "Close", :Day, DateTime("2017-08-01"), DateTime("2017-09-30"), displaylogs = false, strict = false)
-YRead.history(["YESBANK"], "Close", :Day, DateTime("2017-08-01"), DateTime("2017-09-30"), displaylogs = false, strict = false)
+YRead.configureMongo(client, database="dbYojak_develop", priority=3)
+YRead.configureRedis(redisClient)
+
+# ta = YRead.history_unadj(["YESBANK", "TCS", "WIPRO"], "Close", :Day, DateTime("2017-08-01"), DateTime("2017-09-30"), displaylogs = false, strict = false)
+# tb = YRead.history(["YESBANK, TCS"], "Close", :Day, DateTime("2017-08-01"), DateTime("2017-09-30"), displaylogs = false, strict = false)
 # benchmarkdata = YRead.history_unadj(["YESBANK"], "Close", Symbol("1m"), DateTime("2018-12-01"), DateTime("2018-12-31"))
 
 # tickers= ["ACC","ADANIPORTS","AMBUJACEM",
@@ -18,3 +22,6 @@ YRead.history(["YESBANK"], "Close", :Day, DateTime("2017-08-01"), DateTime("2017
 # 	println(adjustments)
 # end
 
+
+
+ YRead.history_unadj(["TCS"], "Low", :Day, DateTime("2018-12-01"), DateTime("2018-12-31"), displaylogs = false, strict = false)

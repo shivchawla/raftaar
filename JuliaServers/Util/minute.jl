@@ -1,31 +1,21 @@
 using TechnicalAPI
 
-function _filterConditionsForDate(conditions::Conditions, date::Date)
-    filteredConditions = Conditions()
-    
-    for (k,v) in conditions
-      filteredConditions[k] = v != nothing ? v[Date.(TimeSeries.timestamp(v)) .== date] : nothing
-    end
-
-    return filteredConditions
-end
-
 function _filterConditionsForDate(LONGENTRY, LONGEXIT, SHORTENTRY, SHORTEXIT, date::Date)
     Dict(
-        "LONGENTRY" => (LONGENTRY != nothing ? _filterConditionsForDate(LONGENTRY, date) : nothing), 
-        "LONGEXIT" => (LONGEXIT != nothing ? _filterConditionsForDate(LONGEXIT, date) : nothing), 
-        "SHORTENTRY" => (SHORTENTRY != nothing ? _filterConditionsForDate(SHORTENTRY, date) : nothing), 
-        "SHORTEXIT" => (SHORTEXIT != nothing ? _filterConditionsForDate(SHORTEXIT, date) : nothing)
+        "LONGENTRY" => (LONGENTRY != nothing ? filter(LONGENTRY, date) : nothing), 
+        "LONGEXIT" => (LONGEXIT != nothing ? filter(LONGEXIT, date) : nothing), 
+        "SHORTENTRY" => (SHORTENTRY != nothing ? filter(SHORTENTRY, date) : nothing), 
+        "SHORTEXIT" => (SHORTEXIT != nothing ? filter(SHORTEXIT, date) : nothing)
     ) 
 end
 
-function _computeTradeTimePerTicker(name, entryTA, exitTA, prices, direction::String, stopLoss::Float64, profitTarget::Float64)
+function _computeTradeTimePerTicker(ticker, entryTA, exitTA, prices, direction::String, stopLoss::Float64, profitTarget::Float64)
   allPos = getallpositions()
 
   pos = Position()
 
   if length(allPos) > 0
-    idx = findall(x -> x.securitysymbol.ticker == name, allPos)
+    idx = findall(x -> x.securitysymbol.ticker == ticker, allPos)
     if length(idx) == 1
       pos = allPos[idx[1]]
     end
@@ -70,10 +60,11 @@ function _computeTradeTimePerTicker(name, entryTA, exitTA, prices, direction::St
   # println("Direction: $(direction)")
   # println("Qty: $(qty)")
 
+
   while length(allEntryDates) > 0 || length(allExitDates) > 0  
     if qty > 0 && length(allExitDates) > 0 && direction == "LONG" 
         exitDate = allExitDates[1]
-        push!(tradeDates, (name, exitDate, "LONGEXIT"))
+        push!(tradeDates, (ticker, exitDate, "LONGEXIT"))
 
         allEntryDates = allEntryDates[allEntryDates .> exitDate]
         allExitDates = allExitDates[allExitDates .> exitDate]
@@ -83,7 +74,7 @@ function _computeTradeTimePerTicker(name, entryTA, exitTA, prices, direction::St
 
     elseif qty < 0 && length(allExitDates) > 0 && direction == "SHORT" 
         exitDate = allExitDates[1]
-        push!(tradeDates, (name, exitDate, "SHORTEXIT"))
+        push!(tradeDates, (ticker, exitDate, "SHORTEXIT"))
         
         allEntryDates = allEntryDates[allEntryDates .> exitDate]
         allExitDates = allExitDates[allExitDates .> exitDate]
@@ -105,7 +96,7 @@ function _computeTradeTimePerTicker(name, entryTA, exitTA, prices, direction::St
         end
 
         if entryPrice != nothing
-          push!(tradeDates, (name, entryDate, "LONGENTRY"))
+          push!(tradeDates, (ticker, entryDate, "LONGENTRY"))
 
           qty = 1
 
@@ -138,9 +129,7 @@ function _computeTradeTimePerTicker(name, entryTA, exitTA, prices, direction::St
           allExitDates = unique([allExitDates; profitTargetDates; stopLossDates])
           # println("OK-4")
         end
-
-
-          
+     
     elseif qty >= 0 && length(allEntryDates) > 0 && direction == "SHORT"
         
         entryDate = allEntryDates[1]
@@ -156,7 +145,7 @@ function _computeTradeTimePerTicker(name, entryTA, exitTA, prices, direction::St
         end
 
         if entryPrice != nothing
-          push!(tradeDates, (name, entryDate, "SHORTENTRY"))
+          push!(tradeDates, (ticker, entryDate, "SHORTENTRY"))
           qty = -1  
 
           profitTargetPrice = (1 - profitTarget)*entryPrice
@@ -226,17 +215,23 @@ end
 function _computeTradeTimes(date::Date, ENTRY, EXIT, prices;direction::String = "LONG", stopLoss::Float64 = 0.05, profitTarget::Float64 = 0.05)
   
   # println("In Every Minute")
-  entryNames = ENTRY != nothing ? collect(keys(ENTRY)) : []
-  exitNames = EXIT != nothing ? collect(keys(EXIT)) : []
+  entryNames = ENTRY != nothing ? colnames(ENTRY) : Symbol[]
+  exitNames = EXIT != nothing ? colnames(EXIT) : Symbol[]
 
   allTradingMinutes = []
   for name in unique([entryNames; exitNames])
-    pricesThisTicker = Dict(k => v[Symbol(name)] for (k,v) in prices)
-    allTradingMinutes = [allTradingMinutes; _computeTradeTimePerTicker(name, get(ENTRY, name, nothing), get(EXIT, name, nothing), pricesThisTicker, direction, stopLoss, profitTarget)]
+    pricesThisTicker = Dict(k => v[name] for (k,v) in prices)
+
+    entryForDate = name in entryNames ? ENTRY[name] : nothing
+    # entryForDate = entryForDate != nothing ? entryForDate[Date.(timestamp(entryForDate)) .== date] : nothing
+
+    exitForDate = name in exitNames ? EXIT[name] : nothing
+    # exitForDate = exitForDate != nothing ? exitForDate[Date.(timestamp(exitForDate)) .== date] : nothing
+
+    allTradingMinutes = [allTradingMinutes; _computeTradeTimePerTicker(String(name), entryForDate, exitForDate, pricesThisTicker, direction, stopLoss, profitTarget)]
   end
 
   return allTradingMinutes
-  
 end
 
 function _after_start(date::Date, eodPrices, adjustments, forward; dynamic::Bool = false)
@@ -315,16 +310,19 @@ function _process_conditions(date::Date, prices, conditions, options, forward; d
   # println("In Minute Main Function")
   allMinuteDataForDate = prices
 
-  LONGENTRY = get(conditions, "LONGENTRY", Conditions())
-  LONGEXIT = get(conditions, "LONGEXIT", Conditions())
+  LONGENTRY = get(conditions, "LONGENTRY", nothing)
+  LONGEXIT = get(conditions, "LONGEXIT", nothing)
 
-  SHORTENTRY = get(conditions, "SHORTENTRY", Conditions())
-  SHORTEXIT = get(conditions, "SHORTEXIT", Conditions())
+  SHORTENTRY = get(conditions, "SHORTENTRY", nothing)
+  SHORTEXIT = get(conditions, "SHORTEXIT", nothing)
 
   stopLoss = get(options, "stopLoss", 0.05)
   profitTarget = get(options, "profitTarget", 0.05)
 
+  # println("Long Trade Times")
   longTradeTimes = _computeTradeTimes(date, LONGENTRY, LONGEXIT, prices, direction = "LONG", stopLoss = stopLoss, profitTarget = profitTarget)
+  
+  # println("Short Trade Times")
   shortTradeTimes = _computeTradeTimes(date, SHORTENTRY, SHORTEXIT, prices, direction = "SHORT", stopLoss = stopLoss, profitTarget = profitTarget)
 
   allTradeTimes = sort([longTradeTimes; shortTradeTimes], by=x->x[2])
@@ -337,11 +335,19 @@ function _process_conditions(date::Date, prices, conditions, options, forward; d
       for (k,v) in allMinuteDataForDate
         currentMinuteData[k] = v[TimeSeries.timestamp(v) .== dt]
       end  
+        
+
+      # println("Update Date Stores")
+      # println("DateTime: $(dt)")
+      # println(currentMinuteData)
       
+
       #println("Updating data stores")
       updatedatastores(dt, currentMinuteData, Dict{SecuritySymbol, Adjustment}())
-      
-      #println("Placing orders")
+        
+
+
+      # println("Placing orders")
 
       # println("Name: $(name)")
       # println("DateTime: $(dt)")
@@ -372,7 +378,6 @@ function _process_conditions(date::Date, prices, conditions, options, forward; d
 
   return true
 end
-
 
 function _fetch_minute_prices(universeIds, startdate::DateTime, enddate::DateTime)
     closeprices = YRead.history(universeIds, "Close", Symbol("1m"), DateTime(startdate) - Dates.Month(1), DateTime(enddate), displaylogs = false)
@@ -623,7 +628,11 @@ function _run_algo_minute(startdate::Date = getstartdate(), enddate::Date = gete
           _after_start(date, ohlcvMinuteToday, adjustments, forward)
 
           # println("_process_conditions")
+          
+          # println("Filter Conditions For $(date)")
           todayTradeConditions = _filterConditionsForDate(LONGENTRY, LONGEXIT, SHORTENTRY, SHORTEXIT, date)
+
+          # println("Process Conditions")
 
           success = _process_conditions(date, 
               ohlcvMinuteToday, todayTradeConditions,
@@ -634,8 +643,13 @@ function _run_algo_minute(startdate::Date = getstartdate(), enddate::Date = gete
               break
           end
 
+
+          # println("After Process")
+          # println(getallpositions())
+
           # println("Filtering EOD")
           ohlcvEODToday = _filterTA(ohlcvEOD, date)
+          # println(ohlcvEODToday)
 
           # println("_before_close")
           _before_close(date, ohlcvEODToday, adjustments, forward)

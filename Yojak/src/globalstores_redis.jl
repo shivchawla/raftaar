@@ -212,57 +212,87 @@ end
 #So effetive DS for Redis == RANGE
 #Save only unadjusted data
 function _updateglobaldatastores(ta::TimeArray, datatype::String, frequency::Symbol)
-    
+
+    merged_ta = _mergeWithExisting(ta, datatype, frequency)
+
+    if (merged_ta != nothing && frequency == :Day)
+        _globaldatastores[datatype] = merged_ta 
+    end
+
     for (i, name) in enumerate(colnames(ta))
 
         #Columns are secids
-        _ta_this = ta!=nothing ? ta[name] : nothing
+        _ta_this = merged_ta!=nothing ? merged_ta[name] : nothing
         
-        #Update incoming ta with existing ta
+        # #Update incoming ta with existing ta
+        # if _ta_this != nothing
+        #    _ta_this = _mergeWithExisting(_ta_this, datatype, frequency)
+        # else
+        #     continue
+        # end
+
         if _ta_this != nothing
-           _ta_this = _mergeWithExisting(_ta_this, datatype, frequency)
-        else
-            continue
+            _ta_this_values = values(_ta_this)
+            _ta_this_names = colnames(_ta_this)
+            _ta_this_timestamp = timestamp(_ta_this) 
+
+            ticker = string(name)
+            key = "$(ticker)_$(string(frequency))_$(datatype)"
+
+            vs = _ta_this_values[:, 1]
+            ts = _ta_this_timestamp
+
+            #Filter out nothing
+            idx_not_nothing = vs .!= nothing
+            vs = vs[idx_not_nothing]
+            ts = ts[idx_not_nothing]
+
+            #Filter out NaN
+            idx_not_nan = .!isnan.(vs)
+            vs = Float64.(vs[idx_not_nan])
+            ts = ts[idx_not_nan]
+            
+            value = Vector{String}(undef, length(ts))
+            for (j, dt) in enumerate(ts)
+                value[j] = JSON.json(Dict("Date" => dt, "Value" => vs[j]))
+            end
+
+            # println("Finally pushing")
+            # println(name)
+            # println(vs)
+            # println(ts)
+            
+            Redis.del(redisClient(), key) 
+            Redis.lpush(redisClient(), key, value)
         end
-
-        _ta_this_values = _ta_this != nothing ? values(_ta_this) : nothing
-        _ta_this_names = _ta_this != nothing ? colnames(_ta_this) : Symbol[]
-        _ta_this_timestamp = _ta_this != nothing ? timestamp(_ta_this) : (frequency == :Day ? Date[] : DateTime[])
-
-        ticker = string(name)
-        key = "$(ticker)_$(string(frequency))_$(datatype)"
-
-        vs = _ta_this_values[:, 1]
-        ts = _ta_this_timestamp
-
-        #Filter out nothing
-        idx_not_nothing = vs .!= nothing
-        vs = vs[idx_not_nothing]
-        ts = ts[idx_not_nothing]
-
-        #Filter out NaN
-        idx_not_nan = .!isnan.(vs)
-        vs = Float64.(vs[idx_not_nan])
-        ts = ts[idx_not_nan]
-        
-        value = Vector{String}(undef, length(ts))
-        for (j, dt) in enumerate(ts)
-            value[j] = JSON.json(Dict("Date" => dt, "Value" => vs[j]))
-        end
-
-        # println("Finally pushing")
-        # println(name)
-        # println(vs)
-        # println(ts)
-
-        Redis.del(redisClient(), key) 
-        Redis.lpush(redisClient(), key, value)
     end 
 end
 
 # Searches and return TA of available secids
 function fromglobalstores(names::Vector{String}, datatype::String, frequency::Symbol)
     
+    if frequency == :Day && haskey(_globaldatastores, datatype)
+        
+        ta = _globaldatastores[datatype]
+
+        secids = Symbol.(names)
+        columnnames = __getcolnames(ta)
+        unavailablenames = setdiff(secids, columnnames)
+
+        if length(unavailablenames) > 0
+            availablenames = setdiff(secids, unavailablenames)
+            if length(availablenames) > 0
+                return ta[availablenames]
+            end
+            
+            return nothing
+        end
+
+        return ta[secids]
+    end
+
+    #Else read from redis
+
     ta = nothing
     all_vs = []
     all_ts = []
@@ -320,6 +350,10 @@ function fromglobalstores(names::Vector{String}, datatype::String, frequency::Sy
             #     println("ta is nothing")
             # end
 
+            # println(name)
+            # println(ts)
+            # println(vs)
+
             push!(all_ts, ts)
             append!(uniq_ts, ts)
             push!(all_vs, vs) 
@@ -342,6 +376,11 @@ function fromglobalstores(names::Vector{String}, datatype::String, frequency::Sy
         #Initialize all values as NaN for the column
         vals[:,i] .= NaN
         
+        # #SOME LOGIC ISSUE       
+        # ts = all_ts[i]
+        # println([ts[ts .== dt] for dt in uniq_ts] .!= [[]])
+        # vals[[ts[ts .== dt] for dt in uniq_ts] .!= [[]], i] .= all_vs[i]
+
         for (j, dt) in enumerate(all_ts[i])
             idx = findall(isequal(dt), uniq_ts)
             if idx!=nothing && length(idx) !=0
@@ -350,7 +389,7 @@ function fromglobalstores(names::Vector{String}, datatype::String, frequency::Sy
         end
     end
 
-    ta = TimeArray(uniq_ts, vals, all_names)
+    ta = TimeArray(uniq_ts, vals, all_names)    
 
     return ta
 end

@@ -12,7 +12,6 @@ function _filterTA(ohlcv, date::Date)
     return output
 end
 
-
 function _fetch_EOD_prices(universeIds, startdate::DateTime, enddate::DateTime)
     closeprices_EOD = YRead.history_unadj(universeIds, "Close", :Day, DateTime(startdate), DateTime(enddate), displaylogs = false)
 
@@ -60,7 +59,7 @@ function _fetch_EOD_prices(universeIds, startdate::DateTime, enddate::DateTime)
         "High" => highprices_EOD,
         "Low" => lowprices_EOD,
         "Close" => closeprices_EOD,
-        "Volume" => vol_EOD);
+        "Volume" => vol_EOD)
 end
 
 function _run_algo_day(startdate::Date = getstartdate(), enddate::Date = getenddate(), forward::Bool = false) 
@@ -167,6 +166,164 @@ function _run_algo_day(startdate::Date = getstartdate(), enddate::Date = getendd
     end
 end
 
+_getcolnames(ta) = ta != nothing ? colnames(ta) : Symbol[]
+
+function _process_long_entry(currentLongEntry, currentLongExit, currentShortEntry, currentShortExit)
+    allPositions = getallpositions()
+    universe = getuniverse()
+
+    otherConditionTickers = String.(union(_getcolnames(currentLongExit), _getcolnames(currentShortEntry), _getcolnames(currentShortExit)))
+
+    for ticker in String.(_getcolnames(currentLongEntry))
+
+        if ticker in otherConditionTickers
+          Logger.warn_static("Skipping Long Entry!! Conflicting entry/exit condtions for $(ticker)")
+          continue
+        end
+
+        pos = Position()
+
+        if length(allPositions) > 0
+          idx = findall(x -> x.securitysymbol.ticker == ticker, allPositions)
+          if length(idx) == 1
+            pos = allPositions[idx[1]]
+          end
+        end
+
+        if (pos.quantity > 0)
+          Logger.warn_static("Skipping Long Entry!! Already a long position for $(ticker)")
+        elseif (pos.quantity < 0)
+          Logger.warn_static("Skipping Long Entry!! Already a short position for $(ticker)")
+        else
+          setholdingpct(ticker, 1/length(universe))
+        end
+    end
+end
+
+function _process_short_entry(currentLongEntry, currentLongExit, currentShortEntry, currentShortExit)
+    allPositions = getallpositions()
+    universe = getuniverse()
+
+    otherConditionTickers = String.(union(_getcolnames(currentLongEntry), _getcolnames(currentLongExit), _getcolnames(currentShortExit)))
+
+    for ticker in String.(colnames(currentShortEntry))
+        
+        if ticker in otherConditionTickers
+          Logger.warn_static("Skipping Short Entry!! Conflicting entry/exit condtions for $(ticker)")
+          continue
+        end
+
+        pos = Position()
+
+        if length(allPositions) > 0
+          idx = findall(x -> x.securitysymbol.ticker == ticker, allPositions)
+          if length(idx) == 1
+            pos = allPositions[idx[1]]
+          end
+        end
+
+        if (pos.quantity < 0)
+          Logger.warn_static("Skipping Short Entry!! Already a short position for $(ticker)")
+
+        elseif (pos.quantity > 0)
+          Logger.warn_static("Skipping Short Entry!! Already a long position for $(ticker)")
+        
+        else
+          setholdingpct(ticker, 1/length(universe))
+        end
+    end
+end
+
+function _process_long_exit(currentLongEntry, currentLongExit, currentShortEntry, currentShortExit)
+    allPositions = getallpositions()
+    universe = getuniverse()
+
+    otherConditionTickers = String.(union(_getcolnames(currentLongEntry), _getcolnames(currentShortEntry), _getcolnames(currentShortExit)))
+
+    for ticker in String.(colnames(currentLongExit))
+        
+        if ticker in otherConditionTickers
+          Logger.warn_static("Skipping Long Exit!! Conflicting entry/exit condtions for $(ticker)")
+          continue
+        end
+
+        pos = Position()
+
+        if length(allPositions) > 0
+          idx = findall(x -> x.securitysymbol.ticker == ticker, allPositions)
+          if length(idx) == 1
+            pos = allPositions[idx[1]]
+          end
+        end
+
+        if (pos.quantity <= 0)
+          Logger.warn_static("Skipping Long Exit!! No long position for $(ticker)")
+        else
+          setholdingpct(ticker, 0.0)
+        end
+    end
+end
+
+function _process_short_exit(currentLongEntry, currentLongExit, currentShortEntry, currentShortExit)
+    allPositions = getallpositions()
+    universe = getuniverse()
+
+    otherConditionTickers = String.(union(_getcolnames(currentLongEntry), _getcolnames(currentLongExit), _getcolnames(currentShortEntry)))
+
+    for ticker in String.(colnames(currentShortExit))
+
+        if ticker in otherConditionTickers
+          Logger.warn_static("Skipping Short Exit!! Conflicting entry/exit condtions for $(ticker)")
+          continue
+        end
+        
+        pos = Position()
+
+        if length(allPositions) > 0
+          idx = findall(x -> x.securitysymbol.ticker == ticker, allPositions)
+          if length(idx) == 1
+            pos = allPositions[idx[1]]
+          end
+        end
+
+        if (pos.quantity >= 0 )
+          Logger.warn_static("Skipping Short Exit!! No short position for $(ticker)")
+        else
+          setholdingpct(ticker, 0.0)
+        end
+    end
+end
+
+function _process_technical_conditions(date::Date, LONGENTRY, LONGEXIT, SHORTENTRY, SHORTEXIT)
+
+    currentLongEntry = LONGENTRY != nothing ? LONGENTRY[date] : nothing
+    currentLongExit = LONGEXIT != nothing ? LONGEXIT[date] : nothing
+    currentShortEntry = SHORTENTRY != nothing ? SHORTENTRY[date] : nothing
+    currentShortExit = SHORTEXIT != nothing ? SHORTEXIT[date] : nothing
+
+    if currentLongExit == nothing && currentLongExit == nothing && currentShortEntry == nothing && currentShortExit == nothing
+        Logger.info("No Technical Conditions for $(date)")
+        return
+    end
+
+    #Continue if conditions are valid   
+    if currentLongEntry != nothing
+      _process_long_entry(currentLongEntry, currentLongExit, currentShortEntry, currentShortExit)
+    end
+
+    if currentShortEntry != nothing
+      _process_short_entry(currentLongEntry, currentLongExit, currentShortEntry, currentShortExit)
+    end
+
+    if currentLongExit != nothing
+      _process_long_exit(currentLongEntry, currentLongExit, currentShortEntry, currentShortExit)
+    end
+
+    if currentShortExit != nothing
+      _process_short_exit(currentLongEntry, currentLongExit, currentShortEntry, currentShortExit)
+    end
+end
+
 function mainfnc(date::Date, ohlcv, adjustments, forward; dynamic::Bool = false)
   
   currentData = Dict{String, TimeArray}()
@@ -213,6 +370,30 @@ function mainfnc(date::Date, ohlcv, adjustments, forward; dynamic::Bool = false)
 
   #once orders are placed and performance is updated based on last know portfolio,
   #call the user defined
+
+  Logger.info_static("Evaluating ENTRY/EXIT criteria")
+
+  LONGENTRY = nothing
+  LONGEXIT = nothing
+  SHORTENTRY = nothing
+  SHORTEXIT = nothing
+
+  try
+    API.setparent(:ondata)
+
+    LONGENTRY = longEntryCondition() 
+    LONGEXIT = longExitCondition()
+    SHORTENTRY = shortEntryCondition() 
+    SHORTEXIT = shortExitCondition()
+
+    _process_technical_conditions(date, LONGENTRY, LONGEXIT, SHORTENTRY, SHORTEXIT) 
+
+    API.setparent(:all)
+  catch err
+    API.setparent(:all)
+    handleexception(err, forward)
+    return false
+  end
 
   try
     API.setparent(:ondata)

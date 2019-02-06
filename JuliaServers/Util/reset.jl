@@ -10,10 +10,18 @@ function ondata(data, state)
 	throw(UndefVarError(:ondata))
 end
 
-function buycondition(state)
+function longEntryCondition(state)
 	return nothing
 end
 
-function sellcondition(state)
+function longExitCondition(state)
+	return nothing
+end
+
+function shortEntryCondition(state)
+	return nothing
+end
+
+function shortExitCondition(state)
 	return nothing
 end

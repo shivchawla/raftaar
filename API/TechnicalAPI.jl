@@ -4,133 +4,137 @@ module TechnicalAPI
 using MarketTechnicals 
 using TimeSeries
 using HistoryAPI
+using Dates
 
 import API.getuniverse
+import API.getresolution
+import API.Resolution
+import API.Resolution_Minute
+import API.Resolution_Day
+
+import Base.filter
+import Base.getindex
 
 minuteDataStore = Dict{String, TimeArray}()
 
-const Conditions = Dict{String, TimeArray}
-const Indicators = Dict{String, TimeArray}
+mutable struct Condition 
+    _ta::TimeArray
+end
 
-export Conditions, Indicators
+Condition(cond::Condition) = Condition(deepcopy(cond._ta))
 
-function Base.:(==)(c1::Indicators, c2::Indicators)
-    keys_c1 = collect(keys(c1))
-    keys_c2 = collect(keys(c2))
+getindex(cond::Condition, date::Date) =  cond._ta[date]
+getindex(cond::Condition, datetime::DateTime) =  cond._ta[datetime]
+getindex(cond::Condition, sym::Symbol) =  cond._ta[sym]
+getindex(cond::Condition, syms::Vector{Symbol}) =  cond._ta[syms]
 
-    if length(setdiff(keys_c1, keys_c2)) != 0
+mutable struct Indicator
+   _ta::TimeArray
+end
+
+Indicator(ind::Indicator) = Indicator(deepcopy(ind._ta))
+
+getindex(ind::Indicator, date::Date) =  ind._ta[date]
+getindex(ind::Indicator, datetime::DateTime) =  ind._ta[datetime]
+getindex(ind::Indicator, sym::Symbol) =  ind._ta[sym]
+getindex(ind::Indicator, syms::Vector{Symbol}) =  ind._ta[syms]
+
+export Condition, Indicator, getindex
+
+function Base.:(==)(c1::Indicator, c2::Indicator)
+    names_c1 = colnames(c1._ta)
+    names_c2 = colnames(c2._ta)
+
+    if length(setdiff(names_c1, names_c2)) != 0
       throw("Unequal entities")
     end
 
-    output = Conditions()
-    for key in keys_c1
-      output[key] = rename(c1[key] .== c2[key], [Symbol(key)])
-    end
+    return Condition(rename(c1._ta .== c2._ta[names_c1], names_c1))
 
-    return output
 end
 
-function Base.:>(c1::Indicators, c2::Indicators) 
-    keys_c1 = collect(keys(c1))
-    keys_c2 = collect(keys(c2))
+function Base.:>(c1::Indicator, c2::Indicator) 
+    names_c1 = colnames(c1._ta)
+    names_c2 = colnames(c2._ta)
 
-    # println("Greater than")
-    # println(keys_c1)
-
-    if length(setdiff(keys_c1, keys_c2)) != 0
+    if length(setdiff(names_c1, names_c2)) != 0
       throw("Unequal entities")
     end
 
-    output = Conditions()
-    for key in keys_c1
-      output[key] = rename(c1[key] .> c2[key], [Symbol(key)])
-    end
+    return Condition(rename(c1._ta .> c2._ta[names_c1], names_c1))
 
-    # println("Conditions")
-    # println(output)
-
-    return output
 end
 
-function Base.:<(c1::Indicators, c2::Indicators) 
-    keys_c1 = collect(keys(c1))
-    keys_c2 = collect(keys(c2))
+function Base.:<(c1::Indicator, c2::Indicator) 
+    names_c1 = colnames(c1._ta)
+    names_c2 = colnames(c2._ta)
 
-    if length(setdiff(keys_c1, keys_c2)) != 0
+    if length(setdiff(names_c1, names_c2)) != 0
       throw("Unequal entities")
     end
 
-    output = Conditions()
-    for key in keys_c1
-      output[key] = rename(c1[key] .< c2[key], [Symbol(key)])
-    end
+    return Condition(rename(c1._ta .< c2._ta[names_c1], names_c1))
 
-    return output
 end
 
-function Base.:>=(c1::Indicators, c2::Indicators)
-    keys_c1 = collect(keys(c1))
-    keys_c2 = collect(keys(c2))
+function Base.:>=(c1::Indicator, c2::Indicator)
+    names_c1 = colnames(c1._ta)
+    names_c2 = colnames(c2._ta)
 
-    if length(setdiff(keys_c1, keys_c2)) != 0
+    if length(setdiff(names_c1, names_c2)) != 0
       throw("Unequal entities")
     end
 
-    output = Conditions()
-    for key in keys_c1
-      output[key] = rename(c1[key] .>= c2[key], [Symbol(key)])
-    end
+    return Condition(rename(c1._ta .>= c2._ta[names_c1], names_c1))
 
-    return output
 end
 
-function Base.:<=(c1::Indicators, c2::Indicators)
-    keys_c1 = collect(keys(c1))
-    keys_c2 = collect(keys(c2))
+function Base.:<=(c1::Indicator, c2::Indicator)
+    names_c1 = colnames(c1._ta)
+    names_c2 = colnames(c2._ta)
 
-    if length(setdiff(keys_c1, keys_c2)) != 0
+    if length(setdiff(names_c1, names_c2)) != 0
       throw("Unequal entities")
     end
 
-    output = Conditions()
-    for key in keys_c1
-      output[key] = rename(c1[key] .<= c2[key], [Symbol(key)])
-    end
+    return Condition(rename(c1._ta .<= c2._ta[names_c1], names_c1))
 
-    return output
 end
 
-function Base.:&(c1::Conditions, c2::Conditions)
-    keys_c1 = collect(keys(c1))
-    keys_c2 = collect(keys(c2))
+function Base.:&(c1::Condition, c2::Condition)
+    names_c1 = colnames(c1._ta)
+    names_c2 = colnames(c2._ta)
 
-    if length(setdiff(keys_c1, keys_c2)) != 0
+    if length(setdiff(names_c1, names_c2)) != 0
       throw("Unequal entities")
     end
 
-    output = Conditions()
-    for key in keys_c1
-      output[key] = rename(c1[key] .& c2[key], [Symbol(key)])
-    end
-
-    return output
+    return Condition(rename(c1._ta .& c2._ta[names_c1], names_c1))
+    
 end
 
-function Base.:|(c1::Conditions, c2::Conditions)
-    keys_c1 = collect(keys(c1))
-    keys_c2 = collect(keys(c2))
+function Base.:|(c1::Condition, c2::Condition)
+    names_c1 = colnames(c1._ta)
+    names_c2 = colnames(c2._ta)
 
-    if length(setdiff(keys_c1, keys_c2)) != 0
+    if length(setdiff(names_c1, names_c2)) != 0
       throw("Unequal entities")
     end
 
-    output = Conditions()
-    for key in keys_c1
-      output[key] = rename(c1[key] .| c2[key], [Symbol(key)])
-    end
+    return Condition(rename(c1._ta .| c2._ta[names_c1], names_c1))
 
-    return output
 end
+
+function filter(condition::Condition, date::Date)
+    fcond = Condition(condition)
+    _ta = fcond._ta[Date.(TimeSeries.timestamp(fcond._ta)) .== date]
+    
+    return _ta
+end
+export filter
+
+# function TimesSeries.:[](c:)
+
 
 function setupMinuteDataStore(open, high, low, close, volume)
     global minuteDataStore["Open"] = open
@@ -144,10 +148,10 @@ function setupMinuteDataStore(ohlcv)
     global minuteDataStore = ohlcv
 end
 
-function _getTA(;price::String="Close", frequency::String="1m", horizon = 10)
+function _getTA(;price::String="Close", horizon = 10)
     ta = nothing
-    
-    if frequency == "1m" 
+
+    if getresolution() == Resolution_Minute
         if price == "Open"
           ta = minuteDataStore["Open"]
         elseif price == "High"
@@ -159,39 +163,26 @@ function _getTA(;price::String="Close", frequency::String="1m", horizon = 10)
         elseif price == "Volume"
           ta = minuteDataStore["Volume"]
         end
-    elseif frequency == "Day"
+    elseif getresolution() == Resolution_Day
         HistoryAPI.history(getuniverse(), price, :Day, horizon)
     end
 end
 
+horizonDefault() = getresolution() == :Day ? 22 : 1000
+
+
 """
 Simple Moving Average
 """
-function SMA(;horizon = 1000, frequency="1m", price="Close")
+function SMA(;horizon = horizonDefault(), price="Close")
   
     names = [security.symbol.ticker for security in getuniverse()]
-    ta = _getTA(price = price, horizon = horizon, frequency = frequency)
+    ta = _getTA(price = price, horizon = horizon)
 
-    output = Indicators()
-    
     if ta != nothing
-  	
-      _sma = sma(ta, horizon)
-
-      # println("Colnames: $(TimeSeries.colnames(_sma))")
-      # println(_sma)
-        
-      for name in names
-        # println("name: $(name)")
-        
-        output[name] = rename(_sma[Symbol("$(name)_sma_$(horizon)")], [Symbol(name)])
-      end
+      return Indicator(rename(sma(ta, horizon), colnames(ta)))
     end
-
-    # println("Final SMA")
-    # println(output)
-
-    return output
+    
 end
 
 export SMA
@@ -199,23 +190,15 @@ export SMA
 """
 Exponential Moving Average
 """
-function EMA(;horizon = 1000, frequency="1m", price="Close", wilder = false)
+function EMA(;horizon = horizonDefault(), price="Close", wilder = false)
     
     names = [security.symbol.ticker for security in getuniverse()]
     ta = _getTA(price)
 
-    output = Indicators()
-    
     if ta != nothing
-
-      ema = ema(ta, horizon, wilder = wilder)
-      
-      for name in names
-        output[name] = rename(ema[Symbol("$(name)_ema_$(horizon)")], [Symbol(name)])
-      end
+      return Indicator(rename(ema(ta, horizon, wilder = wilder), colnames(ta)))
     end
-
-    return output
+    
 end
 
 export EMA
@@ -223,48 +206,37 @@ export EMA
 """
 Rate of change
 """
-function ROC(;horizon = 1000, frequency="1m", price="Close")
+function ROC(;horizon = horizonDefault(), price="Close")
     
     names = [security.symbol.ticker for security in getuniverse()]
 
     ta = _getTA(price)
 
-    output = Indicators()
-    
     if ta != nothing
-
-      roc = roc(ta, horizon)
-      
-      for name in names
-        output[name] = rename(roc[Symbol("roc_$(name)")], [Symbol(name)])
-      end
+      return Indicator(rename(roc(ta, horizon), colnames(ta)))
     end
 
-    return output
 end
 
 export ROC
 
+
+fastKAMADefault() = getresolution() == :Day ? 5 : 200
+slowKAMADefault() = getresolution() == :Day ? 66 : 3000
+
 """
 Kaufman Adaptive Moving Average
 """
-function KAMA(;horizon = 1000, frequency="1m", price="Close", fast = 200, slow = 3000)
+function KAMA(;horizon = horizonDefault(), price="Close", fast = fastKAMADefault(), slow = slowKAMADefault())
     
     names = [security.symbol.ticker for security in getuniverse()]
 
     ta = _getTA(price)
 
-    output = Indicators()
-    
     if ta != nothing
-      kama = kama(ta, horizon, fast, slow)
-      
-      for name in names
-        output[name] = rename(kama[Symbol("kama_$(name)")], [Symbol(name)])
-      end
+      return Indicator(rename(kama(ta, horizon, fast, slow), colnames(ta)))
     end
-
-    return output
+    
 end
 
 export KAMA
@@ -279,6 +251,8 @@ export KAMA
 #       env(ta, horizon, e = env)
 #     end
 # end
+
+##########MODIFY REST AFTER TESTING THE ABOVE
 
 """
 Average Directional Movement Index
@@ -314,7 +288,6 @@ end
 export ADX
 
 
-##########MODIFY REST AFTER TESTING THE ABOVE
 
 """
 Aroon Oscillator

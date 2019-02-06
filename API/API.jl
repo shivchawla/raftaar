@@ -16,9 +16,15 @@ using JSON
 using Dates
 
 #Import list of functions to be overloaded
-import BackTester: getuniverse, getopenorders
+import BackTester: getuniverse, getopenorders, Resolution
 import BackTester: Security, SecuritySymbol
 import Base: getindex, convert
+
+export Resolution
+
+for s in instances(Resolution)
+    @eval export $(Symbol(s))
+end
 
 _currentparent = Symbol()
 
@@ -267,7 +273,7 @@ function updatedatastores(datetime::DateTime, ohlcv::Dict{String, TimeArray}, ad
     adjs = Dict{SecuritySymbol, Adjustment}()
 
     for security in getuniverse(validprice=false)
- 
+        
         openprices = ohlcv["Open"]
         highprices = ohlcv["High"]
         lowprices = ohlcv["Low"]
@@ -307,7 +313,8 @@ function __getprices(prices, colname)
     defaultprice = 0.0
     price = 0.0
     if colname in colnames(prices)
-        price = values(prices[colname])[1]
+        vals = values(prices[colname])
+        price = length(vals) > 0 ? vals[1] : defaultprice 
         price = !isnan(price) ? price : defaultprice
     end
 
@@ -318,7 +325,8 @@ function __getvolume(volumes, colname)
     defaultvolume = 0.0
     volume = 0.0
     if colname in colnames(volumes)
-        volume = values(volumes[colname])[1]
+        vals = values(volumes[colname])
+        volume = length(vals) > 0 ? vals[1] : defaultvolume
         volume = !isnan(volume) ? volume : defaultvolume
     end
     return volume
