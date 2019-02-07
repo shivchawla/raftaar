@@ -380,17 +380,30 @@ function fromglobalstores(names::Vector{String}, datatype::String, frequency::Sy
         #Initialize all values as NaN for the column
         vals[:,i] .= NaN
         
-        # #SOME LOGIC ISSUE       
-        # ts = all_ts[i]
-        # println([ts[ts .== dt] for dt in uniq_ts] .!= [[]])
-        # vals[[ts[ts .== dt] for dt in uniq_ts] .!= [[]], i] .= all_vs[i]
+        # #LOGIC 1 to merge  O(NlogN)
+        # for (j, dt) in enumerate(all_ts[i])
+        #     idx = findall(isequal(dt), uniq_ts)
+        #     if idx!=nothing && length(idx) !=0
+        #         vals[idx[1], i] = all_vs[i][j]
+        #     end
+        # end
 
-        for (j, dt) in enumerate(all_ts[i])
-            idx = findall(isequal(dt), uniq_ts)
-            if idx!=nothing && length(idx) !=0
-                vals[idx[1], i] = all_vs[i][j]
+        #LOGIC 2 to merge O(N)
+        _tSmall = all_ts[i]
+        _tBig =  uniq_ts
+        j=1
+        k=1
+        idx = Vector{Int64}(undef, length(_tSmall))
+        while j <= length(_tBig) && k<=length(_tSmall)
+            if  _tSmall[k] == _tBig[j]
+                idx[k] = j
+                k += 1
             end
+            j+=1
         end
+
+        vals[idx, i] .= all_vs[i]
+ 
     end
 
     ta = TimeArray(uniq_ts, vals, all_names)    
