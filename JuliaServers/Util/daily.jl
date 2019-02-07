@@ -142,8 +142,10 @@ function _run_algo_day(startdate::Date = getstartdate(), enddate::Date = getendd
       Logger.info_static("Running algorithm for each timestamp")
       success = true
       
+      techConds = _evaluate_technical_conditions(forward)
+
       for (i, date) in enumerate(sort(collect(keys(labels))))
-          success = mainfnc(Date(date), ohlcvEOD, adjustments, forward)
+          success = mainfnc(Date(date), ohlcvEOD, adjustments, techConds, forward)
           
           if(!success)
               break
@@ -317,6 +319,36 @@ function _findActive(ta)
 
 end
 
+function _evaluate_technical_conditions(forward::Bool=false)
+  LONGENTRY = nothing
+  LONGEXIT = nothing
+  SHORTENTRY = nothing
+  SHORTEXIT = nothing
+
+  try
+  
+    API.setparent(:ondata)
+
+    LONGENTRY = longEntryCondition() 
+    LONGEXIT = longExitCondition()
+    SHORTENTRY = shortEntryCondition() 
+    SHORTEXIT = shortExitCondition()
+
+  catch err
+    println(err)
+    println("Error evaluating technical conditions ")
+    handleexception(err, forward)
+  end
+
+  return Dict(
+      "LONGENTRY" =>  LONGENTRY,
+      "LONGEXIT" =>  LONGEXIT,
+      "SHORTENTRY" =>  SHORTENTRY,
+      "SHORTEIT" =>  SHORTEXIT
+  )
+
+end
+
 function _process_technical_conditions(date::Date, LONGENTRY, LONGEXIT, SHORTENTRY, SHORTEXIT)
 
     currentLongEntry = _findActive(LONGENTRY != nothing ? LONGENTRY[date] : nothing)
@@ -350,9 +382,11 @@ function _process_technical_conditions(date::Date, LONGENTRY, LONGEXIT, SHORTENT
     # end
     
     if currentLongEntry == nothing && currentLongExit == nothing && currentShortEntry == nothing && currentShortExit == nothing
-        Logger.info("No Technical Conditions for $(date)")
+        # Logger.info("No Technical Conditions for $(date)")
         return
     end
+
+    Logger.info_static("Evaluating ENTRY/EXIT criteria")
 
     #Continue if conditions are valid   
     if currentLongEntry != nothing
@@ -372,7 +406,7 @@ function _process_technical_conditions(date::Date, LONGENTRY, LONGEXIT, SHORTENT
     end
 end
 
-function mainfnc(date::Date, ohlcv, adjustments, forward; dynamic::Bool = false)
+function mainfnc(date::Date, ohlcv, adjustments, technicalConds, forward; dynamic::Bool = false)
   
   currentData = Dict{String, TimeArray}()
 
@@ -419,20 +453,15 @@ function mainfnc(date::Date, ohlcv, adjustments, forward; dynamic::Bool = false)
   #once orders are placed and performance is updated based on last know portfolio,
   #call the user defined
 
-  Logger.info_static("Evaluating ENTRY/EXIT criteria")
-
-  LONGENTRY = nothing
-  LONGEXIT = nothing
-  SHORTENTRY = nothing
-  SHORTEXIT = nothing
-
   try
-    API.setparent(:ondata)
+    
+    Logger.update_display(true)
 
-    LONGENTRY = longEntryCondition() 
-    LONGEXIT = longExitCondition()
-    SHORTENTRY = shortEntryCondition() 
-    SHORTEXIT = shortExitCondition()
+    
+    LONGENTRY = get(technicalConds, "LONGENTRY", nothing)
+    LONGEXIT = get(technicalConds, "LONGEXIT", nothing)
+    SHORTENTRY = get(technicalConds, "SHORTENTRY", nothing)
+    SHORTEXIT = get(technicalConds, "SHORTEXIT", nothing)
 
     # println("Long Entry")
     # println(LONGENTRY)
@@ -441,18 +470,6 @@ function mainfnc(date::Date, ohlcv, adjustments, forward; dynamic::Bool = false)
     # println(LONGEXIT)
 
     _process_technical_conditions(date, LONGENTRY, LONGEXIT, SHORTENTRY, SHORTEXIT) 
-
-    API.setparent(:all)
-  catch err
-    API.setparent(:all)
-    handleexception(err, forward)
-    return false
-  end
-
-  try
-    API.setparent(:ondata)
-
-    Logger.update_display(true)
 
     if length(getuniverse()) !=0
       ondata(currentData["Close"], getstate())

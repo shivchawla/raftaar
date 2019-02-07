@@ -23,5 +23,5 @@ function shortEntryCondition()
 end
 
 function shortExitCondition()
-	return nothingr
+	return nothing
 end

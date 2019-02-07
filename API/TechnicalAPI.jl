@@ -3,11 +3,14 @@ module TechnicalAPI
 	
 using MarketTechnicals 
 using TimeSeries
-using HistoryAPI
+using YRead
 using Dates
 
 import API.getuniverse
 import API.getresolution
+import API.getstartdate
+import API.getenddate
+
 import API.Resolution
 import API.Resolution_Minute
 import API.Resolution_Day
@@ -164,12 +167,11 @@ function _getTA(;price::String="Close", horizon = 10)
           ta = minuteDataStore["Volume"]
         end
     elseif getresolution() == Resolution_Day
-        HistoryAPI.history(getuniverse(), price, :Day, horizon+10)
+        YRead.history([sec.symbol.ticker for sec in getuniverse()], price, :Day, DateTime(getstartdate() - Dates.Day(2*horizon)), DateTime(getenddate()), displaylogs = false)
     end
 end
 
 horizonDefault() = getresolution() == :Day ? 22 : 1000
-
 
 """
 Simple Moving Average
