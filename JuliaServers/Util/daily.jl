@@ -195,6 +195,7 @@ function _process_long_entry(currentLongEntry, currentLongExit, currentShortEntr
         elseif (pos.quantity < 0)
           Logger.warn_static("Skipping Long Entry!! Already a short position for $(ticker)")
         else
+          # println("Setting Long Holding in $(ticker)")
           setholdingpct(ticker, 1/length(universe))
         end
     end
@@ -229,6 +230,7 @@ function _process_short_entry(currentLongEntry, currentLongExit, currentShortEnt
           Logger.warn_static("Skipping Short Entry!! Already a long position for $(ticker)")
         
         else
+          # println("Setting Short Holding in $(ticker)")
           setholdingpct(ticker, 1/length(universe))
         end
     end
@@ -294,14 +296,60 @@ function _process_short_exit(currentLongEntry, currentLongExit, currentShortEntr
     end
 end
 
+#Find true active conditions: WORKS for only one timestamp
+function _findActive(ta) 
+  if ta == nothing
+    return nothing
+  end
+
+  # println(ta)
+
+  vals = values(ta)
+  idx = findall(x->x==true, reshape(vals, (length(vals),)))
+
+  if length(idx) == 0
+    return nothing
+  end
+
+  vs = vals[idx]
+
+  TimeArray(timestamp(ta), reshape(vs , (1, length(vs))), colnames(ta)[idx])
+
+end
+
 function _process_technical_conditions(date::Date, LONGENTRY, LONGEXIT, SHORTENTRY, SHORTEXIT)
 
-    currentLongEntry = LONGENTRY != nothing ? LONGENTRY[date] : nothing
-    currentLongExit = LONGEXIT != nothing ? LONGEXIT[date] : nothing
-    currentShortEntry = SHORTENTRY != nothing ? SHORTENTRY[date] : nothing
-    currentShortExit = SHORTEXIT != nothing ? SHORTEXIT[date] : nothing
+    currentLongEntry = _findActive(LONGENTRY != nothing ? LONGENTRY[date] : nothing)
+    currentLongExit = _findActive(LONGEXIT != nothing ? LONGEXIT[date] : nothing)
+    currentShortEntry = _findActive(SHORTENTRY != nothing ? SHORTENTRY[date] : nothing)
+    currentShortExit = _findActive(SHORTEXIT != nothing ? SHORTEXIT[date] : nothing)
 
-    if currentLongExit == nothing && currentLongExit == nothing && currentShortEntry == nothing && currentShortExit == nothing
+    # println(date)
+    # if currentLongEntry != nothing
+    #   println(currentLongEntry)
+    # else
+    #   println("Empty Long Entry")
+    # end
+
+    # if currentLongExit != nothing
+    #   println(currentLongExit)
+    # else
+    #   println("Empty Long Exit")
+    # end
+
+    # if currentShortEntry != nothing
+    #   println(currentShortEntry)
+    # else
+    #   println("Empty Short Entry")
+    # end
+
+    # if currentShortExit != nothing
+    #   println(currentShortExit)
+    # else
+    #   println("Empty Short Exit")
+    # end
+    
+    if currentLongEntry == nothing && currentLongExit == nothing && currentShortEntry == nothing && currentShortExit == nothing
         Logger.info("No Technical Conditions for $(date)")
         return
     end
@@ -385,6 +433,12 @@ function mainfnc(date::Date, ohlcv, adjustments, forward; dynamic::Bool = false)
     LONGEXIT = longExitCondition()
     SHORTENTRY = shortEntryCondition() 
     SHORTEXIT = shortExitCondition()
+
+    # println("Long Entry")
+    # println(LONGENTRY)
+
+    # println("Long Exit")
+    # println(LONGEXIT)
 
     _process_technical_conditions(date, LONGENTRY, LONGEXIT, SHORTENTRY, SHORTEXIT) 
 

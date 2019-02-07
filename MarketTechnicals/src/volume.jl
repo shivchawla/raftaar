@@ -31,7 +31,7 @@ function obv(ohlcv::TimeArray{T,N}; price=:Close, v=:Volume) where {T,N}
       end
     end
 
-    TimeArray(timestamp(ohlcv), cumsum(vol), [:obv], meta(ohlcv))
+    TimeArray(timestamp(ohlcv), nancumsum(vol), [:obv], meta(ohlcv))
 end
 
 """

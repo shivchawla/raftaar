@@ -10,18 +10,18 @@ function ondata(data, state)
 	throw(UndefVarError(:ondata))
 end
 
-function longEntryCondition(state)
+function longEntryCondition()
 	return nothing
 end
 
-function longExitCondition(state)
+function longExitCondition()
 	return nothing
 end
 
-function shortEntryCondition(state)
+function shortEntryCondition()
 	return nothing
 end
 
-function shortExitCondition(state)
-	return nothing
+function shortExitCondition()
+	return nothingr
 end

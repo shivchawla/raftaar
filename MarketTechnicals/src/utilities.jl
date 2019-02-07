@@ -17,10 +17,10 @@ function mean_abs_dev(a::Array{T,1}, scale::Bool=false) where T
 
     res = ones(length(a))
     for i in 1:length(a)
-        @inbounds res[i] = abs(a[i] - mean(a))
+        @inbounds res[i] = abs(a[i] - nanmean(a))
     end
 
-    mean(res) * c
+    nanmean(res) * c
 end
 
 """
@@ -54,14 +54,14 @@ function wilder_smooth(ta::TimeArray, n::Integer;
                        padding::Bool=false, dx::Bool=false)
     val = similar(Array{Float64}, indices(values(ta)))
 
-    first_cal = (dx ? mean : sum)
+    first_cal = (dx ? nanmean : nansum)
 
     for i ∈ 1:size(val, 1)
         val[i, :] =
             if i < n
                 NaN
             elseif i == n
-                first_cal(values(ta[1:n]), 1)
+                first_cal(values(ta[1:n]))
             elseif dx
                 (val[i-1, :] .* (n - 1) .+ values(ta)[i, :]) ./ n
             else

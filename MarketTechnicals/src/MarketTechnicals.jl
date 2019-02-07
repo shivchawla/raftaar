@@ -16,6 +16,17 @@ export sma, ema, kama, env,
        floorpivots, woodiespivots,
        typical
 
+_nanmean(x) = mean(filter(!isnan, x))
+nanmean(x; dims = 1) = ndims(x) > 1 ? mapslices(_nanmean, x, dims = dims) : _nanmean(x)
+
+_nansum(x) = sum(filter(!isnan,x))
+nansum(x; dims = 1) = ndims(x) > 1 ? mapslices(_nansum, x, dims = dims) : _nansum(x)
+
+_nanstd(x) = std(filter(!isnan,x))
+nanstd(x; dims = 1) = ndims(x) > 1 ? mapslices(_nanstd, x, dims = dims) : _nanstd(x)
+
+nancumsum(x) = cumsum(filter(!isnan,x))
+
 include("candlesticks.jl")
 include("levels.jl")
 include("movingaverages.jl")

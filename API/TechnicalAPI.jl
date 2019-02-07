@@ -164,7 +164,7 @@ function _getTA(;price::String="Close", horizon = 10)
           ta = minuteDataStore["Volume"]
         end
     elseif getresolution() == Resolution_Day
-        HistoryAPI.history(getuniverse(), price, :Day, horizon)
+        HistoryAPI.history(getuniverse(), price, :Day, horizon+10)
     end
 end
 
@@ -179,8 +179,15 @@ function SMA(;horizon = horizonDefault(), price="Close")
     names = [security.symbol.ticker for security in getuniverse()]
     ta = _getTA(price = price, horizon = horizon)
 
+    # println("Historical Prices")
+    # println(ta)
+
     if ta != nothing
-      return Indicator(rename(sma(ta, horizon), colnames(ta)))
+      _ind = sma(ta, horizon)
+      
+      # println(_ind)
+      
+      return Indicator(rename(_ind, colnames(ta)))
     end
     
 end
@@ -194,6 +201,7 @@ function EMA(;horizon = horizonDefault(), price="Close", wilder = false)
     
     names = [security.symbol.ticker for security in getuniverse()]
     ta = _getTA(price)
+
 
     if ta != nothing
       return Indicator(rename(ema(ta, horizon, wilder = wilder), colnames(ta)))

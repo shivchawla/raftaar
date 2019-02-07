@@ -4,7 +4,7 @@ function sma(ta::TimeArray, n::Int)
     vals = zeros(size(values(ta),1) - (n-1), size(values(ta),2))
     for i in 1:size(values(ta),1) - (n-1)
         for j in 1:size(values(ta),2)
-            vals[i,j] = mean(values(ta)[i:i+(n-1),j])
+            vals[i,j] = nanmean(values(ta)[i:i+(n-1),j])[1]
         end
     end
 
@@ -46,7 +46,7 @@ function ema(ta::TimeArray, n::Int; wilder=false)
 end
 
 function kama(ta::TimeArray, n::Int=10, fn::Int=2, sn::Int=30)
-    vola = moving(sum, abs.(ta .- lag(ta)), n)
+    vola = moving(nansum, abs.(ta .- lag(ta)), n)
     change = abs.(ta .- lag(ta, n))
     er = safediv.(change, vola)  # Efficiency Ratio
 
@@ -56,7 +56,7 @@ function kama(ta::TimeArray, n::Int=10, fn::Int=2, sn::Int=30)
     cl = ta[n+1:end]
     vals = similar(Array{Float64}, indices(values(cl)))
     # using simple moving average as initial kama
-    pri_kama = mean(values(ta[1:n]), 1)
+    pri_kama = nanmean(values(ta[1:n]))
 
     @assert length(cl) == length(sc)
 
@@ -100,7 +100,7 @@ function sma(a::Array, n::Int)
 
     for i in 1:size(a,1) - (n-1)
         for j in 1:size(a,2)
-            vals[i,j] = mean(a[i:i+(n-1),j])
+            vals[i,j] = nanmean(a[i:i+(n-1),j])
         end
     end
 
