@@ -271,6 +271,10 @@ end
 # Searches and return TA of available secids
 function fromglobalstores(names::Vector{String}, datatype::String, frequency::Symbol)
     
+    # if frequency != :Day
+    #     println("Fetching From global store: $(now())")
+    # end
+
     if frequency == :Day && haskey(_globaldatastores, datatype)
         
         ta = _globaldatastores[datatype]
@@ -390,6 +394,10 @@ function fromglobalstores(names::Vector{String}, datatype::String, frequency::Sy
     end
 
     ta = TimeArray(uniq_ts, vals, all_names)    
+
+    # if frequency != :Day
+    #     println("Done fetching from global store: $(now())")
+    # end
 
     return ta
 end

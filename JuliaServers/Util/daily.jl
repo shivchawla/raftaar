@@ -139,10 +139,11 @@ function _run_algo_day(startdate::Date = getstartdate(), enddate::Date = getendd
         return
       end
 
+      Logger.info_static("Evaluating ENTRY/EXIT criteria")
+      techConds = _evaluate_technical_conditions(forward)
+      
       Logger.info_static("Running algorithm for each timestamp")
       success = true
-      
-      techConds = _evaluate_technical_conditions(forward)
 
       for (i, date) in enumerate(sort(collect(keys(labels))))
           success = mainfnc(Date(date), ohlcvEOD, adjustments, techConds, forward)
@@ -386,8 +387,6 @@ function _process_technical_conditions(date::Date, LONGENTRY, LONGEXIT, SHORTENT
         return
     end
 
-    Logger.info_static("Evaluating ENTRY/EXIT criteria")
-
     #Continue if conditions are valid   
     if currentLongEntry != nothing
       _process_long_entry(currentLongEntry, currentLongExit, currentShortEntry, currentShortExit)
@@ -457,7 +456,7 @@ function mainfnc(date::Date, ohlcv, adjustments, technicalConds, forward; dynami
     
     Logger.update_display(true)
 
-    
+
     LONGENTRY = get(technicalConds, "LONGENTRY", nothing)
     LONGEXIT = get(technicalConds, "LONGEXIT", nothing)
     SHORTENTRY = get(technicalConds, "SHORTENTRY", nothing)

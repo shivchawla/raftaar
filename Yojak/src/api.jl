@@ -459,7 +459,7 @@ function history_unadj(secids::Vector{Int},
     ta = findinglobalstores(secids, datatype, frequency, 
                                 horizon, enddate,
                                 offset = -1,
-                                removeNaN = true,
+                                removeNaN = frequency == :Day ? true : false,
                                 securitytype = securitytype,
                                 exchange = exchange,
                                 country = country)
@@ -518,7 +518,14 @@ function history_unadj(secids::Vector{Int},
                         displaylogs::Bool = true,
                         strict::Bool = true,
                         forwardfill::Bool=false) 
-    
+
+    # if frequency != :Day
+    #     println("History Unadj")
+    #     println(secids)
+    #     println(datatype)
+    #     println("$(startdate) - $(datatype)")
+    # end
+
     _populateBenchmarkStore(frequency)
 
     Logger.update_display(displaylogs)
@@ -529,10 +536,12 @@ function history_unadj(secids::Vector{Int},
 
     ta = findinglobalstores(secids, datatype, frequency,
                                 startdate, enddate,
-                                removeNaN = true, 
+                                removeNaN = frequency == :Day ? true : false,
                                 securitytype = securitytype,
                                 exchange = exchange,
                                 country = country)
+
+    # println("Completed Fetching from global stores")
 
     cols = Int[Meta.parse(String(name)) for name in __getcolnames(ta)]
 
@@ -540,6 +549,11 @@ function history_unadj(secids::Vector{Int},
         Logger.update_display(true)
         return __renamecolumns(ta)
     end
+
+    # if frequency != :Day
+    #     println("OOPS! Data not sufficient")
+    #     println("Fetching from DB")
+    # end
 
     more_ta = _history_unadj(securitycollection(), 
                         frequency == :Day ? datacollection() : minutedatacollection(),
@@ -557,9 +571,19 @@ function history_unadj(secids::Vector{Int},
     # println(timestamp(more_ta))
     # println(values(more_ta))
 
+    # if frequency != :Day
+    #     println("Again updating the global data stores")
+    #     println("Datetype: $(datatype)")
+    # end
+
     if (more_ta != nothing)
         _updateglobaldatastores(more_ta, datatype, frequency)
     end
+
+    # if frequency != :Day
+    #     println("Again finding in the global data stores")
+    #     println("Datetype: $(datatype)")
+    # end
 
     #finally get from updated global stores
     ta = findinglobalstores(secids, datatype, frequency,
@@ -567,7 +591,12 @@ function history_unadj(secids::Vector{Int},
                                 forwardfill = forwardfill,
                                 securitytype = securitytype,
                                 exchange = exchange,
-                                country = country) 
+                                country = country)
+
+
+    # if frequency != :Day
+    #     println("Finally done")
+    # end
 
     ta = __fillmissingdata(ta, secids)
 
