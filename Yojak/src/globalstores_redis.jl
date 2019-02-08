@@ -293,7 +293,7 @@ function _updateglobaldatastores(ta::TimeArray, datatype::String, frequency::Sym
 end
 
 # Searches and return TA of available secids
-function fromglobalstores(names::Vector{String}, datatype::String, frequency::Symbol, startdate::DateTime = DateTime("1990-01-01"), enddate::DateTime = DateTime("2030-01-01"))
+function fromglobalstores(names::Vector{String}, datatype::String, frequency::Symbol, startdate::DateTime = DateTime("1990-01-01"), enddate::DateTime = DateTime("2030-01-01"); forceRedis::Bool = false)
     
     # if frequency != :Day
     #     println("Fetching From global store: $(now())")
@@ -307,11 +307,18 @@ function fromglobalstores(names::Vector{String}, datatype::String, frequency::Sy
         columnnames = __getcolnames(ta)
         unavailablenames = setdiff(secids, columnnames)
 
-        if length(unavailablenames) == 0
-            # availablenames = setdiff(secids, unavailablenames)
-            # if length(availablenames) > 0
-            #     return ta[availablenames]
-            # end
+        if length(unavailablenames) >= 0
+            availablenames = setdiff(secids, unavailablenames)
+            if length(availablenames) > 0
+                return ta[availablenames]
+            end
+
+            if !forceRedis
+                return nothing
+            end
+        end
+
+        if !forceRedis
             return ta[secids]
         end
     end
@@ -458,11 +465,12 @@ function findinglobalstores(secids::Vector{Int},
                                 offset::Int=5,
                                 forwardfill::Bool=false,
                                 removeNaN::Bool=false,
+                                forceRedis::Bool=false,
                                 securitytype::String="EQ",
                                 exchange::String="NSE",
                                 country::String="IN")      
     
-    full_ta = fromglobalstores(string.(secids), datatype, frequency, startdate, enddate)
+    full_ta = fromglobalstores(string.(secids), datatype, frequency, startdate, enddate, forceRedis = forceRedis)
     truenames = full_ta != nothing ? colnames(full_ta) : Symbol[]
 
     #Merge with benchmark data as a filter
@@ -498,11 +506,12 @@ function findinglobalstores(secids::Vector{Int},
                                 offset::Int=5,
                                 forwardfill::Bool=false,
                                 removeNaN::Bool=false,
+                                forceRedis::Bool=false,
                                 securitytype::String="EQ",
                                 exchange::String="NSE",
                                 country::String="IN")
     
-    _guessStartDate = DateTime(frequency == :Day ? Date(enddate) - Dates.Day(2*horizon) : enddate - Dates.Minute(2*horizon)) 
+    _guessStartDate = DateTime(frequency == :Day ? Date(enddate) - Dates.Day(2*horizon) : enddate - Dates.Minute(2*horizon), forceRedis = forceRedis) 
     full_ta = fromglobalstores(string.(secids), datatype, frequency, _guessStartDate, enddate)
 
     truenames = full_ta != nothing ? colnames(full_ta) : Symbol[]
