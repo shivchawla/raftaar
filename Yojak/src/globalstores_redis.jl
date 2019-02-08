@@ -25,7 +25,7 @@ function getsubset(ta::TimeArray, d::DateTime, ct::Int=0, offset::Int=5, frequen
     ta = dropnan(ta)
     timestamps = TimeSeries.timestamp(ta)
 
-    lastidx = nothing
+    lastidx = 0
 
     #special logic to check for offset number of days around the end date (in case end date is unavailable)
     #offset = -1 means inifinite days
@@ -57,8 +57,10 @@ function getsubset(ta::TimeArray, d::DateTime, ct::Int=0, offset::Int=5, frequen
     end
 
     #Check if lastidx is zero and offset is -1 ====> lastidx = end
-    if offset == -1 || isnothing(lastidx)
+    if offset == -1 && isnothing(lastidx)
         lastidx = length(timestamps)
+    elseif isnothing(lastidx)
+        lastidx = 0
     end
 
     firstidx = 1
@@ -507,16 +509,16 @@ function findinglobalstores(secids::Vector{Int},
 
     #Merge with benchmark data as a filter
     if frequency == :Day
-        full_ta = full_ta!=nothing ? merge(full_ta, TimeSeries.tail(to(_benchmarkEODData, Date(enddate)), horizon), :outer) : nothing
+        full_ta = full_ta != nothing ? merge(full_ta, TimeSeries.tail(to(_benchmarkEODData, Date(enddate)), horizon), :outer) : nothing
     else
-        full_ta = full_ta!=nothing ? TimeSeries.tail(to(full_ta, enddate), horizon) : nothing
+        full_ta = full_ta != nothing ? TimeSeries.tail(to(full_ta, enddate), horizon) : nothing
     end
     
     if forwardfill
         full_ta = __forwardfill(full_ta)
     end
 
-    full_ta = full_ta!=nothing ? getsubset(full_ta, enddate, horizon, offset, frequency) : nothing
+    full_ta = full_ta != nothing ? getsubset(full_ta, enddate, horizon, offset, frequency) : nothing
 
     #Remove the filter columns
     full_ta = full_ta != nothing ? full_ta[truenames] : nothing
