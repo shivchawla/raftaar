@@ -242,7 +242,7 @@ function _updateglobaldatastores(ta::TimeArray, datatype::String, frequency::Sym
             _ta_this_names = colnames(_ta_this)
             _ta_this_timestamp = timestamp(_ta_this) 
             
-            vs = _ta_this_names[:,1]
+            vs = _ta_this_values[:,1]
             ts = _ta_this_timestamp 
 
             #Filter out nothing/NaN
@@ -251,7 +251,7 @@ function _updateglobaldatastores(ta::TimeArray, datatype::String, frequency::Sym
             ts = ts[idx_not_valid]
 
             yearFormattedDates = Dates.format.(ts, "yyyy")
-            monthFormattedDates = Dates.format.(ts, "yyyy")
+            monthFormattedDates = Dates.format.(ts, "yyyymm")
 
             timeunits = frequency == :Day ? unique(yearFormattedDates)  : unique(monthFormattedDates) 
             
@@ -273,7 +273,7 @@ function _updateglobaldatastores(ta::TimeArray, datatype::String, frequency::Sym
                 _ts = ts[idx]
 
                 value = Vector{String}(undef, length(_ts))
-                for (j, dt) in enumerate(ts)
+                for (j, dt) in enumerate(_ts)
                     value[j] = JSON.json(Dict("Date" => dt, "Value" => _vs[j]))
                 end
 

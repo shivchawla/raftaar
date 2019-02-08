@@ -489,20 +489,24 @@ function history_unadj(secids::Vector{Int},
                             country, strict) 
 
     println("Again updating the global data stores: $(now())")
-    if (more_ta != nothing)
-       _updateglobaldatastores(more_ta, datatype, frequency)
+
+    if (more_ta != ta)
+
+        if (more_ta != nothing)
+           _updateglobaldatastores(more_ta, datatype, frequency)
+        end
+
+        println("Again finding in the global data stores: $(now())")
+
+        #finally get from updated global stores
+        ta = findinglobalstores(secids, datatype, frequency,
+                                    horizon, enddate,
+                                    offset = offset,
+                                    forwardfill = forwardfill,
+                                    securitytype = securitytype,
+                                    exchange = exchange,
+                                    country = country)
     end
-
-    println("Again finding in the global data stores: $(now())")
-
-    #finally get from updated global stores
-    ta = findinglobalstores(secids, datatype, frequency,
-                                horizon, enddate,
-                                offset = offset,
-                                forwardfill = forwardfill,
-                                securitytype = securitytype,
-                                exchange = exchange,
-                                country = country)
 
     ta = __fillmissingdata(ta, secids)
 
@@ -563,25 +567,28 @@ function history_unadj(secids::Vector{Int},
                         country, strict)
 
 
-    println("Again updating the global data stores: $(now())")
+    if (more_ta != ta)
+        println("Again updating the global data stores: $(now())")
 
-    if (more_ta != nothing)
-        _updateglobaldatastores(more_ta, datatype, frequency)
+        if (more_ta != nothing)
+            _updateglobaldatastores(more_ta, datatype, frequency)
+        end
+
+        println("Again finding in the global data stores: $(now())")
+
+        #finally get from updated global stores
+        ta = findinglobalstores(secids, datatype, frequency,
+                                    startdate, enddate,
+                                    forwardfill = forwardfill,
+                                    securitytype = securitytype,
+                                    exchange = exchange,
+                                    country = country)
+
     end
 
-    println("Again finding in the global data stores: $(now())")
-
-    #finally get from updated global stores
-    ta = findinglobalstores(secids, datatype, frequency,
-                                startdate, enddate,
-                                forwardfill = forwardfill,
-                                securitytype = securitytype,
-                                exchange = exchange,
-                                country = country)
-
-    println("Finally done: $(now())")
-
     ta = __fillmissingdata(ta, secids)
+    
+    println("Finally done: $(now())")
 
     Logger.update_display(true)
     return __renamecolumns(ta)
