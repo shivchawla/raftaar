@@ -219,6 +219,7 @@ function _updateglobaldatastores(ta::TimeArray, datatype::String, frequency::Sym
         _globaldatastores[datatype] = merged_ta 
     end
 
+    # println("Updating for all names")
     for (i, name) in enumerate(colnames(ta))
 
         #Columns are secids
@@ -237,7 +238,8 @@ function _updateglobaldatastores(ta::TimeArray, datatype::String, frequency::Sym
             _ta_this_timestamp = timestamp(_ta_this) 
 
             timeunits = frequency == :Day ? unique(Dates.format.(_ta_this_timestamp, "yyyy"))  : unique(Dates.format.(_ta_this_timestamp, "yyyymm")) 
-            
+            # println(timeunits)
+
             for timeunit in timeunits
                 ticker = string(name)
                 key = "$(ticker)_$(string(frequency))_$(datatype)_$(timeunit)"
@@ -275,8 +277,14 @@ function _updateglobaldatastores(ta::TimeArray, datatype::String, frequency::Sym
                 # println(vs)
                 # println(ts)
                 
-                Redis.del(redisClient(), key) 
-                Redis.lpush(redisClient(), key, value)
+                # println("Pushing")
+                # println("Key: $(key)")
+                # println("Value: $(value)")
+
+                if length(value) > 0
+                    Redis.del(redisClient(), key) 
+                    Redis.lpush(redisClient(), key, value)
+                end
             end
         end
     end 
