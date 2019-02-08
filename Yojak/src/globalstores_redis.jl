@@ -219,6 +219,9 @@ function _updateglobaldatastores(ta::TimeArray, datatype::String, frequency::Sym
 
     if (merged_ta != nothing && frequency == :Day)
         _globaldatastores[datatype] = merged_ta 
+
+        #Updating Redis is slow because of redundant updates
+        #return
     end
 
     # println("Updating for all names")
@@ -238,8 +241,11 @@ function _updateglobaldatastores(ta::TimeArray, datatype::String, frequency::Sym
             _ta_this_values = values(_ta_this)
             _ta_this_names = colnames(_ta_this)
             _ta_this_timestamp = timestamp(_ta_this) 
+            
+            yearFormattedDates = Dates.format.(_ta_this_timestamp, "yyyy")
+            monthFormattedDates = Dates.format.(_ta_this_timestamp, "yyyy")
 
-            timeunits = frequency == :Day ? unique(Dates.format.(_ta_this_timestamp, "yyyy"))  : unique(Dates.format.(_ta_this_timestamp, "yyyymm")) 
+            timeunits = frequency == :Day ? unique(yearFormattedDates)  : unique(monthFormattedDates) 
             # println(timeunits)
 
             for timeunit in timeunits
@@ -250,24 +256,24 @@ function _updateglobaldatastores(ta::TimeArray, datatype::String, frequency::Sym
                 ts = [] 
 
                 if frequency == :Day
-                    idx = findall(isequal(timeunit), Dates.format.(_ta_this_timestamp, "yyyy"))
+                    idx = findall(isequal(timeunit), yearFormattedDates)
                     vs = _ta_this_values[idx,1]
                     ts = _ta_this_timestamp[idx]
                 else
-                    idx = findall(isequal(timeunit), Dates.format.(_ta_this_timestamp, "yyyymm"))
+                    idx = findall(isequal(timeunit), monthFormattedDates)
                     vs = _ta_this_values[idx, 1]
                     ts = _ta_this_timestamp[idx]
                 end
 
-                #Filter out nothing
-                idx_not_nothing = vs .!= nothing
-                vs = vs[idx_not_nothing]
-                ts = ts[idx_not_nothing]
+                #Filter out nothing/NaN
+                idx_not_valid = (vs .!= nothing) .& (.!isnan.(vs)) 
+                vs = loat64.(vs[idx_not_valid])
+                ts = ts[idx_not_valid]
 
-                #Filter out NaN
-                idx_not_nan = .!isnan.(vs)
-                vs = Float64.(vs[idx_not_nan])
-                ts = ts[idx_not_nan]
+                # #Filter out NaN
+                # idx_not_nan = .!isnan.(vs)
+                # vs = Float64.(vs[idx_not_nan])
+                # ts = ts[idx_not_nan]
                 
                 value = Vector{String}(undef, length(ts))
                 for (j, dt) in enumerate(ts)

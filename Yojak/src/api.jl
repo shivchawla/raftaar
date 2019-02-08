@@ -446,7 +446,7 @@ function history_unadj(secids::Vector{Int},
                         forwardfill::Bool=false) 
     
     println("History unadj between dates: $(now())")
-    println("Freqeuncy: $(frequency), Datatype: $(datatype), horizon: $(horizon())")
+    println("Freqeuncy: $(frequency), Datatype: $(datatype), horizon: $(horizon)")
 
     _populateBenchmarkStore(frequency)
 
@@ -490,7 +490,7 @@ function history_unadj(secids::Vector{Int},
 
     println("Again updating the global data stores: $(now())")
     if (more_ta != nothing)
-        _updateglobaldatastores(more_ta, datatype, frequency)
+       _updateglobaldatastores(more_ta, datatype, frequency)
     end
 
     println("Again finding in the global data stores: $(now())")
@@ -582,7 +582,7 @@ function history_unadj(secids::Vector{Int},
     println("Finally done: $(now())")
 
     ta = __fillmissingdata(ta, secids)
-    
+
     Logger.update_display(true)
     return __renamecolumns(ta)
 end
