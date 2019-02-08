@@ -492,20 +492,25 @@ function history_unadj(secids::Vector{Int},
 
     if (more_ta != ta)
 
+        updateStatus = false
         if (more_ta != nothing)
-           _updateglobaldatastores(more_ta, datatype, frequency)
+           updateStatus = _updateglobaldatastores(more_ta, datatype, frequency)
         end
 
         println("Again finding in the global data stores: $(now())")
 
-        #finally get from updated global stores
-        ta = findinglobalstores(secids, datatype, frequency,
-                                    horizon, enddate,
-                                    offset = offset,
-                                    forwardfill = forwardfill,
-                                    securitytype = securitytype,
-                                    exchange = exchange,
-                                    country = country)
+        if updateStatus
+            #finally get from updated global stores
+            ta = findinglobalstores(secids, datatype, frequency,
+                                        horizon, enddate,
+                                        offset = offset,
+                                        forwardfill = forwardfill,
+                                        securitytype = securitytype,
+                                        exchange = exchange,
+                                        country = country)
+        else 
+            ta = more_ta
+        end
     end
 
     ta = __fillmissingdata(ta, secids)
@@ -570,19 +575,24 @@ function history_unadj(secids::Vector{Int},
     if (more_ta != ta)
         println("Again updating the global data stores: $(now())")
 
+        updateStatus = false
         if (more_ta != nothing)
-            _updateglobaldatastores(more_ta, datatype, frequency)
+            updateStatus = _updateglobaldatastores(more_ta, datatype, frequency)
         end
 
         println("Again finding in the global data stores: $(now())")
 
-        #finally get from updated global stores
-        ta = findinglobalstores(secids, datatype, frequency,
-                                    startdate, enddate,
-                                    forwardfill = forwardfill,
-                                    securitytype = securitytype,
-                                    exchange = exchange,
-                                    country = country)
+        if updateStatus
+            #finally get from updated global stores
+            ta = findinglobalstores(secids, datatype, frequency,
+                                        startdate, enddate,
+                                        forwardfill = forwardfill,
+                                        securitytype = securitytype,
+                                        exchange = exchange,
+                                        country = country)
+        else
+            ta = more_ta
+        end
 
     end
 

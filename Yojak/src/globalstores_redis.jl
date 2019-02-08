@@ -153,7 +153,7 @@ function _mergeWithExisting(ta::TimeArray, datatype::String, frequency::Symbol)
 
         if (!isDifferent) 
             println("Incoming TA is already present")
-            return
+            return 
         end
 
     else 
@@ -277,22 +277,26 @@ function _updateglobaldatastores(ta::TimeArray, datatype::String, frequency::Sym
                 end
             end
         else 
-            isDifferent  = true
+            isDifferent = true
         end
 
         if (!isDifferent)
             println("Incoming TA is already present")
-            return 
+            return false
         end
     end
 
     merged_ta = _mergeWithExisting(ta, datatype, frequency)
 
+    if merged_ta == nothing
+        return false    
+    end
+
     if (merged_ta != nothing && frequency == :Day)
         _globaldatastores[datatype] = merged_ta 
 
         #Updating Redis is slow because of redundant updates
-        #return
+        #return false
     end
 
     # println("Updating for all names")
@@ -355,6 +359,8 @@ function _updateglobaldatastores(ta::TimeArray, datatype::String, frequency::Sym
             end
         end
     end 
+
+    return true
 end
 
 # Searches and return TA of available secids
