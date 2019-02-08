@@ -242,52 +242,40 @@ function _updateglobaldatastores(ta::TimeArray, datatype::String, frequency::Sym
             _ta_this_names = colnames(_ta_this)
             _ta_this_timestamp = timestamp(_ta_this) 
             
-            yearFormattedDates = Dates.format.(_ta_this_timestamp, "yyyy")
-            monthFormattedDates = Dates.format.(_ta_this_timestamp, "yyyy")
+            vs = _ta_this_names[:,1]
+            ts = _ta_this_timestamp 
+
+            #Filter out nothing/NaN
+            idx_not_valid = (vs .!= nothing) .& (.!isnan.(vs)) 
+            vs = Float64.(vs[idx_not_valid])
+            ts = ts[idx_not_valid]
+
+            yearFormattedDates = Dates.format.(ts, "yyyy")
+            monthFormattedDates = Dates.format.(ts, "yyyy")
 
             timeunits = frequency == :Day ? unique(yearFormattedDates)  : unique(monthFormattedDates) 
-            # println(timeunits)
-
+            
             for timeunit in timeunits
                 ticker = string(name)
                 key = "$(ticker)_$(string(frequency))_$(datatype)_$(timeunit)"
 
-                vs = []
-                ts = [] 
-
+                _vs = []
+                _ts = []
+                
+                idx = nothing
                 if frequency == :Day
-                    idx = findall(isequal(timeunit), yearFormattedDates)
-                    vs = _ta_this_values[idx,1]
-                    ts = _ta_this_timestamp[idx]
+                    idx = yearFormattedDates .== timeunit
                 else
-                    idx = findall(isequal(timeunit), monthFormattedDates)
-                    vs = _ta_this_values[idx, 1]
-                    ts = _ta_this_timestamp[idx]
+                    idx = monthFormattedDates .== timeunit
                 end
 
-                #Filter out nothing/NaN
-                idx_not_valid = (vs .!= nothing) .& (.!isnan.(vs)) 
-                vs = loat64.(vs[idx_not_valid])
-                ts = ts[idx_not_valid]
+                _vs = vs[idx]
+                _ts = ts[idx]
 
-                # #Filter out NaN
-                # idx_not_nan = .!isnan.(vs)
-                # vs = Float64.(vs[idx_not_nan])
-                # ts = ts[idx_not_nan]
-                
-                value = Vector{String}(undef, length(ts))
+                value = Vector{String}(undef, length(_ts))
                 for (j, dt) in enumerate(ts)
-                    value[j] = JSON.json(Dict("Date" => dt, "Value" => vs[j]))
+                    value[j] = JSON.json(Dict("Date" => dt, "Value" => _vs[j]))
                 end
-
-                # println("Finally pushing")
-                # println(name)
-                # println(vs)
-                # println(ts)
-                
-                # println("Pushing")
-                # println("Key: $(key)")
-                # println("Value: $(value)")
 
                 if length(value) > 0
                     Redis.del(redisClient(), key) 
