@@ -121,7 +121,17 @@ end
 
 function _mergeWithExisting(ta::TimeArray, datatype::String, frequency::Symbol)
 
-    old_ta = fromglobalstores(String.(colnames(ta)), datatype, frequency)
+    old_ta = nothing
+    if frequency != Day
+        old_ta = fromglobalstores(String.(colnames(ta)), datatype, frequency)
+
+        if old_ta != nothing && ta == old_ta[timestamp(ta)][colnames(ta)]
+            println("Incoming TA is already present")
+            return
+        end
+    else 
+        old_ta = haskey(_globaldatastores, datatype) ? _globaldatastores[datatype] : nothing
+    end
 
     if old_ta == nothing
         return ta
@@ -214,6 +224,15 @@ end
 #So effetive DS for Redis == RANGE
 #Save only unadjusted data
 function _updateglobaldatastores(ta::TimeArray, datatype::String, frequency::Symbol)
+
+    if haskey(_globaldatastores, datatype)
+        storedlTa = _globaldatastores[datatype][timestamp(ta)][colnames(ta)]
+
+        if (storedTa == ta)
+            println("Incoming TA is already present")
+            return 
+        end
+    end
 
     merged_ta = _mergeWithExisting(ta, datatype, frequency)
 
