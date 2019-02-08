@@ -298,8 +298,7 @@ function fromglobalstores(names::Vector{String}, datatype::String, frequency::Sy
     #Else read from redis
 
     ta = nothing
-    all_vs = []
-    all_ts = []
+    all_fs = []
     uniq_ts = frequency == :Day ? Date[] : DateTime[]
     all_names = Symbol[]
 
@@ -319,55 +318,15 @@ function fromglobalstores(names::Vector{String}, datatype::String, frequency::Sy
                 ts = DateTime.(get.(parsed, "Date", DateTime(1)))
             end
             
-            # println("VS-1")
-            # println(vs)
-
-            #Filter out Nothing
-            idx_not_nothing = vs .!= nothing
-            vs = vs[idx_not_nothing]
-            ts = ts[idx_not_nothing]
-
-            # println("VS-2")
-            # println(vs)
-
-            #Filter out Nan
-            idx_not_nan = .!isnan.(vs)
-            vs = Float64.(vs[idx_not_nan])
-            ts = ts[idx_not_nan]
-
-            # println("VS-3")
-            # println(vs)
-
-            #_ta = TimeArray(ts, vs, [Symbol(name)])
-
-            # # println("_Ta")
-            # if _ta != nothing
-            #     println(_ta)
-            # else
-            #     println("_ta is nothing")
-            # end
-
-            # println("Ta")
-            # if ta != nothing
-            #     println(ta)
-            # else
-            #     println("ta is nothing")
-            # end
-
-            # println(name)
-            # println(ts)
-            # println(vs)
-
-            push!(all_ts, ts)
-            append!(uniq_ts, ts)
-            push!(all_vs, vs) 
+            fs = [ts vs]
+            fs = fs[fs[:,2] .!= nothing, :]
+            fs = fs[.!isnan.(fs[:,2]), :]
+            fs = sortslices(fs, dims=1, by=x->x[1])
+            
+            push!(all_fs, fs)
+            append!(uniq_ts, fs[:,1])
             push!(all_names, Symbol(name))           
 
-            # if ta == nothing
-            #     ta = _ta
-            # else 
-            #     ta = merge(ta, _ta, :outer)
-            # end
         end
     end
 
@@ -389,20 +348,26 @@ function fromglobalstores(names::Vector{String}, datatype::String, frequency::Sy
         # end
 
         #LOGIC 2 to merge O(N)
-        _tSmall = all_ts[i]
+        _tSmall = all_fs[i][:, 1]
         _tBig =  uniq_ts
-        j=1
-        k=1
-        idx = Vector{Int64}(undef, length(_tSmall))
-        while j <= length(_tBig) && k<=length(_tSmall)
-            if  _tSmall[k] == _tBig[j]
-                idx[k] = j
-                k += 1
-            end
-            j+=1
-        end
+        if length(_tSmall) == length(_tBig)
+            vals[:, i] .= all_fs[i][:, 2]
+        else
 
-        vals[idx, i] .= all_vs[i]
+            j=1
+            k=1
+            idx = Vector{Int64}(undef, length(_tSmall))
+            idx .= 0
+            while j <= length(_tBig) && k<=length(_tSmall)
+                if  _tSmall[k] == _tBig[j]
+                    idx[k] = j
+                    k += 1
+                end
+                j+=1
+            end
+
+            vals[idx, i] .= all_fs[i][:, 2]
+        end
  
     end
 
