@@ -93,9 +93,9 @@ function getsubset(ta::TimeArray, sd::DateTime, ed::DateTime, offset::Int=5, fre
     return output != nothing ? length(TimeSeries.timestamp(output)) > 0 ? output : nothing : nothing
 end
 
-# array of columns by name
+#array of columns by name
 function getindex(ta::TimeArray, names::Vector{Symbol})
-    ns = [something(findfirst(isequal(a), TimeSeries.colnames(ta)), 0) for a in names]
+    ns = [findfirst(isequal(a), TimeSeries.colnames(ta)) for a in names]
     TimeArray(TimeSeries.timestamp(ta), TimeSeries.values(ta)[:,ns], names, TimeSeries.meta(ta))
 end
 
@@ -121,14 +121,41 @@ end
 
 function _mergeWithExisting(ta::TimeArray, datatype::String, frequency::Symbol)
 
+    isDifferent = false
     old_ta = nothing
     if frequency != Day
         old_ta = fromglobalstores(String.(colnames(ta)), datatype, frequency)
 
-        if old_ta != nothing && ta == old_ta[timestamp(ta)][colnames(ta)]
+        storedTa = nothing
+        try
+            storedTa = old_ta[timestamp(ta)][colnames(ta)]
+        catch err
+        end
+
+        if storedTa != nothing
+            for nm in colnames(ta)
+                nmta = dropnan(ta[nm])
+                nmstoredTa = nothing
+                try
+                    nmstoredTa = dropnan(storedTa[nm])
+                catch err
+                end
+
+                if nmstoredTa == nothing || nmstoredTa != nmta
+                    isDifferent = true
+                    break
+                end
+            end
+
+        else 
+            isDifferent = true  
+        end
+
+        if (!isDifferent) 
             println("Incoming TA is already present")
             return
         end
+
     else 
         old_ta = haskey(_globaldatastores, datatype) ? _globaldatastores[datatype] : nothing
     end
@@ -226,9 +253,34 @@ end
 function _updateglobaldatastores(ta::TimeArray, datatype::String, frequency::Symbol)
 
     if haskey(_globaldatastores, datatype)
-        storedlTa = _globaldatastores[datatype][timestamp(ta)][colnames(ta)]
+        isDifferent = false
 
-        if (storedTa == ta)
+        storedTa = nothing
+        try 
+            storedTa = _globaldatastores[datatype][timestamp(ta)][colnames(ta)]
+        catch err
+        end
+        
+        if storedTa != nothing
+            for nm in colnames(ta)
+                nmta = dropnan(ta[nm])
+
+                nmstoredTa  = nothing
+                try
+                    nmstoredTa = dropnan(storedTa[nm])
+                catch err
+                end
+
+                if nmstoredTa == nothing ||  nmta != storedTa
+                    isDifferent = true
+                    break
+                end
+            end
+        else 
+            isDifferent  = true
+        end
+
+        if (!isDifferent)
             println("Incoming TA is already present")
             return 
         end
