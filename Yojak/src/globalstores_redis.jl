@@ -25,19 +25,20 @@ function getsubset(ta::TimeArray, d::DateTime, ct::Int=0, offset::Int=5, frequen
     ta = dropnan(ta)
     timestamps = TimeSeries.timestamp(ta)
 
-    lastidx = 0
+    lastidx = nothing
 
     #special logic to check for offset number of days around the end date (in case end date is unavailable)
     #offset = -1 means inifinite days
     #offset = offset == -1 ? length(timestamps) : offset
-    
+    # println("Subset")
+    # println(timestamps)
     if frequency == :Day
         for i=0:(offset == -1 ? length(timestamps) : offset)
             
             nd = Date(d) - Dates.Day(i)
-            lastidx = findlast(x -> x == nd, timestamps)
+            lastidx = findlast(x -> x <= nd, timestamps)
 
-            if lastidx > 0
+            if lastidx == nothing || lastidx > 0
                 break
             end
         end
@@ -56,7 +57,7 @@ function getsubset(ta::TimeArray, d::DateTime, ct::Int=0, offset::Int=5, frequen
     end
 
     #Check if lastidx is zero and offset is -1 ====> lastidx = end
-    if offset == -1 && lastidx == 0
+    if offset == -1 || isnothing(lastidx)
         lastidx = length(timestamps)
     end
 
@@ -202,7 +203,6 @@ function _mergeWithExisting(ta::TimeArray, datatype::String, frequency::Symbol)
         merged_ta = merged_common_ta
     end
 
-
     return merged_ta
 end
 
@@ -236,40 +236,54 @@ function _updateglobaldatastores(ta::TimeArray, datatype::String, frequency::Sym
             _ta_this_names = colnames(_ta_this)
             _ta_this_timestamp = timestamp(_ta_this) 
 
-            ticker = string(name)
-            key = "$(ticker)_$(string(frequency))_$(datatype)"
-
-            vs = _ta_this_values[:, 1]
-            ts = _ta_this_timestamp
-
-            #Filter out nothing
-            idx_not_nothing = vs .!= nothing
-            vs = vs[idx_not_nothing]
-            ts = ts[idx_not_nothing]
-
-            #Filter out NaN
-            idx_not_nan = .!isnan.(vs)
-            vs = Float64.(vs[idx_not_nan])
-            ts = ts[idx_not_nan]
+            timeunits = frequency == :Day ? unique(Dates.format.(_ta_this_timestamp, "yyyy"))  : unique(Dates.format.(_ta_this_timestamp, "yyyymm")) 
             
-            value = Vector{String}(undef, length(ts))
-            for (j, dt) in enumerate(ts)
-                value[j] = JSON.json(Dict("Date" => dt, "Value" => vs[j]))
+            for timeunit in timeunits
+                ticker = string(name)
+                key = "$(ticker)_$(string(frequency))_$(datatype)_$(timeunit)"
+
+                vs = []
+                ts = [] 
+
+                if frequency == :Day
+                    idx = findall(isequal(timeunit), Dates.format.(_ta_this_timestamp, "yyyy"))
+                    vs = _ta_this_values[idx,1]
+                    ts = _ta_this_timestamp[idx]
+                else
+                    idx = findall(isequal(timeunit), Dates.format.(_ta_this_timestamp, "yyyymm"))
+                    vs = _ta_this_values[idx, 1]
+                    ts = _ta_this_timestamp[idx]
+                end
+
+                #Filter out nothing
+                idx_not_nothing = vs .!= nothing
+                vs = vs[idx_not_nothing]
+                ts = ts[idx_not_nothing]
+
+                #Filter out NaN
+                idx_not_nan = .!isnan.(vs)
+                vs = Float64.(vs[idx_not_nan])
+                ts = ts[idx_not_nan]
+                
+                value = Vector{String}(undef, length(ts))
+                for (j, dt) in enumerate(ts)
+                    value[j] = JSON.json(Dict("Date" => dt, "Value" => vs[j]))
+                end
+
+                # println("Finally pushing")
+                # println(name)
+                # println(vs)
+                # println(ts)
+                
+                Redis.del(redisClient(), key) 
+                Redis.lpush(redisClient(), key, value)
             end
-
-            # println("Finally pushing")
-            # println(name)
-            # println(vs)
-            # println(ts)
-            
-            Redis.del(redisClient(), key) 
-            Redis.lpush(redisClient(), key, value)
         end
     end 
 end
 
 # Searches and return TA of available secids
-function fromglobalstores(names::Vector{String}, datatype::String, frequency::Symbol)
+function fromglobalstores(names::Vector{String}, datatype::String, frequency::Symbol, startdate::DateTime = DateTime("1990-01-01"), enddate::DateTime = DateTime("2030-01-01"))
     
     # if frequency != :Day
     #     println("Fetching From global store: $(now())")
@@ -283,19 +297,33 @@ function fromglobalstores(names::Vector{String}, datatype::String, frequency::Sy
         columnnames = __getcolnames(ta)
         unavailablenames = setdiff(secids, columnnames)
 
-        if length(unavailablenames) > 0
-            availablenames = setdiff(secids, unavailablenames)
-            if length(availablenames) > 0
-                return ta[availablenames]
-            end
-            
-            return nothing
+        if length(unavailablenames) == 0
+            # availablenames = setdiff(secids, unavailablenames)
+            # if length(availablenames) > 0
+            #     return ta[availablenames]
+            # end
+            return ta[secids]
         end
-
-        return ta[secids]
     end
 
+    #If data not available above, search in redis
+
     #Else read from redis
+    timeunits = String[];
+
+    if frequency == :Day
+        _sd = Dates.firstdayofyear(Date(startdate))
+        while _sd <= enddate
+           push!(timeunits, Dates.format.(_sd, "yyyy"))
+           _sd = _sd + Dates.Year(1)
+       end
+    else
+        _sd = Dates.firstdayofmonth(Date(startdate))
+        while _sd <= enddate
+           push!(timeunits, Dates.format.(_sd, "yyyymm"))
+           _sd = _sd + Dates.Month(1)
+       end
+    end
 
     ta = nothing
     all_fs = []
@@ -303,81 +331,107 @@ function fromglobalstores(names::Vector{String}, datatype::String, frequency::Sy
     all_names = Symbol[]
 
     for name in names
-        key = "$(name)_$(string(frequency))_$(datatype)"
-        value = Redis.lrange(redisClient(), key, 0, -1)
+        vs = []
+        ts = []
+        for timeunit in timeunits
+            key = "$(name)_$(string(frequency))_$(datatype)_$(timeunit)"
+            value = Redis.lrange(redisClient(), key, 0, -1)
 
-        if length(value) > 0 
-            # println("Name: $(name)")
-            parsed = JSON.parse.(value)
-            vs = (get.(parsed, "Value", NaN))
-            
-            ts = nothing
-            if frequency == :Day
-                ts = Date.(get.(parsed, "Date", Date(1)))
-            else
-                ts = DateTime.(get.(parsed, "Date", DateTime(1)))
+            # println("Key: $(key)")
+
+            if length(value) > 0 
+                # println("Name: $(name)")
+                parsed = JSON.parse.(value)
+                sub_vs = (get.(parsed, "Value", NaN))
+                
+                sub_ts = nothing
+                if frequency == :Day
+                    sub_ts = Date.(get.(parsed, "Date", Date(1)))
+                else
+                    sub_ts = DateTime.(get.(parsed, "Date", DateTime(1)))
+                end
+                
+                sub_fs = [sub_ts sub_vs]
+                sub_fs = sub_fs[sub_fs[:,2] .!= nothing, :]
+                sub_fs = sub_fs[.!isnan.(sub_fs[:,2]), :]
+                sub_fs = sortslices(sub_fs, dims=1, by=x->x[1])
+
+                append!(ts, sub_fs[:,1])
+                append!(vs, sub_fs[:,2])
+                # println("Sub")
+                # println(ts)
+                # println(vs)
             end
-            
+        end
+
+        if length(ts) > 0
             fs = [ts vs]
-            fs = fs[fs[:,2] .!= nothing, :]
-            fs = fs[.!isnan.(fs[:,2]), :]
-            fs = sortslices(fs, dims=1, by=x->x[1])
-            
             push!(all_fs, fs)
             append!(uniq_ts, fs[:,1])
             push!(all_names, Symbol(name))           
-
         end
     end
 
-    #Now process TA from all values
-    uniq_ts = sort(unique(uniq_ts))
-    vals = Matrix{Float64}(undef, length(uniq_ts), length(all_names))
+    if length(all_names) > 0
+        #Now process TA from all values
+        uniq_ts = sort(unique(uniq_ts))
+        vals = Matrix{Float64}(undef, length(uniq_ts), length(all_names))
 
-    for (i, name) in enumerate(all_names)
+        for (i, name) in enumerate(all_names)
 
-        #Initialize all values as NaN for the column
-        vals[:,i] .= NaN
-        
-        # #LOGIC 1 to merge  O(NlogN)
-        # for (j, dt) in enumerate(all_ts[i])
-        #     idx = findall(isequal(dt), uniq_ts)
-        #     if idx!=nothing && length(idx) !=0
-        #         vals[idx[1], i] = all_vs[i][j]
-        #     end
+            #Initialize all values as NaN for the column
+            vals[:,i] .= NaN
+            
+            # #LOGIC 1 to merge  O(NlogN)
+            # for (j, dt) in enumerate(all_ts[i])
+            #     idx = findall(isequal(dt), uniq_ts)
+            #     if idx!=nothing && length(idx) !=0
+            #         vals[idx[1], i] = all_vs[i][j]
+            #     end
+            # end
+
+            #LOGIC 2 to merge O(N)
+            _tSmall = all_fs[i][:, 1]
+            _tBig =  uniq_ts
+            if length(_tSmall) == length(_tBig)
+                vals[:, i] .= all_fs[i][:, 2]
+            else
+
+                # println(_tSmall)
+                # println(_tBig)
+
+                j=1
+                k=1
+                idx = Vector{Int64}(undef, length(_tSmall))
+                idx .= 0
+                while j <= length(_tBig) && k<=length(_tSmall)
+                    if  _tSmall[k] == _tBig[j]
+                        idx[k] = j
+                        k += 1
+                    end
+                    j+=1
+                end
+
+                # println(idx)
+                # println(all_fs[i])
+                # println(typeof(all_fs[i]))
+
+                # println(all_fs[i][:,2])
+                # println(typeof(all_fs[i][:,2]))
+
+                vals[idx, i] .= all_fs[i][:, 2]
+            end
+     
+        end
+
+        ta = TimeArray(uniq_ts, vals, all_names)    
+
+        # if frequency != :Day
+        #     println("Done fetching from global store: $(now())")
         # end
 
-        #LOGIC 2 to merge O(N)
-        _tSmall = all_fs[i][:, 1]
-        _tBig =  uniq_ts
-        if length(_tSmall) == length(_tBig)
-            vals[:, i] .= all_fs[i][:, 2]
-        else
-
-            j=1
-            k=1
-            idx = Vector{Int64}(undef, length(_tSmall))
-            idx .= 0
-            while j <= length(_tBig) && k<=length(_tSmall)
-                if  _tSmall[k] == _tBig[j]
-                    idx[k] = j
-                    k += 1
-                end
-                j+=1
-            end
-
-            vals[idx, i] .= all_fs[i][:, 2]
-        end
- 
+        return ta
     end
-
-    ta = TimeArray(uniq_ts, vals, all_names)    
-
-    # if frequency != :Day
-    #     println("Done fetching from global store: $(now())")
-    # end
-
-    return ta
 end
 
 #Time gap based global stores is not GOOD
@@ -398,7 +452,7 @@ function findinglobalstores(secids::Vector{Int},
                                 exchange::String="NSE",
                                 country::String="IN")      
     
-    full_ta = fromglobalstores(string.(secids), datatype, frequency)
+    full_ta = fromglobalstores(string.(secids), datatype, frequency, startdate, enddate)
     truenames = full_ta != nothing ? colnames(full_ta) : Symbol[]
 
     #Merge with benchmark data as a filter
@@ -438,7 +492,8 @@ function findinglobalstores(secids::Vector{Int},
                                 exchange::String="NSE",
                                 country::String="IN")
     
-    full_ta = fromglobalstores(string.(secids), datatype, frequency)
+    _guessStartDate = DateTime(frequency == :Day ? Date(enddate) - Dates.Day(2*horizon) : enddate - Dates.Minute(2*horizon)) 
+    full_ta = fromglobalstores(string.(secids), datatype, frequency, _guessStartDate, enddate)
 
     truenames = full_ta != nothing ? colnames(full_ta) : Symbol[]
 
