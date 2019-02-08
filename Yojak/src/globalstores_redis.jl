@@ -511,8 +511,8 @@ function findinglobalstores(secids::Vector{Int},
                                 exchange::String="NSE",
                                 country::String="IN")
     
-    _guessStartDate = DateTime(frequency == :Day ? Date(enddate) - Dates.Day(2*horizon) : enddate - Dates.Minute(2*horizon), forceRedis = forceRedis) 
-    full_ta = fromglobalstores(string.(secids), datatype, frequency, _guessStartDate, enddate)
+    _guessStartDate = DateTime(frequency == :Day ? Date(enddate) - Dates.Day(2*horizon) : enddate - Dates.Minute(2*horizon)) 
+    full_ta = fromglobalstores(string.(secids), datatype, frequency, _guessStartDate, enddate, forceRedis = forceRedis)
 
     truenames = full_ta != nothing ? colnames(full_ta) : Symbol[]
 
