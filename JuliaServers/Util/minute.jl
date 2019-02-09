@@ -234,7 +234,7 @@ function _computeTradeTimes(date::Date, ENTRY, EXIT, prices;direction::String = 
   return allTradingMinutes
 end
 
-function _after_start(date::Date, eodPrices, adjustments, forward; dynamic::Bool = false)
+function _after_start(date::Date, minutePrices, adjustments, forward; dynamic::Bool = false)
   
   # println("Initial State")
   # println(getstate())
@@ -253,7 +253,7 @@ function _after_start(date::Date, eodPrices, adjustments, forward; dynamic::Bool
     #DYNAMIC doesn't work
     updatedatastores(DateTime(date), fetchprices(date), fetchvolumes(date), YRead.getadjustments())
   else
-    updatedatastores(DateTime(date), eodPrices, adjustments)
+    updatedatastores(DateTime(date), minutePrices, adjustments)
   end
 
   _updateaccount_splits_dividends()
@@ -402,7 +402,6 @@ function _fetch_minute_prices(universeIds, startdate::DateTime, enddate::DateTim
 
     # println("highprices_minute")
     # println(highprices)
- 
 
     lowprices = YRead.history(universeIds, "Low", Symbol("1m"), DateTime(startdate) - Dates.Month(1), DateTime(enddate), displaylogs = false)
     if lowprices == nothing
@@ -422,7 +421,7 @@ function _fetch_minute_prices(universeIds, startdate::DateTime, enddate::DateTim
     # println("vol_minute")
     # println(vol)
 
-    closeprices_unadj = YRead.history_unadj(universeIds, "Close", Symbol("1m"), DateTime(startdate) - Dates.Month(1), DateTime(enddate), displaylogs = false)
+    closeprices_unadj = YRead.history_unadj(universeIds, "Close", Symbol("1m"), DateTime(startdate), DateTime(enddate), displaylogs = false)
     if closeprices_unadj == nothing
         Logger.warn_static("Close Price Data not available from $(startdate) to $(enddate)")
         Logger.warn_static("Aborting test")
@@ -431,7 +430,7 @@ function _fetch_minute_prices(universeIds, startdate::DateTime, enddate::DateTim
 
     # println("closeprices_minute")
     # println(closeprices)
-
+    
     openprices_unadj = YRead.history_unadj(universeIds, "Open", Symbol("1m"), DateTime(startdate) - Dates.Month(1), DateTime(enddate), displaylogs = false)
     if openprices_unadj == nothing
         #Logger.warn_static("Open Price Data not available from $(startdate) to $(enddate)")
@@ -441,7 +440,6 @@ function _fetch_minute_prices(universeIds, startdate::DateTime, enddate::DateTim
     # println("openprices_minute")
     # println(openprices)
  
-
     highprices_unadj = YRead.history_unadj(universeIds, "High", Symbol("1m"), DateTime(startdate) - Dates.Month(1), DateTime(enddate), displaylogs = false)
     if highprices_unadj == nothing
         #Logger.warn_static("High Price Data not available from $(startdate) to $(enddate)")
@@ -451,7 +449,6 @@ function _fetch_minute_prices(universeIds, startdate::DateTime, enddate::DateTim
     # println("highprices_minute")
     # println(highprices_unadj)
  
-
     lowprices_unadj = YRead.history_unadj(universeIds, "Low", Symbol("1m"), DateTime(startdate) - Dates.Month(1), DateTime(enddate), displaylogs = false)
     if lowprices_unadj == nothing
         #Logger.warn_static("Low Price Data not available from $(startdate) to $(enddate)")
@@ -461,7 +458,7 @@ function _fetch_minute_prices(universeIds, startdate::DateTime, enddate::DateTim
     # println("lowprices_minute")
     # println(lowprices_unadj)
  
-    vol_unadj = YRead.history_unadj(universeIds, "Volume", Symbol("1m"), DateTime(startdate) - Dates.Month(1), DateTime(enddate), displaylogs = false)      
+    vol_unadj = YRead.history_unadj(universeIds, "Volume", Symbol("1m"), DateTime(startdate), DateTime(enddate), displaylogs = false)      
     
     if vol_unadj == nothing
         Logger.warn_static("No volume data available for any stock in the universe")
