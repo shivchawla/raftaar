@@ -36,7 +36,7 @@ Function to get commission for the fill
 """
 function getcommission(fill::OrderFill, commission::Commission)
     if commission.model == PerTrade
-        return round(abs(fill.fillquantity* fill.fillprice) * commission.value, digits = 2)
+        return min(20.0, round(abs(fill.fillquantity* fill.fillprice) * commission.value, digits = 2))
     end
 
     return 0.0
@@ -44,12 +44,11 @@ end
 
 function getcommission(fillquantity::Int, fillprice::Float64, commission::Commission)
     if commission.model == PerTrade
-        return round(abs(fillquantity*fillprice) * commission.value, digits = 2)
+        return min(20.0, round(abs(fillquantity*fillprice) * commission.value, digits = 2))
     end
 
     return 0.0
 end
-
 
 function serialize(commission::Commission)
   return Dict{String, Any}("model" => string(commission.model),

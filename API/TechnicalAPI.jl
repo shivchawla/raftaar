@@ -53,7 +53,10 @@ function Base.:(==)(c1::Indicator, c2::Indicator)
     end
 
     return Condition(rename(c1._ta .== c2._ta[names_c1], names_c1))
+end
 
+function Base.:(==)(c1::Indicator, val::Float64)
+    return Condition(rename(c1._ta .== val, names_c1))
 end
 
 function Base.:>(c1::Indicator, c2::Indicator) 
@@ -65,7 +68,10 @@ function Base.:>(c1::Indicator, c2::Indicator)
     end
 
     return Condition(rename(c1._ta .> c2._ta[names_c1], names_c1))
+end
 
+function Base.:>(c1::Indicator, val::Float64)
+    return Condition(rename(c1._ta .> val, names_c1))
 end
 
 function Base.:<(c1::Indicator, c2::Indicator) 
@@ -77,7 +83,10 @@ function Base.:<(c1::Indicator, c2::Indicator)
     end
 
     return Condition(rename(c1._ta .< c2._ta[names_c1], names_c1))
+end
 
+function Base.:<(c1::Indicator, val::Float64)
+    return Condition(rename(c1._ta .< val, names_c1))
 end
 
 function Base.:>=(c1::Indicator, c2::Indicator)
@@ -89,7 +98,10 @@ function Base.:>=(c1::Indicator, c2::Indicator)
     end
 
     return Condition(rename(c1._ta .>= c2._ta[names_c1], names_c1))
+end
 
+function Base.:>=(c1::Indicator, val::Float64)
+    return Condition(rename(c1._ta .>= val, names_c1))
 end
 
 function Base.:<=(c1::Indicator, c2::Indicator)
@@ -101,7 +113,45 @@ function Base.:<=(c1::Indicator, c2::Indicator)
     end
 
     return Condition(rename(c1._ta .<= c2._ta[names_c1], names_c1))
+end
 
+function Base.:<=(c1::Indicator, val::Float64)
+    return Condition(rename(c1._ta .<= val, names_c1))
+end
+
+#Logic to compute cross above/below
+#           d       ld      d-ld
+# 1  3     -2        NaN      NaN
+# 2  4     -2        -2       0
+# 5  4.5    1 (CA)   -2        3
+# 7  6      1         1        0
+# 8  10    -2 (CB)    1        -3
+# 10 9      1  (CA)   -2        3
+function crossBelow(ind1::Indicator, ind2::Indicator)
+    names_ind1 = colnames(ind1._ta)
+    names_ind2 = colnames(ind2._ta)
+
+    if length(setdiff(names_ind1, names_ind2)) != 0
+      throw("Unequal entities")
+    end
+    x = ind1._ta .- ind2._ta[names_ind1]
+    y = x .- lag(x)
+    return Condition(rename(y .< 0, names_ind1))
+end
+
+function crossBelow(ind::Indicator, val::Float64)
+    names_ind = colnames(ind._ta)
+    x = ind._ta .- val
+    y = x .- lag(x)
+    return Condition(rename(y .< 0, names_ind))
+end
+
+function crossAbove(ind::Indicator, val::Float64)
+    names_ind = colnames(ind._ta)
+
+    x = ind1._ta .- val
+    y = x .- lag(x)
+    return Condition(rename(y .> 0, names_ind))
 end
 
 function Base.:&(c1::Condition, c2::Condition)
@@ -113,7 +163,6 @@ function Base.:&(c1::Condition, c2::Condition)
     end
 
     return Condition(rename(c1._ta .& c2._ta[names_c1], names_c1))
-    
 end
 
 function Base.:|(c1::Condition, c2::Condition)
@@ -125,7 +174,6 @@ function Base.:|(c1::Condition, c2::Condition)
     end
 
     return Condition(rename(c1._ta .| c2._ta[names_c1], names_c1))
-
 end
 
 function filter(condition::Condition, date::Date)

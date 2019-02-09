@@ -299,18 +299,11 @@ function _updateglobaldatastores(ta::TimeArray, datatype::String, frequency::Sym
         #return false
     end
 
-    # println("Updating for all names")
+
     for (i, name) in enumerate(colnames(ta))
 
         #Columns are secids
-        _ta_this = merged_ta!=nothing ? merged_ta[name] : nothing
-        
-        # #Update incoming ta with existing ta
-        # if _ta_this != nothing
-        #    _ta_this = _mergeWithExisting(_ta_this, datatype, frequency)
-        # else
-        #     continue
-        # end
+        _ta_this = ta!=nothing ? ta[name] : nothing
 
         if _ta_this != nothing
             _ta_this_values = values(_ta_this)
@@ -353,8 +346,7 @@ function _updateglobaldatastores(ta::TimeArray, datatype::String, frequency::Sym
                 end
 
                 if length(value) > 0
-                    Redis.del(redisClient(), key) 
-                    Redis.lpush(redisClient(), key, value)
+                    Redis.sadd(redisClient(), key, value)
                 end
             end
         end
@@ -394,8 +386,6 @@ function fromglobalstores(names::Vector{String}, datatype::String, frequency::Sy
         end
     end
 
-    #If data not available above, search in redis
-
     #Else read from redis
     timeunits = String[];
 
@@ -423,7 +413,7 @@ function fromglobalstores(names::Vector{String}, datatype::String, frequency::Sy
         ts = []
         for timeunit in timeunits
             key = "$(name)_$(string(frequency))_$(datatype)_$(timeunit)"
-            value = Redis.lrange(redisClient(), key, 0, -1)
+            value = Redis.smembers(redisClient(), key)
 
             # println("Key: $(key)")
 
@@ -453,7 +443,7 @@ function fromglobalstores(names::Vector{String}, datatype::String, frequency::Sy
         end
 
         if length(ts) > 0
-            fs = [ts vs]
+            fs = unique([ts vs], dims=1)
             push!(all_fs, fs)
             append!(uniq_ts, fs[:,1])
             push!(all_names, Symbol(name))           
