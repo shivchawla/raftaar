@@ -408,14 +408,12 @@ function fromglobalstores(names::Vector{String}, datatype::String, frequency::Sy
     uniq_ts = frequency == :Day ? Date[] : DateTime[]
     all_names = Symbol[]
 
-    for name in names
+    @sync @async for name in names
         vs = []
         ts = []
         for timeunit in timeunits
             key = "$(name)_$(string(frequency))_$(datatype)_$(timeunit)"
             value = Redis.smembers(redisClient(), key)
-
-            # println("Key: $(key)")
 
             if length(value) > 0 
                 # println("Name: $(name)")
@@ -442,13 +440,16 @@ function fromglobalstores(names::Vector{String}, datatype::String, frequency::Sy
             end
         end
 
-        if length(ts) > 0
-            fs = unique([ts vs], dims=1)
-            push!(all_fs, fs)
-            append!(uniq_ts, fs[:,1])
-            push!(all_names, Symbol(name))           
+        @async begin
+            if length(ts) > 0
+                fs = unique([ts vs], dims=1)
+                push!(all_fs, fs)
+                append!(uniq_ts, fs[:,1])
+                push!(all_names, Symbol(name))           
+            end
         end
     end
+   
 
     if length(all_names) > 0
         #Now process TA from all values

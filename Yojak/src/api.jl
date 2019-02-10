@@ -532,7 +532,7 @@ function history_unadj(secids::Vector{Int},
                         forwardfill::Bool=false) 
 
     println("History unadj between dates: $(now())")
-    println("Freqeuncy: $(frequency), Datatype: $(datatype)")
+    println("Frequency: $(frequency), Datatype: $(datatype)")
     
     _populateBenchmarkStore(frequency)
 
