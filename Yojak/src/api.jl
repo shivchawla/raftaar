@@ -446,7 +446,7 @@ function history_unadj(secids::Vector{Int},
                         forwardfill::Bool=false) 
     
     println("History unadj between dates: $(now())")
-    println("Freqeuncy: $(frequency), Datatype: $(datatype), horizon: $(horizon)")
+    println("Frequency: $(frequency), Datatype: $(datatype), horizon: $(horizon)")
 
     _populateBenchmarkStore(frequency)
 
@@ -460,7 +460,7 @@ function history_unadj(secids::Vector{Int},
     ta = findinglobalstores(secids, datatype, frequency, 
                                 horizon, enddate,
                                 offset = -1,
-                                removeNaN = frequency == :Day ? true : false,
+                                removeNaN = (frequency == :Day ? true : false),
                                 forceRedis = true,
                                 securitytype = securitytype,
                                 exchange = exchange,
@@ -471,7 +471,7 @@ function history_unadj(secids::Vector{Int},
     # println("Cols: $(cols)")
     # println("Secids: $(secids)")
 
-    if frequency != :Day || (length(setdiff(secids, cols)) == 0 && compareSizeWithBenchmark(ta, enddate = enddate, horizon = horizon) != -1, frequency)
+    if (frequency != :Day) || (length(setdiff(secids, cols)) == 0 && compareSizeWithBenchmark(ta, enddate = enddate, horizon = horizon, frequency) != -1)
         Logger.update_display(true)
         return __renamecolumns(ta)
     end
@@ -545,7 +545,7 @@ function history_unadj(secids::Vector{Int},
     println("Finding in global stores $(now())")
     ta = findinglobalstores(secids, datatype, frequency,
                                 startdate, enddate,
-                                removeNaN = frequency == :Day ? true : false,
+                                removeNaN = (frequency == :Day ? true : false),
                                 forceRedis = true,
                                 securitytype = securitytype,
                                 exchange = exchange,
@@ -553,7 +553,7 @@ function history_unadj(secids::Vector{Int},
 
     cols = Int[Meta.parse(String(name)) for name in __getcolnames(ta)]
 
-    if frequency != :Day || (length(setdiff(secids, cols)) == 0 && compareSizeWithBenchmark(ta, startdate = startdate, enddate = enddate) != -1, frequency)
+    if (frequency != :Day) || (length(setdiff(secids, cols)) == 0 && compareSizeWithBenchmark(ta, startdate = startdate, enddate = enddate, frequency) != -1)
         Logger.update_display(true)
         return __renamecolumns(ta)
     end
