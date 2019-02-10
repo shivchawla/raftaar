@@ -355,6 +355,38 @@ function _updateglobaldatastores(ta::TimeArray, datatype::String, frequency::Sym
     return true
 end
 
+
+function _processRedisSet(key)
+    value = Redis.smembers(redisClient(), key)
+
+    if length(value) > 0 
+        # println("Name: $(name)")
+        parsed = JSON.parse.(value)
+        sub_vs = (get.(parsed, "Value", NaN))
+        
+        sub_ts = nothing
+        if frequency == :Day
+            sub_ts = Date.(get.(parsed, "Date", Date(1)))
+        else
+            sub_ts = DateTime.(get.(parsed, "Date", DateTime(1)))
+        end
+        
+        sub_fs = [sub_ts sub_vs]
+        sub_fs = sub_fs[sub_fs[:,2] .!= nothing, :]
+        sub_fs = sub_fs[.!isnan.(sub_fs[:,2]), :]
+        sub_fs = sortslices(sub_fs, dims=1, by=x->x[1])
+
+        append!(ts, sub_fs[:,1])
+        append!(vs, sub_fs[:,2])
+
+        return sub_fs
+        # println("Sub")
+        # println(ts)
+        # println(vs)
+    end
+
+end
+
 # Searches and return TA of available secids
 function fromglobalstores(names::Vector{String}, datatype::String, frequency::Symbol, startdate::DateTime = DateTime("1990-01-01"), enddate::DateTime = DateTime("2030-01-01"); forceRedis::Bool = false)
     
@@ -408,49 +440,49 @@ function fromglobalstores(names::Vector{String}, datatype::String, frequency::Sy
     uniq_ts = frequency == :Day ? Date[] : DateTime[]
     all_names = Symbol[]
 
-    lp_lck = Threads.Mutex()
-    Threads.@threads for name in names
-        vs = []
-        ts = []
-        for timeunit in timeunits
+    lp_lck_i = Threads.Mutex()
+    lp_lck_j = Threads.Mutex()
+
+    value = Vector{Any}(undef, length(names))
+
+    sub_fs = Matrix{Any}(length(names), length(timeunits))
+    vs = Vector{Any}(length(names))
+    ts = Vector{Any}(length(names))
+
+    Threads.@threads for (i,name) in enumerate(names)
+        
+        for (j, timeunit) in enumerate(timeunits)
             key = "$(name)_$(string(frequency))_$(datatype)_$(timeunit)"
-            value = Redis.smembers(redisClient(), key)
+            
+            println("ThreadId: $(Threads.threadid())")
+            sub_fs[i][j] = _processRedisSet(key)
 
-            if length(value) > 0 
-                # println("Name: $(name)")
-                parsed = JSON.parse.(value)
-                sub_vs = (get.(parsed, "Value", NaN))
-                
-                sub_ts = nothing
-                if frequency == :Day
-                    sub_ts = Date.(get.(parsed, "Date", Date(1)))
-                else
-                    sub_ts = DateTime.(get.(parsed, "Date", DateTime(1)))
+            println("Done procesing of Redis data: $(key) : $(Threads.threadid())")
+
+            if trylock(lp_lck_j)
+                if sub_fs[i][j] != nothing    
+                    append!(ts[i], sub_fs[i][j][:,1])
+                    append!(vs[i], sub_fs[i][j][:,2])
                 end
-                
-                sub_fs = [sub_ts sub_vs]
-                sub_fs = sub_fs[sub_fs[:,2] .!= nothing, :]
-                sub_fs = sub_fs[.!isnan.(sub_fs[:,2]), :]
-                sub_fs = sortslices(sub_fs, dims=1, by=x->x[1])
-
-                append!(ts, sub_fs[:,1])
-                append!(vs, sub_fs[:,2])
-                # println("Sub")
-                # println(ts)
-                # println(vs)
+                unlock(lp_lck_j)
             end
+
+            println("Done saving for $(key) : $(Threads.threadid())")
         end
 
+        println("Final procesing $(name) : $(Threads.threadid())")
         
         if length(ts) > 0
             fs = unique([ts vs], dims=1)
-            if trylock(lp_lck)
+            if trylock(lp_lck_i)
                 push!(all_fs, fs)
                 append!(uniq_ts, fs[:,1])
                 push!(all_names, Symbol(name))           
-                unlock(lp_lck)
+                unlock(lp_lck_i)
             end
         end
+
+        println("Done Final procesing $(name) : $(Threads.threadid())")
         
     end
    
