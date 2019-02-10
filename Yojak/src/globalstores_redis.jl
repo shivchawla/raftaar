@@ -440,7 +440,7 @@ function fromglobalstores(names::Vector{String}, datatype::String, frequency::Sy
             end
         end
 
-        @async begin
+        @sync begin
             if length(ts) > 0
                 fs = unique([ts vs], dims=1)
                 push!(all_fs, fs)
