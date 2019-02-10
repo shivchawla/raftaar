@@ -1,4 +1,7 @@
 import Base: getindex
+using Distributed
+
+addprocs(8)
 
 const _globaldatastores = Dict{String, Any}()
 const _tickertosecurity = Dict{String, Security}()
