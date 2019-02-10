@@ -100,7 +100,7 @@ end
     #fetchBulkFromQuandl("XNSE", quandl_auth_token)
     #YWrite.updatedb_fromquandl("XNSE", priority=2, refreshAll = refreshAll)
 
-    fetchBulkFromEODH("NSE", auth_token_EODH)
+    #fetchBulkFromEODH("NSE", auth_token_EODH)
     YWrite.updatedb_fromEODH("NSE", priority=3, refreshAll = refreshAll)
 
     #There is no latest file for NSE

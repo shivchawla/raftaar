@@ -24,4 +24,4 @@ YRead.configureRedis(redisClient)
 
 
 
- YRead.history_unadj(["TCS"], "Low", :Day, DateTime("2018-12-01"), DateTime("2018-12-31"), displaylogs = false, strict = false)
+ YRead.history_unadj(["TCS"], "Close", :Day, DateTime("2018-12-01"), DateTime("2018-12-31"), displaylogs = false, strict = false)
