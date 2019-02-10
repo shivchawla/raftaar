@@ -1,7 +1,4 @@
 import Base: getindex
-using Distributed
-
-addprocs(8)
 
 const _globaldatastores = Dict{String, Any}()
 const _tickertosecurity = Dict{String, Security}()
@@ -411,7 +408,8 @@ function fromglobalstores(names::Vector{String}, datatype::String, frequency::Sy
     uniq_ts = frequency == :Day ? Date[] : DateTime[]
     all_names = Symbol[]
 
-    @sync @async for name in names
+    lp_lck = Threads.Mutex()
+    Threads.@threads for name in names
         vs = []
         ts = []
         for timeunit in timeunits
@@ -443,14 +441,17 @@ function fromglobalstores(names::Vector{String}, datatype::String, frequency::Sy
             end
         end
 
-        @sync begin
-            if length(ts) > 0
-                fs = unique([ts vs], dims=1)
+        
+        if length(ts) > 0
+            fs = unique([ts vs], dims=1)
+            if trylock(lp_lck)
                 push!(all_fs, fs)
                 append!(uniq_ts, fs[:,1])
                 push!(all_names, Symbol(name))           
+                unlock(lp_lck)
             end
         end
+        
     end
    
 
