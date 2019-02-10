@@ -191,7 +191,7 @@ history(secids::Array{Int,1},
         country::String="IN",
         displaylogs::Bool=true,
         strict::Bool=true,
-        forwardfill::Bool=false) = history([getsecurityid(ticker, securitytype = securitytype, exchange = exchange, country = country) for ticker in tickers],
+        forwardfill::Bool=false) = history(secids,
                                         datatype,
                                         frequency,
                                         horizon,
@@ -736,6 +736,7 @@ function getsecurity(ticker::String;
                         exchange::String="NSE",
                         country::String="IN")
     
+    ticker = replace(ticker, r"[^a-zA-Z0-9]" => "_")
     mticker = ticker*"_"*securitytype*"_"*exchange*"_"*country
     
     if haskey(_tickertosecurity, mticker)

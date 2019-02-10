@@ -370,21 +370,21 @@ function fromglobalstores(names::Vector{String}, datatype::String, frequency::Sy
         columnnames = __getcolnames(ta)
         unavailablenames = setdiff(secids, columnnames)
 
-        if length(unavailablenames) >= 0
+        if length(unavailablenames) >= 0 && !forceRedis
             availablenames = setdiff(secids, unavailablenames)
             if length(availablenames) > 0
                 return ta[availablenames]
             end
 
-            if !forceRedis
-                return nothing
-            end
+            return nothing
         end
 
         if !forceRedis
             return ta[secids]
         end
     end
+
+    #In case of :Day and forceRedis = true, read from redis
 
     #Else read from redis
     timeunits = String[];
