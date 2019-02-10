@@ -16,7 +16,7 @@ BACKTEST_FINAL_CHANNEL_PREFIX = "backtest-final-"
 DEFAULT_WAIT_TIME = 5
 
 source_dir = Base.source_dir()
-include("$(source_dir)/Util/evalStrategy.jl")
+@everywhere include("$(source_dir)/Util/evalStrategy.jl")
 
 backtests_requests = []
 redisClient = nothing
