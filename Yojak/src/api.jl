@@ -471,7 +471,7 @@ function history_unadj(secids::Vector{Int},
     # println("Cols: $(cols)")
     # println("Secids: $(secids)")
 
-    if (frequency != :Day) || (length(setdiff(secids, cols)) == 0 && compareSizeWithBenchmark(ta, enddate = enddate, horizon = horizon, frequency) != -1)
+    if (frequency != :Day) || (length(setdiff(secids, cols)) == 0 && compareSizeWithBenchmark(ta, enddate = enddate, horizon = horizon, frequency = frequency) != -1)
         Logger.update_display(true)
         return __renamecolumns(ta)
     end
@@ -553,7 +553,7 @@ function history_unadj(secids::Vector{Int},
 
     cols = Int[Meta.parse(String(name)) for name in __getcolnames(ta)]
 
-    if (frequency != :Day) || (length(setdiff(secids, cols)) == 0 && compareSizeWithBenchmark(ta, startdate = startdate, enddate = enddate, frequency) != -1)
+    if (frequency != :Day) || (length(setdiff(secids, cols)) == 0 && compareSizeWithBenchmark(ta, startdate = startdate, enddate = enddate, frequency = frequency) != -1)
         Logger.update_display(true)
         return __renamecolumns(ta)
     end
