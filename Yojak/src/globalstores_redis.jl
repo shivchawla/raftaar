@@ -440,7 +440,7 @@ function fromglobalstores(names::Vector{String}, datatype::String, frequency::Sy
         @sync @async for timeunit in timeunits
             key = "$(name)_$(string(frequency))_$(datatype)_$(timeunit)"
             
-            sub_fs = @fetch _processRedisData(key) 
+            sub_fs = @fetch _processRedisData(key, frequency) 
 
             if sub_fs != nothing
                 append!(ts, sub_fs[:,1])
