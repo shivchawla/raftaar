@@ -357,24 +357,7 @@ end
 
 
 function _processRedisData(key, frequency)
-    value = Redis.smembers(redisClient(), key)
-    if length(value) > 0 
-        # println("Name: $(name)")
-        parsed = JSON.parse.(value)
-        sub_vs = (get.(parsed, "Value", NaN))
-        
-        sub_ts = nothing
-        if frequency == :Day
-            sub_ts = Date.(get.(parsed, "Date", Date(1)))
-        else
-            sub_ts = DateTime.(get.(parsed, "Date", DateTime(1)))
-        end
-        
-        sub_fs = [sub_ts sub_vs]
-        sub_fs = sub_fs[sub_fs[:,2] .!= nothing, :]
-        sub_fs = sub_fs[.!isnan.(sub_fs[:,2]), :]
-        sub_fs = sortslices(sub_fs, dims=1, by=x->x[1])
-    end
+    
 end
 
 # Searches and return TA of available secids
@@ -429,33 +412,55 @@ function fromglobalstores(names::Vector{String}, datatype::String, frequency::Sy
     all_fs = []
     uniq_ts = frequency == :Day ? Date[] : DateTime[]
     all_names = Symbol[]
+    lk = Threads.Mutex()
 
-    for name in names
+    Threads.@threads for name in names
         vs = []
         ts = []
         
         for timeunit in timeunits
             key = "$(name)_$(string(frequency))_$(datatype)_$(timeunit)"
-            sub_fs = _processRedisData(key, frequency) 
+            
+            lock(lk)
+            value = Redis.smembers(redisClient(), key)
+            unlock(lk)
 
+            if length(value) > 0 
+                # println("Name: $(name)")
+                parsed = JSON.parse.(value)
+                sub_vs = (get.(parsed, "Value", NaN))
+                
+                sub_ts = nothing
+                if frequency == :Day
+                    sub_ts = Date.(get.(parsed, "Date", Date(1)))
+                else
+                    sub_ts = DateTime.(get.(parsed, "Date", DateTime(1)))
+                end
+                
+                sub_fs = [sub_ts sub_vs]
+                sub_fs = sub_fs[sub_fs[:,2] .!= nothing, :]
+                sub_fs = sub_fs[.!isnan.(sub_fs[:,2]), :]
+                sub_fs = sortslices(sub_fs, dims=1, by=x->x[1])
+            end
+
+            lock(lk)
             if sub_fs != nothing
                 append!(ts, sub_fs[:,1])
                 append!(vs, sub_fs[:,2])
-                # println("Sub")
-                # println(ts)
-                # println(vs)
             end
+            unlock(lk)
         end
 
+        lock(lk)
         if length(ts) > 0
             fs = unique([ts vs], dims=1)
             push!(all_fs, fs)
             append!(uniq_ts, fs[:,1])
             push!(all_names, Symbol(name))           
         end
+        unlock(lk)
     end
    
-
     if length(all_names) > 0
         #Now process TA from all values
         uniq_ts = sort(unique(uniq_ts))
@@ -466,24 +471,12 @@ function fromglobalstores(names::Vector{String}, datatype::String, frequency::Sy
             #Initialize all values as NaN for the column
             vals[:,i] .= NaN
             
-            # #LOGIC 1 to merge  O(NlogN)
-            # for (j, dt) in enumerate(all_ts[i])
-            #     idx = findall(isequal(dt), uniq_ts)
-            #     if idx!=nothing && length(idx) !=0
-            #         vals[idx[1], i] = all_vs[i][j]
-            #     end
-            # end
-
             #LOGIC 2 to merge O(N)
             _tSmall = all_fs[i][:, 1]
             _tBig =  uniq_ts
             if length(_tSmall) == length(_tBig)
                 vals[:, i] .= all_fs[i][:, 2]
             else
-
-                # println(_tSmall)
-                # println(_tBig)
-
                 j=1
                 k=1
                 idx = Vector{Int64}(undef, length(_tSmall))
@@ -495,14 +488,7 @@ function fromglobalstores(names::Vector{String}, datatype::String, frequency::Sy
                     end
                     j+=1
                 end
-
-                # println(idx)
-                # println(all_fs[i])
-                # println(typeof(all_fs[i]))
-
-                # println(all_fs[i][:,2])
-                # println(typeof(all_fs[i][:,2]))
-
+                
                 vals[idx, i] .= all_fs[i][:, 2]
             end
      
