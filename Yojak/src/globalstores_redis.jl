@@ -1,5 +1,4 @@
 import Base: getindex
-using Distributed
 
 const _globaldatastores = Dict{String, Any}()
 const _tickertosecurity = Dict{String, Security}()
@@ -431,16 +430,13 @@ function fromglobalstores(names::Vector{String}, datatype::String, frequency::Sy
     uniq_ts = frequency == :Day ? Date[] : DateTime[]
     all_names = Symbol[]
 
-    println("NProcs: $(nprocs())")
-    
-    @sync @async for name in names
+    for name in names
         vs = []
         ts = []
         
-        @sync @async for timeunit in timeunits
+        for timeunit in timeunits
             key = "$(name)_$(string(frequency))_$(datatype)_$(timeunit)"
-            
-            sub_fs = @fetch _processRedisData(key, frequency) 
+            sub_fs = _processRedisData(key, frequency) 
 
             if sub_fs != nothing
                 append!(ts, sub_fs[:,1])
@@ -451,14 +447,12 @@ function fromglobalstores(names::Vector{String}, datatype::String, frequency::Sy
             end
         end
 
-        # @sync begin
-            if length(ts) > 0
-                fs = unique([ts vs], dims=1)
-                push!(all_fs, fs)
-                append!(uniq_ts, fs[:,1])
-                push!(all_names, Symbol(name))           
-            end
-        # end
+        if length(ts) > 0
+            fs = unique([ts vs], dims=1)
+            push!(all_fs, fs)
+            append!(uniq_ts, fs[:,1])
+            push!(all_names, Symbol(name))           
+        end
     end
    
 

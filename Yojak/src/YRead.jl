@@ -5,16 +5,15 @@ using Mongoc
 using Logger
 using TimeSeries
 using Dates
-using Distributed
 
 import Logger: info, warn
 import TimeSeries: TimeArray
 import Base: convert
 import Redis
 
-@everywhere const dict = Dict{String, Any}()
+const dict = Dict{String, Any}()
 
-@everywhere function configureMongo(cl::Mongoc.Client; database::String = "dbYojak_dev", priority::Int = 1, strict::Bool = true)    
+function configureMongo(cl::Mongoc.Client; database::String = "dbYojak_dev", priority::Int = 1, strict::Bool = true)    
     global dict
     dict["client"] = cl
     dict["db"] = database
@@ -22,15 +21,15 @@ import Redis
     dict["strict"] = strict
 end
 
-@everywhere function configureRedis(cl::Redis.RedisConnection)    
+function configureRedis(cl::Redis.RedisConnection)    
     global dict
     dict["redis_client"] = cl
 end
 
-@everywhere securitycollection() = dict["client"][dict["db"]]["security_test"]
-@everywhere datacollection() = dict["client"][dict["db"]]["data_test"]
-@everywhere minutedatacollection() = dict["client"][dict["db"]]["data_minute"]
-@everywhere redisClient() = dict["redis_client"]
+securitycollection() = dict["client"][dict["db"]]["security_test"]
+datacollection() = dict["client"][dict["db"]]["data_test"]
+minutedatacollection() = dict["client"][dict["db"]]["data_minute"]
+redisClient() = dict["redis_client"]
 
 const PRIORITY = 1
 const STRICT = false

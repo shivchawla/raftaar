@@ -8,11 +8,8 @@ using YRead
 using Logger
 using Mongoc
 using JSON
-using Distributed
 
-addprocs(8)
-
-@everywhere include("./dbConnections.jl")
+include("./dbConnections.jl")
 include("./parseArgs.jl")
 include("./processArgs.jl")
 include("./handleErrors.jl")
