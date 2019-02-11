@@ -441,14 +441,15 @@ function fromglobalstores(names::Vector{String}, datatype::String, frequency::Sy
                 sub_fs = sub_fs[sub_fs[:,2] .!= nothing, :]
                 sub_fs = sub_fs[.!isnan.(sub_fs[:,2]), :]
                 sub_fs = sortslices(sub_fs, dims=1, by=x->x[1])
-            end
 
-            lock(lk)
-            if sub_fs != nothing
-                append!(ts, sub_fs[:,1])
-                append!(vs, sub_fs[:,2])
+                lock(lk)
+                if sub_fs != nothing
+                    append!(ts, sub_fs[:,1])
+                    append!(vs, sub_fs[:,2])
+                end
+                unlock(lk)
             end
-            unlock(lk)
+            
         end
 
         lock(lk)

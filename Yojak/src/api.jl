@@ -128,7 +128,8 @@ function history(secids::Array{Int,1},
                     country::String="IN",
                     displaylogs::Bool=true,
                     strict::Bool=true,
-                    forwardfill::Bool=false)
+                    forwardfill::Bool=false,
+                    everything::Bool=false)
     
     # IMPLEMENTATION HERE
     unadj_history = history_unadj(secids, datatype, frequency, 
@@ -144,12 +145,23 @@ function history(secids::Array{Int,1},
     try
         adjusted_ta = unadj_history != nothing && horizon > 0 ? _adjust(unadj_history, displaylogs = displaylogs, frequency = frequency) : unadj_history
 
-        return adjusted_ta != nothing ? 
+        final_adj_ta = adjusted_ta != nothing ? 
             frequency == :Day ? TimeSeries.tail(to(adjusted_ta, Date(enddate)), horizon) :
                 adjusted_ta : nothing
 
-                #Update logic to do final fetch between datetimes (based on horizon)
+                 #Update logic to do final fetch between datetimes (based on horizon)
                 #TimeSeries.tail(to(adjusted_ta, enddate), horizon) : nothing
+        if !everything    
+            return final_adj_ta
+        else
+            final_unadj_ta = unadj_history != nothing ? 
+            frequency == :Day ? TimeSeries.tail(to(unadj_history, Date(enddate)), horizon) :
+                unadj_history : nothing            
+
+            return (final_unadj_ta, final_adj_ta)
+        end
+
+           
     catch err
         if strict
             rethrow(err)
@@ -169,7 +181,8 @@ history(tickers::Array{String,1},
         country::String="IN",
         displaylogs::Bool=true,
         strict::Bool=true,
-        forwardfill::Bool=false) = history([getsecurityid(ticker, securitytype = securitytype, exchange = exchange, country = country) for ticker in tickers], 
+        forwardfill::Bool=false,
+        everything::Bool=false) = history([getsecurityid(ticker, securitytype = securitytype, exchange = exchange, country = country) for ticker in tickers], 
                                     datatype, 
                                     frequency, 
                                     horizon, 
@@ -179,7 +192,8 @@ history(tickers::Array{String,1},
                                     country = country,
                                     displaylogs = displaylogs,
                                     strict = strict,
-                                    forwardfill = forwardfill)
+                                    forwardfill = forwardfill,
+                                    everything = everything)
 
 history(secids::Array{Int,1},
         datatype::String,
@@ -191,7 +205,8 @@ history(secids::Array{Int,1},
         country::String="IN",
         displaylogs::Bool=true,
         strict::Bool=true,
-        forwardfill::Bool=false) = history(secids,
+        forwardfill::Bool=false,
+        everything::Bool=false) = history(secids,
                                         datatype,
                                         frequency,
                                         horizon,
@@ -201,7 +216,8 @@ history(secids::Array{Int,1},
                                         country = country,
                                         displaylogs = displaylogs,
                                         strict = strict,
-                                        forwardfill = forwardfill)
+                                        forwardfill = forwardfill,
+                                        everything = everything)
 
 history(tickers::Array{String,1},
         datatype::String,
@@ -213,7 +229,8 @@ history(tickers::Array{String,1},
         country::String="IN",
         displaylogs::Bool=true,
         strict::Bool=true,
-        forwardfill::Bool=false) = history([getsecurityid(ticker, securitytype = securitytype, exchange = exchange, country = country) for ticker in tickers],
+        forwardfill::Bool=false,
+        everything::Bool=false) = history([getsecurityid(ticker, securitytype = securitytype, exchange = exchange, country = country) for ticker in tickers],
                                         datatype,
                                         frequency,
                                         horizon,
@@ -235,7 +252,8 @@ history(securities::Array{Security,1},
         country::String="IN",
         displaylogs::Bool=true,
         strict::Bool=true,
-        forwardfill::Bool=false) = history([security.symbol.id for security in securities],
+        forwardfill::Bool=false,
+        everything::Bool=false) = history([security.symbol.id for security in securities],
                                         datatype,
                                         frequency,
                                         horizon,
@@ -245,7 +263,8 @@ history(securities::Array{Security,1},
                                         country = country,
                                         displaylogs = displaylogs,
                                         strict = strict,
-                                        forwardfill = forwardfill)
+                                        forwardfill = forwardfill, 
+                                        everything = everything)
 
 ############ PERIOD BASED
 function history(secids::Vector{Int},
@@ -258,7 +277,8 @@ function history(secids::Vector{Int},
                     country::String="IN",
                     displaylogs::Bool=true,
                     strict::Bool=true,
-                    forwardfill::Bool=false) 
+                    forwardfill::Bool=false,
+                    everything::Bool=false) 
     
     #IMPLEMENTATION HERE
     unadj_history = history_unadj(secids, datatype, frequency, 
@@ -275,9 +295,21 @@ function history(secids::Vector{Int},
             _adjust(unadj_history, displaylogs = displaylogs, frequency = frequency) :
             unadj_history
         
-        return adjusted_ta!=nothing ? 
-            frequency == :Day ? TimeSeries.from(to(adjusted_ta, Date(enddate)), Date(startdate)) :
-                adjusted_ta  : nothing
+        final_adj_ta = adjusted_ta!=nothing ? 
+                frequency == :Day ? TimeSeries.from(to(adjusted_ta, Date(enddate)), Date(startdate)) :
+                    adjusted_ta  : nothing
+
+        if !everything
+            return final_adj_ta
+        else
+            final_unadj_ta = unadj_history!=nothing ? 
+                frequency == :Day ? TimeSeries.from(to(unadj_history, Date(enddate)), Date(startdate)) :
+                    unadj_history  : nothing 
+            
+            return (final_unadj_ta, final_adj_ta)
+        end 
+
+
                 #Update logic to do final fetch between datetimes
                 #TimeSeries.from(to(adjusted_ta, DateTime(Date(enddate) + Dates.Day(1)), startdate) : nothing
     catch err
@@ -299,7 +331,8 @@ history(tickers::Array{String,1},
         country::String="IN",
         displaylogs::Bool=true,
         strict::Bool=true,
-        forwardfill::Bool=false) = history([getsecurityid(ticker, securitytype = securitytype, exchange = exchange, country = country) for ticker in tickers],
+        forwardfill::Bool=false,
+        everything::Bool=false) = history([getsecurityid(ticker, securitytype = securitytype, exchange = exchange, country = country) for ticker in tickers],
                                         datatype,
                                         frequency,
                                         sdate,
@@ -309,7 +342,8 @@ history(tickers::Array{String,1},
                                         country = country,
                                         displaylogs = displaylogs,
                                         strict = strict,
-                                        forwardfill = forwardfill)
+                                        forwardfill = forwardfill,
+                                        everything = everything)
 
 history(secids::Array{Int,1},
         datatype::String,
@@ -321,7 +355,8 @@ history(secids::Array{Int,1},
         country::String="IN",
         displaylogs::Bool=true,
         strict::Bool=true,
-        forwardfill::Bool=false) = history(secids,
+        forwardfill::Bool=false,
+        everything::Bool=false) = history(secids,
                                         datatype,
                                         frequency,
                                         DateTime(sdate),
@@ -331,7 +366,8 @@ history(secids::Array{Int,1},
                                         country = country,
                                         displaylogs = displaylogs,
                                         strict = strict,
-                                        forwardfill = forwardfill)
+                                        forwardfill = forwardfill,
+                                        everything = everything)
 
 history(tickers::Array{String,1},
         datatype::String,
@@ -343,7 +379,8 @@ history(tickers::Array{String,1},
         country::String="IN",
         displaylogs::Bool=true,
         strict::Bool=true,
-        forwardfill::Bool=false) = history([getsecurityid(ticker, securitytype = securitytype, exchange = exchange, country = country) for ticker in tickers],
+        forwardfill::Bool=false,
+        everything::Bool=false) = history([getsecurityid(ticker, securitytype = securitytype, exchange = exchange, country = country) for ticker in tickers],
                                         datatype,
                                         frequency,
                                         DateTime(sdate),
@@ -353,7 +390,8 @@ history(tickers::Array{String,1},
                                         country = country,
                                         displaylogs = displaylogs,
                                         strict = strict,
-                                        forwardfill = forwardfill)
+                                        forwardfill = forwardfill,
+                                        everything = everything)
 
 
 
@@ -393,7 +431,8 @@ function history(secid::Int,
                     country::String="IN",
                     displaylogs::Bool=true,
                     strict::Bool=true,
-                    forwardfill::Bool=false)
+                    forwardfill::Bool=false,,
+                    everything::Bool=false)
 
     _history_unadj(securitycollection(), 
                     frequency == :Day ? datacollection() : minutedatacollection(),
@@ -418,7 +457,8 @@ history(ticker::String,
         country::String="IN",
         displaylogs::Bool=true,
         strict::Bool=true,
-        forwardfill::Bool=false) = history(getsecurityid(ticker, securitytype = securitytype, exchange = exchange, country = country), 
+        forwardfill::Bool=false,
+        everything::Bool=false) = history(getsecurityid(ticker, securitytype = securitytype, exchange = exchange, country = country), 
                                         datatypes,
                                         frequency,
                                         sdate,
@@ -428,7 +468,8 @@ history(ticker::String,
                                         country = country,
                                         displaylogs = displaylogs,
                                         strict = strict,
-                                        forwardfill = forwardfill)
+                                        forwardfill = forwardfill,
+                                        everything = everything)
 
 export history
 

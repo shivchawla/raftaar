@@ -380,92 +380,54 @@ function _process_conditions(date::Date, prices, conditions, options, forward; d
 end
 
 function _fetch_minute_prices(universeIds, startdate::DateTime, enddate::DateTime)
-    closeprices = YRead.history(universeIds, "Close", Symbol("1m"), DateTime(startdate) - Dates.Month(1), DateTime(enddate), displaylogs = false)
+    (closeprices_unadj, closeprices) = YRead.history(universeIds, "Close", Symbol("1m"), DateTime(startdate) - Dates.Month(1), DateTime(enddate), displaylogs = false, everything = true)
     # println("closeprices_minute")
     # println(closeprices)
 
-    openprices = YRead.history(universeIds, "Open", Symbol("1m"), DateTime(startdate) - Dates.Month(1), DateTime(enddate), displaylogs = false)
-    if openprices == nothing
-        #Logger.warn_static("Open Price Data not available from $(startdate) to $(enddate)")
-        openprices = closeprices
-    end
-
-    # println("openprices_minute")
-    # println(openprices)
- 
-
-    highprices = YRead.history(universeIds, "High", Symbol("1m"), DateTime(startdate) - Dates.Month(1), DateTime(enddate), displaylogs = false)
-    if highprices == nothing
-        #Logger.warn_static("High Price Data not available from $(startdate) to $(enddate)")
-        highprices = closeprices
-    end
-
-    # println("highprices_minute")
-    # println(highprices)
-
-    lowprices = YRead.history(universeIds, "Low", Symbol("1m"), DateTime(startdate) - Dates.Month(1), DateTime(enddate), displaylogs = false)
-    if lowprices == nothing
-        #Logger.warn_static("Low Price Data not available from $(startdate) to $(enddate)")
-        lowprices = closeprices
-    end
-
-    # println("lowprices_minute")
-    # println(lowprices)
- 
-    vol = YRead.history(universeIds, "Volume", Symbol("1m"), DateTime(startdate) - Dates.Month(1), DateTime(enddate), displaylogs = false)      
-    
-    if vol == nothing
-        Logger.warn_static("No volume data available for any stock in the universe")
-    end
-
-    # println("vol_minute")
-    # println(vol)
-
-    closeprices_unadj = YRead.history_unadj(universeIds, "Close", Symbol("1m"), DateTime(startdate), DateTime(enddate), displaylogs = false)
     if closeprices_unadj == nothing
         Logger.warn_static("Close Price Data not available from $(startdate) to $(enddate)")
         Logger.warn_static("Aborting test")
         return false
     end
 
-    # println("closeprices_minute")
-    # println(closeprices)
-    
-    openprices_unadj = YRead.history_unadj(universeIds, "Open", Symbol("1m"), DateTime(startdate) - Dates.Month(1), DateTime(enddate), displaylogs = false)
+    (openprices_unadj, openprices) = YRead.history(universeIds, "Open", Symbol("1m"), DateTime(startdate) - Dates.Month(1), DateTime(enddate), displaylogs = false, everything=true)
+    if openprices == nothing
+        #Logger.warn_static("Open Price Data not available from $(startdate) to $(enddate)")
+        openprices = closeprices
+    end
+
     if openprices_unadj == nothing
         #Logger.warn_static("Open Price Data not available from $(startdate) to $(enddate)")
         openprices_unadj = closeprices_unadj
     end
 
-    # println("openprices_minute")
-    # println(openprices)
- 
-    highprices_unadj = YRead.history_unadj(universeIds, "High", Symbol("1m"), DateTime(startdate) - Dates.Month(1), DateTime(enddate), displaylogs = false)
+    (highprices_unadj, highprices) = YRead.history(universeIds, "High", Symbol("1m"), DateTime(startdate) - Dates.Month(1), DateTime(enddate), displaylogs = false, everything = true)
+    if highprices == nothing
+        #Logger.warn_static("High Price Data not available from $(startdate) to $(enddate)")
+        highprices = closeprices
+    end
+
     if highprices_unadj == nothing
         #Logger.warn_static("High Price Data not available from $(startdate) to $(enddate)")
         highprices_unadj = closeprices_unadj
     end
 
-    # println("highprices_minute")
-    # println(highprices_unadj)
- 
-    lowprices_unadj = YRead.history_unadj(universeIds, "Low", Symbol("1m"), DateTime(startdate) - Dates.Month(1), DateTime(enddate), displaylogs = false)
+    (lowprices_unadj, lowprices) = YRead.history(universeIds, "Low", Symbol("1m"), DateTime(startdate) - Dates.Month(1), DateTime(enddate), displaylogs = false, everything = true)
+    if lowprices == nothing
+        #Logger.warn_static("Low Price Data not available from $(startdate) to $(enddate)")
+        lowprices = closeprices
+    end
+
     if lowprices_unadj == nothing
         #Logger.warn_static("Low Price Data not available from $(startdate) to $(enddate)")
         lowprices_unadj = closeprices_unadj
     end
 
-    # println("lowprices_minute")
-    # println(lowprices_unadj)
- 
-    vol_unadj = YRead.history_unadj(universeIds, "Volume", Symbol("1m"), DateTime(startdate), DateTime(enddate), displaylogs = false)      
+    (vol_unadj, vol) = YRead.history(universeIds, "Volume", Symbol("1m"), DateTime(startdate) - Dates.Month(1), DateTime(enddate), displaylogs = false, everything = true)      
     
-    if vol_unadj == nothing
+    if vol == nothing
         Logger.warn_static("No volume data available for any stock in the universe")
     end
-
-    # println("vol_minute")
-    # println(vol_unadj)
 
     return Dict(
       "Adjusted" => 

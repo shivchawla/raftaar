@@ -1,7 +1,7 @@
 using Pkg
 Pkg.resolve()
 
-user = ENV["USER"]s
+user = ENV["USER"]
 push!(LOAD_PATH, "/home/$user/raftaar/BackTester/")
 push!(LOAD_PATH, "/home/$user/raftaar/Yojak/src/")
 push!(LOAD_PATH, "/home/$user/raftaar/Logger/")

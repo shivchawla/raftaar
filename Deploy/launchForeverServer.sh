@@ -35,5 +35,4 @@ chgrp -R $user /home/$user/raftaar/tmp
 chmod -R u=rwx /home/$user/raftaar/tmp
 
 bash $base_dir/raftaar/JuliaServers/relaxPermissions.sh $user $base_dir
-
-su - $user -c "$julia $base_dir/raftaar/JuliaServers/forever.jl $port $env 1>&2"
+su - $user -c "export JULIA_NUM_THREADS=7 && $julia $base_dir/raftaar/JuliaServers/forever.jl $port $env 1>&2"
