@@ -1,4 +1,5 @@
 import Base: getindex
+using Distributed
 
 const _globaldatastores = Dict{String, Any}()
 const _tickertosecurity = Dict{String, Security}()
@@ -430,6 +431,8 @@ function fromglobalstores(names::Vector{String}, datatype::String, frequency::Sy
     uniq_ts = frequency == :Day ? Date[] : DateTime[]
     all_names = Symbol[]
 
+    println("NProcs: $(nprocs())")
+    
     @sync @async for name in names
         vs = []
         ts = []

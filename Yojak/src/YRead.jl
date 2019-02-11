@@ -5,33 +5,32 @@ using Mongoc
 using Logger
 using TimeSeries
 using Dates
+using Distributed
 
 import Logger: info, warn
 import TimeSeries: TimeArray
 import Base: convert
 import Redis
 
-const dict = Dict{String, Any}()
+@everywhere const dict = Dict{String, Any}()
 
-function configureMongo(cl::Mongoc.Client; database::String = "dbYojak_dev", priority::Int = 1, strict::Bool = true)    
+@everywhere function configureMongo(cl::Mongoc.Client; database::String = "dbYojak_dev", priority::Int = 1, strict::Bool = true)    
     global dict
     dict["client"] = cl
     dict["db"] = database
     dict["priority"] = priority
     dict["strict"] = strict
-    @everywhere global dict = dict
 end
 
-function configureRedis(cl::Redis.RedisConnection)    
+@everywhere function configureRedis(cl::Redis.RedisConnection)    
     global dict
     dict["redis_client"] = cl
-    @everywhere global dict = dict
 end
 
-@verywhere securitycollection() = dict["client"][dict["db"]]["security_test"]
-@verywhere datacollection() = dict["client"][dict["db"]]["data_test"]
-@verywhere minutedatacollection() = dict["client"][dict["db"]]["data_minute"]
-@verywhere redisClient() = dict["redis_client"]
+@everywhere securitycollection() = dict["client"][dict["db"]]["security_test"]
+@everywhere datacollection() = dict["client"][dict["db"]]["data_test"]
+@everywhere minutedatacollection() = dict["client"][dict["db"]]["data_minute"]
+@everywhere redisClient() = dict["redis_client"]
 
 const PRIORITY = 1
 const STRICT = false
