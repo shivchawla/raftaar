@@ -379,6 +379,7 @@ function _process_conditions(date::Date, prices, conditions, options, forward; d
   return true
 end
 
+#NO SPEED IMPOROVEMENT (crahes with use of @threads)
 function _fetch_minute_prices_threaded(universeIds, startdate::DateTime, enddate::DateTime)
     
     pTypes = ["Close", "Open", "High", "Low", "Volume"]
@@ -395,7 +396,7 @@ function _fetch_minute_prices_threaded(universeIds, startdate::DateTime, enddate
     lowprices = nothing
     vol = nothing
 
-    Threads.@threads for pType in pTypes
+    @sync @async for pType in pTypes
       (p1, p2) = YRead.history(universeIds, pType, Symbol("1m"), DateTime(startdate) - Dates.Month(1), DateTime(enddate), displaylogs = false, everything = true)
 
       if pType == "Close"
@@ -409,7 +410,7 @@ function _fetch_minute_prices_threaded(universeIds, startdate::DateTime, enddate
       elseif pType == "Volume"
         (vol_unadj, vol) = (p1, p2)
       end
-          
+
     end
 
     if closeprices_unadj == nothing
@@ -566,7 +567,7 @@ function _run_algo_minute(startdate::Date = getstartdate(), enddate::Date = gete
       end
 
       ohlcvEOD = _fetch_EOD_prices(universeIds, DateTime(startdate), DateTime(enddate))
-      ohlcv = _fetch_minute_prices_threaded(universeIds, DateTime(startdate), DateTime(enddate))
+      ohlcv = _fetch_minute_prices(universeIds, DateTime(startdate), DateTime(enddate))
       
       #Join benchmark data with close prices
       #Right join (benchmark data comes from NSE database and excludes the holidays)
