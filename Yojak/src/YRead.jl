@@ -19,18 +19,19 @@ function configureMongo(cl::Mongoc.Client; database::String = "dbYojak_dev", pri
     dict["db"] = database
     dict["priority"] = priority
     dict["strict"] = strict
+    @everywhere global dict = dict
 end
 
 function configureRedis(cl::Redis.RedisConnection)    
     global dict
     dict["redis_client"] = cl
+    @everywhere global dict = dict
 end
 
-println(dict)
-securitycollection() = dict["client"][dict["db"]]["security_test"]
-datacollection() = dict["client"][dict["db"]]["data_test"]
-minutedatacollection() = dict["client"][dict["db"]]["data_minute"]
-redisClient() = dict["redis_client"]
+@verywhere securitycollection() = dict["client"][dict["db"]]["security_test"]
+@verywhere datacollection() = dict["client"][dict["db"]]["data_test"]
+@verywhere minutedatacollection() = dict["client"][dict["db"]]["data_minute"]
+@verywhere redisClient() = dict["redis_client"]
 
 const PRIORITY = 1
 const STRICT = false

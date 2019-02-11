@@ -1,6 +1,7 @@
 
 using YRead
 import Redis
+using Distributed
 
 function connect(host::String, port::Int, user::String="", pass::String="")
     usr_pwd_less = user=="" && pass==""
@@ -65,6 +66,7 @@ end
 
 connections = JSON.parsefile(Base.source_dir()*"/connection.json")
 
+addprocs(8)
 setdatastores(connections)
 setredisconnection(connections)
 
