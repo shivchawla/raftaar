@@ -379,7 +379,97 @@ function _process_conditions(date::Date, prices, conditions, options, forward; d
   return true
 end
 
+function _fetch_minute_prices_threaded(universeIds, startdate::DateTime, enddate::DateTime)
+    
+    pTypes = ["Close", "Open", "High", "Low", "Volume"]
+
+    closeprices_unadj = nothing
+    openprices_unadj = nothing
+    highprices_unadj = nothing
+    lowprices_unadj = nothing
+    vol_unadj = nothing
+
+    closeprices = nothing
+    openprices = nothing
+    highprices = nothing
+    lowprices = nothing
+    vol = nothing
+
+    Threads.@threads for pType in pTypes
+      (p1, p2) = YRead.history(universeIds, pType, Symbol("1m"), DateTime(startdate) - Dates.Month(1), DateTime(enddate), displaylogs = false, everything = true)
+
+      if pType == "Close"
+        (closeprices_unadj, closeprices) = (p1, p2)
+      elseif pType == "Open"
+        (openrices_unadj, openprices) = (p1, p2)
+      elseif pType == "High"
+        (highprices_unadj, highprices) = (p1, p2)
+      elseif pType == "Low"
+        (lowprices_unadj, lowprices) = (p1, p2)
+      elseif pType == "Volume"
+        (vol_unadj, vol) = (p1, p2)
+      end
+          
+    end
+
+    if closeprices_unadj == nothing
+        Logger.warn_static("Close Price Data not available from $(startdate) to $(enddate)")
+        Logger.warn_static("Aborting test")
+        return false
+    end
+
+    if openprices == nothing
+        #Logger.warn_static("Open Price Data not available from $(startdate) to $(enddate)")
+        openprices = closeprices
+    end
+
+    if openprices_unadj == nothing
+        #Logger.warn_static("Open Price Data not available from $(startdate) to $(enddate)")
+        openprices_unadj = closeprices_unadj
+    end
+
+    if highprices == nothing
+        #Logger.warn_static("High Price Data not available from $(startdate) to $(enddate)")
+        highprices = closeprices
+    end
+
+    if highprices_unadj == nothing
+        #Logger.warn_static("High Price Data not available from $(startdate) to $(enddate)")
+        highprices_unadj = closeprices_unadj
+    end
+
+    if lowprices == nothing
+        #Logger.warn_static("Low Price Data not available from $(startdate) to $(enddate)")
+        lowprices = closeprices
+    end
+
+    if lowprices_unadj == nothing
+        #Logger.warn_static("Low Price Data not available from $(startdate) to $(enddate)")
+        lowprices_unadj = closeprices_unadj
+    end
+
+    if vol == nothing
+        Logger.warn_static("No volume data available for any stock in the universe")
+    end
+
+    return Dict(
+      "Adjusted" => 
+        Dict("Open" => openprices, 
+            "High" => highprices, 
+            "Low" => lowprices, 
+            "Close" => closeprices, 
+            "Volume" => vol),
+      "Unadjusted" => 
+      Dict("Open" => openprices_unadj, 
+        "High" => highprices_unadj, 
+        "Low" => lowprices_unadj, 
+        "Close" => closeprices_unadj, 
+        "Volume" => vol_unadj)
+      )
+end
+
 function _fetch_minute_prices(universeIds, startdate::DateTime, enddate::DateTime)
+    
     (closeprices_unadj, closeprices) = YRead.history(universeIds, "Close", Symbol("1m"), DateTime(startdate) - Dates.Month(1), DateTime(enddate), displaylogs = false, everything = true)
     # println("closeprices_minute")
     # println(closeprices)
@@ -476,7 +566,7 @@ function _run_algo_minute(startdate::Date = getstartdate(), enddate::Date = gete
       end
 
       ohlcvEOD = _fetch_EOD_prices(universeIds, DateTime(startdate), DateTime(enddate))
-      ohlcv = _fetch_minute_prices(universeIds, DateTime(startdate), DateTime(enddate))
+      ohlcv = _fetch_minute_prices_threaded(universeIds, DateTime(startdate), DateTime(enddate))
       
       #Join benchmark data with close prices
       #Right join (benchmark data comes from NSE database and excludes the holidays)

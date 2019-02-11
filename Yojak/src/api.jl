@@ -431,7 +431,7 @@ function history(secid::Int,
                     country::String="IN",
                     displaylogs::Bool=true,
                     strict::Bool=true,
-                    forwardfill::Bool=false,,
+                    forwardfill::Bool=false,
                     everything::Bool=false)
 
     _history_unadj(securitycollection(), 
