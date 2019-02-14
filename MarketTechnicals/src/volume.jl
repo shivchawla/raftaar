@@ -47,7 +47,7 @@ Volume Weight-Adjusted Price
 function vwap(ohlcv::TimeArray{T,N}, n::Int; price=:Close, v=:Volume) where {T,N}
     p   = ohlcv[price]
     q   = ohlcv[v]
-    ∑PQ = moving(nansum, p .* q, n)e
+    ∑PQ = moving(nansum, p .* q, n)
     ∑Q  = moving(nansum, q, n)
     val = ∑PQ ./ ∑Q
 

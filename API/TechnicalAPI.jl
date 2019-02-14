@@ -218,7 +218,7 @@ function _getTA(;price::String="Close", horizon = 10)
           ta = minuteDataStore["Volume"]
         end
     elseif getresolution() == Resolution_Day
-        # YRead.history(["TCS"], price, :Day, DateTime(Date("2017-12-31") - Dates.Day(2*horizon)), DateTime(Date("2018-12-31")), displaylogs = false)
+        # YRead.history(["TCS", "WIPRO", "INFY"], price, :Day, DateTime(Date("2017-12-31") - Dates.Day(2*horizon)), DateTime(Date("2018-12-31")), displaylogs = false)
         YRead.history([sec.symbol.ticker for sec in getuniverse()], price, :Day, DateTime(getstartdate() - Dates.Day(2*horizon)), DateTime(getenddate()), displaylogs = false)
     end
 end
@@ -1046,8 +1046,8 @@ end
 export DONCHIAN_UP, DONCHIAN_DOWN, DONCHIAN_MID
 
 
-fastChaikinDefault() = getresolution() == Resolution_Day ? 3 : 300
-slowChaikinDefault() = getresolution() == Resolution_Day ? 10 : 1000
+fastChaikinDefault() = 10
+slowChaikinDefault() = 30
 
 """
 Chaikin Oscillator
