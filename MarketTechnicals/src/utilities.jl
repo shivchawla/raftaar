@@ -48,29 +48,42 @@ relu(ta::TimeArray) =
     TimeArray(timestamp(ta), relu.(values(ta)), colnames(ta), meta(ta))
 
 """
-The soomth method used by ADX
+The smooth method used by ADX
 """
 function wilder_smooth(ta::TimeArray, n::Integer;
                        padding::Bool=false, dx::Bool=false)
-    val = similar(Array{Float64}, indices(values(ta)))
+    val = similar(Array{Float64}, axes(values(ta)))
 
     first_cal = (dx ? nanmean : nansum)
 
+    ncols = size(val, 2)
+    _vals_ta = values(ta)
+
     for i ∈ 1:size(val, 1)
-        val[i, :] =
-            if i < n
-                NaN
-            elseif i == n
-                first_cal(values(ta[1:n]))
-            elseif dx
-                (val[i-1, :] .* (n - 1) .+ values(ta)[i, :]) ./ n
-            else
-                (val[i-1, :] .* (n - 1) ./ n) .+ values(ta)[i, :]
-            end
+        if i < n
+            val[i, :] .= NaN
+        elseif i == n
+            _fv = first_cal(values(ta[1:n]))
+            val[i, :] = typeof(_fv) == Float64 ? reshape([_fv], (1,1)) : _fv
+        elseif dx
+            _nv = (val[i-1, :] .* (n - 1) .+ _vals_ta[i, :]) ./ n
+            _nv[isnan.(_nv)] .= val[i-1, :][isnan.(_nv)]
+
+            val[i, :] = reshape(_nv, (ncols,1))
+        else
+            _nv = (val[i-1, :] .* (n - 1) ./ n) .+ _vals_ta[i, :]
+            _nv[isnan.(_nv)] .= val[i-1, :][isnan.(_nv)]
+
+            val[i, :] = reshape(_nv, (ncols,1))
+        end
     end
 
     ret = TimeArray(timestamp(ta), val, colnames(ta), meta(ta))
 
+    # println("Wilder Smooth")
+    # println(ret)
+
+    
     if padding
         ret
     else

@@ -16,7 +16,7 @@ On Balance Volume
 function obv(ohlcv::TimeArray{T,N}; price=:Close, v=:Volume) where {T,N}
 
     ret    = percentchange(ohlcv[price])
-    vol    = zeros(length(ohlcv))
+    vol     = zeros(length(ohlcv))
     
     _vol_values = values(ohlcv[v])
     _ret_values = values(ret)
@@ -26,12 +26,12 @@ function obv(ohlcv::TimeArray{T,N}; price=:Close, v=:Volume) where {T,N}
     for i=2:length(ohlcv)
       if _ret_values[i-1] >= 0
         vol[i] += _vol_values[i]
-      else
+      else _ret_values[i-1] < 0
         vol[i] -= _vol_values[i]
       end
     end
 
-    TimeArray(timestamp(ohlcv), nancumsum(vol), [:obv], meta(ohlcv))
+    TimeArray(timestamp(ohlcv), reshape(nancumsum(vol), (length(timestamp(ohlcv)), 1)), [:obv], meta(ohlcv))
 end
 
 """
@@ -47,8 +47,8 @@ Volume Weight-Adjusted Price
 function vwap(ohlcv::TimeArray{T,N}, n::Int; price=:Close, v=:Volume) where {T,N}
     p   = ohlcv[price]
     q   = ohlcv[v]
-    ∑PQ = moving(sum, p .* q, n)
-    ∑Q  = moving(sum, q, n)
+    ∑PQ = moving(nansum, p .* q, n)e
+    ∑Q  = moving(nansum, q, n)
     val = ∑PQ ./ ∑Q
 
     TimeArray(timestamp(val), values(val), [:vwap], meta(ohlcv))
@@ -100,9 +100,9 @@ function adl(ohlcv::TimeArray; h=:High, l=:Low, c=:Close, v=:Volume)
     _flowvol_values = values(flow_vol)
 
     vals = similar(_flowvol_values)
-    vals[1] = _flowvol_values[1]
+    vals[1] = isnan(_flowvol_values[1]) ? 0.0 : _flowvol_values[1]
     for i ∈ 2:length(_flowvol_values)
-        vals[i] = vals[i-1] + _flowvol_values[i]
+        vals[i] = vals[i-1] + (isnan(_flowvol_values[i]) ? 0.0 : _flowvol_values[i])
     end
 
     TimeArray(timestamp(ohlcv), vals, [:adl], meta(ohlcv))

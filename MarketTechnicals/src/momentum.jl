@@ -8,23 +8,36 @@ Relative Strength Index
 ```
 """
 function rsi(ta::TimeArray, n::Int=14; wilder::Bool=false)
-    ret = diff(values(ta))
+    ret = diff(values(ta), dims=1)
     ups = zeros(size(values(ta), 1) - 1, size(values(ta), 2))
     dns = zeros(size(values(ta), 1) - 1, size(values(ta), 2))
 
+    # println("Ret")
+    # println(ret)
+
+    #skip NaNs (by explicitly comparing on both sides of zero)
     @inbounds for i in 1:size(values(ta), 1) - 1
         for j in 1:size(values(ta), 2)
             if ret[i, j] >= 0
                 ups[i, j] += ret[i, j]
-            else
+            elseif ret[i, j] < 0   
                 dns[i, j] += ret[i, j]
             end
         end
     end
 
+    # println("Ups")
+    # println(ups)
+
+    # println("Downs")
+    # println(dns)
+
     upsema = ema(ups, n, wilder=wilder)
     dnsema = abs.(ema(dns, n, wilder=wilder))
     rs     = upsema ./ dnsema
+
+    # println("Rs")
+    # println(rs)
 
     res  = @. 100 - (100 / (1 + rs))
 
@@ -78,8 +91,8 @@ where the [`adl`](@ref) is the Accumulation/Distribution Line.
   (http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:chaikin_oscillator)
 """
 function chaikinoscillator(ohlcv::TimeArray, fast::Integer=3, slow::Integer=10;
-                           h=:High, l=:Low, c=:Close)
-    _adl = adl(ohlcv, h=h, l=l, c=c)
+                           h=:High, l=:Low, c=:Close, v=:Volume)
+    _adl = adl(ohlcv, h=h, l=l, c=c, v=v)
     rename(ema(_adl, fast) .- ema(_adl, slow), [:chaikinoscillator])
 end
 
@@ -159,8 +172,8 @@ end
   (http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:aroon_oscillator)
 """
 function aroon(ohlc::TimeArray, n::Integer=25; h=:High, l=:Low)
-    up = rename(moving(indmax, ohlc[h], n) ./ n .* 100, :up)
-    dn = rename(moving(indmin, ohlc[l], n) ./ n .* 100, :dn)
+    up = rename(moving(nanargmax, ohlc[h], n) ./ n .* 100, :up)
+    dn = rename(moving(nanargmin, ohlc[l], n) ./ n .* 100, :down)
     osc = rename(up .- dn, :osc)
 
     merge(merge(up, dn), osc)
@@ -186,7 +199,7 @@ function adx(ohlc::TimeArray, n::Integer=14; h=:High, l=:Low, c=:Close)
     dm = relu(merge(ohlc[h] .- lag(ohlc[h]), lag(ohlc[l]) .- ohlc[l]))
 
     _dm_values = values(dm)
-    _dm_values[findmin(_dm_values, 2)[2]] = 0
+    _dm_values[findmin(_dm_values, dims=2)[2]] .= 0
 
     dm = TimeArray(timestamp(dm), _dm_values, colnames(dm))
 
@@ -194,8 +207,15 @@ function adx(ohlc::TimeArray, n::Integer=14; h=:High, l=:Low, c=:Close)
 
     tr = wilder_smooth(truerange(ohlc, h=h, l=l, c=c), n)
 
+    # println("TR")
+    # println(tr)
+
     di = (dm ./ tr) .* 100
     di = rename(di, [:di_plus, :di_minus])
+
+    # println("DI")
+    # println(di)
+
 
     dx = @. abs((di[:di_plus] - di[:di_minus]) / (di[:di_plus] + di[:di_minus])) * 100
     adx = wilder_smooth(dx, n, dx=true)

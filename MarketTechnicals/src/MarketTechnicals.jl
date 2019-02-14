@@ -25,7 +25,30 @@ nansum(x; dims = 1) = ndims(x) > 1 ? mapslices(_nansum, x, dims = dims) : _nansu
 _nanstd(x) = std(filter(!isnan,x))
 nanstd(x; dims = 1) = ndims(x) > 1 ? mapslices(_nanstd, x, dims = dims) : _nanstd(x)
 
-nancumsum(x) = cumsum(filter(!isnan,x))
+function nancumsum(x)
+	x[isnan.(x)] .= 0
+	cumsum(x)
+end
+
+function nanargmax(x) 
+	x[isnan.(x)] .= -Inf
+	argmax(x)
+end
+
+function nanargmin(x) 
+	x[isnan.(x)] .= Inf
+	argmin(x)
+end
+
+function nanmax(x) 
+	x[isnan.(x)] .= -Inf
+	maximum(x)
+end
+
+function nanmin(x) 
+	x[isnan.(x)] .= Inf
+	minimum(x)
+end
 
 include("candlesticks.jl")
 include("levels.jl")

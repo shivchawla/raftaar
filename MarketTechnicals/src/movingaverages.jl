@@ -32,7 +32,8 @@ function ema(ta::TimeArray, n::Int; wilder=false)
 
     for i in n+1:size(values(ta),1)
         for j in 1:size(values(ta),2)
-            vals[i,j] = values(ta)[i,j] * k + vals[i-1, j] * (1-k)
+            _v = values(ta)[i,j]
+            vals[i,j] = isnan(_v) ? vals[i-1, j] : _v * k + vals[i-1, j] * (1-k)
         end
     end
 
@@ -54,26 +55,36 @@ function kama(ta::TimeArray, n::Int=10, fn::Int=2, sn::Int=30)
     sc = (er .* (2 / (fn + 1) - 2 / (sn + 1)) .+ 2 / (sn + 1)).^2
 
     cl = ta[n+1:end]
-    vals = similar(Array{Float64}, indices(values(cl)))
+
+    vals = similar(Array{Float64}, axes(values(cl)))
     # using simple moving average as initial kama
     pri_kama = nanmean(values(ta[1:n]))
 
     @assert length(cl) == length(sc)
 
     for idx ∈ 1:length(cl)
-        vals[idx, :] =
-            pri_kama =
-            pri_kama .+ values(sc[idx]) .* (values(cl[idx]) .- pri_kama)
+        _p_k = pri_kama .+ values(sc[idx]) .* (values(cl[idx]) .- pri_kama)
+        
+        #Added check for NaN and adequately backfill with the correct last available pri_kama
+        if typeof(pri_kama) == Float64
+            pri_kama = isnan.(_p_k)[1] ? pri_kama : _p_k
+        else
+            _p_k[isnan.(_p_k)] .= pri_kama[isnan.(_p_k)]
+            pri_kama = _p_k
+        end
+
+        vals[idx, :] = pri_kama
+            
     end
 
     cols =
     if length(colnames(ta)) == 1
         [:kama]
     else
-        [Symbol("$(c)_kama") for c in colanms(ta)]
+        [Symbol("$(c)_kama") for c in colnames(ta)]
     end
 
-    TimeArray(timestam(cl), vals, cols)
+    TimeArray(timestamp(cl), vals, cols)
 end
 
 function env(ta::TimeArray, n::Int; e::Float64 = 0.1)

@@ -37,7 +37,11 @@ function processargs(parsed_args::Dict{String,Any})
       
       benchmark = get(parsed_args, "benchmark", "NIFTY_50")
       setbenchmark(benchmark)  
-      
+
+      if (parsed_args["resolution"] != nothing)
+        setresolution(parsed_args["resolution"])
+      end
+
       universeconstituents = Vector{String}()    
       
       universe = get(parsed_args, "universe", "")
@@ -53,6 +57,11 @@ function processargs(parsed_args::Dict{String,Any})
       end
      
       n_universeconstituents = length(universeconstituents)
+        
+      MAX_CONSTITUENTS = getresolution() == Resolution_Day ? 50 : 20
+      #Trim to a max of 20 ticker
+      #Add more for professional users (paid) -- LATER (when max as limit)
+      universeconstituents = universeconstituents[1:min(MAX_CONSTITUENTS, n_universeconstituents)]
     
       for ticker in universeconstituents
           adduniverse(ticker)
@@ -76,10 +85,7 @@ function processargs(parsed_args::Dict{String,Any})
         setexecutionpolicy(executionpolicy)
       end
 
-      if (parsed_args["resolution"] != nothing)
-        setresolution(parsed_args["resolution"])
-      end
-
+      
       if (parsed_args["commission"] != nothing)
         ss = split(parsed_args["commission"],',');
 

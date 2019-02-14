@@ -15,8 +15,8 @@ end{align*}''
 """
 function bollingerbands(ta::TimeArray, ma::Integer=20, width::AbstractFloat=2.0)
     tama   = sma(ta, ma)
-    upband = tama .+ moving(std, ta, ma) .* width .* sqrt((ma-1)/ma) # take out Bessel correction, per algorithm
-    dnband = tama .- moving(std, ta, ma) .* width .* sqrt((ma-1)/ma)
+    upband = tama .+ moving(nanstd, ta, ma) .* width .* sqrt((ma-1)/ma) # take out Bessel correction, per algorithm
+    dnband = tama .- moving(nanstd, ta, ma) .* width .* sqrt((ma-1)/ma)
     bands  =  merge(upband, dnband)
     merge(bands, tama, colnames = [:up, :down, :mean])
 end
@@ -43,8 +43,8 @@ end
 
 """
 function donchianchannels(ta::TimeArray, n::Integer=20; h=:High, l=:Low)
-    up = rename(moving(maximum, ta[h], n), :up)
-    down = rename(moving(minimum, ta[l], n), :down)
+    up = rename(moving(nanmax, ta[h], n), :up)
+    down = rename(moving(nanmin, ta[l], n), :down)
     mid = rename((up .+ down) ./ 2, :mid)
     merge(up, merge(mid, down))
 end
@@ -62,8 +62,8 @@ True Range
 function truerange(ohlc::TimeArray{T,N}; h=:High, l=:Low, c=:Close) where {T,N}
     highs    = merge(ohlc[h], lag(ohlc[c]))
     lows     = merge(ohlc[l], lag(ohlc[c]))
-    truehigh = TimeArray(timestamp(highs), maximum(values(highs), 2), [:hi], meta(highs))
-    truelow  = TimeArray(timestamp(lows),  minimum(values(lows), 2),  [:lo], meta(lows))
+    truehigh = TimeArray(timestamp(highs), maximum(values(highs), dims=2), [:hi], meta(highs))
+    truelow  = TimeArray(timestamp(lows),  minimum(values(lows), dims=2),  [:lo], meta(lows))
     rename(truehigh .- truelow, :tr)
 end
 

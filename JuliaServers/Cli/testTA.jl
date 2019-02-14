@@ -2,6 +2,9 @@ using Mongoc
 using YRead
 using Dates
 import Redis
+using TimeSeries
+using TechnicalAPI
+using MarketTechnicals
 
 client = Mongoc.Client("mongodb://127.0.0.1:27017")
 redisClient = Redis.RedisConnection(host="127.0.0.1", port=13472, password="", db=0)
@@ -24,4 +27,14 @@ YRead.configureRedis(redisClient)
 
 
 
- YRead.history_unadj(["TCS"], "Close", :Day, DateTime("2018-12-01"), DateTime("2018-12-31"), displaylogs = false, strict = false)
+ # ta = YRead.history_unadj(["TCS", "WIPRO"], "Close", :Day, DateTime("2018-12-01"), DateTime("2018-12-31"), displaylogs = false, strict = false)
+
+ta = YRead.history(["TCS"], "Close", :Day, DateTime(Date("2017-12-31") - Dates.Day(2*100)), DateTime(Date("2018-12-31")), displaylogs = false)
+
+# tb = ta
+
+# vs = values(ta)
+
+# vs[5,1] = NaN
+
+# ta = TimeArray(timestamp(ta), vs, colnames(ta))
