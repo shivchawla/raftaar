@@ -1,5 +1,3 @@
-using TechnicalAPI
-
 function _filterConditionsForDate(LONGENTRY, LONGEXIT, SHORTENTRY, SHORTEXIT, date::Date)
     Dict(
         "LONGENTRY" => (LONGENTRY != nothing ? filter(LONGENTRY, date) : nothing), 

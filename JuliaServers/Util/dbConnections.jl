@@ -5,7 +5,7 @@ import Redis
 function connect(host::String, port::Int, user::String="", pass::String="")
     usr_pwd_less = user=="" && pass==""
 
-    client = Mongoc.Client("mongodb://myUserAdmin:abc123@localhost/?authMechanism=SCRAM-SHA-256&authSource=admin")
+    # client = Mongoc.Client("mongodb://myUserAdmin:abc123@localhost/?authMechanism=SCRAM-SHA-256&authSource=admin")
 
     #info_static("Configuring datastore connections")
     client = usr_pwd_less ? Mongoc.Client("mongodb://$(host):$(port)") :

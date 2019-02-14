@@ -1,5 +1,6 @@
 using API
 using HistoryAPI
+using TechnicalAPI
 
 using YRead
 using TimeSeries
