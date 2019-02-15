@@ -46,7 +46,7 @@ function processargs(parsed_args::Dict{String,Any})
       
       universe = get(parsed_args, "universe", "")
       if (universe!="" && universe!=nothing)
-          universeconstituents = [strip(String(ticker)) for ticker in split(universe,",")] 
+          universeconstituents = [String(strip(ticker)) for ticker in split(universe,",")] 
       end
 
       if length(universeconstituents) == 0 
@@ -62,10 +62,7 @@ function processargs(parsed_args::Dict{String,Any})
       #Trim to a max of 20 ticker
       #Add more for professional users (paid) -- LATER (when max as limit)
       universeconstituents = universeconstituents[1:min(MAX_CONSTITUENTS, n_universeconstituents)]
-    
-      for ticker in universeconstituents
-          adduniverse(ticker)
-      end
+      setuniverse(universeconstituents)
 
       if (parsed_args["investmentplan"] != nothing)
         setinvestmentplan(parsed_args["investmentplan"])

@@ -56,12 +56,9 @@ end
 export __IllegalContextMessage
 
 include("TradingEnvAPI.jl")
-#include("HistoryAPI.jl")
 include("AccountAPI.jl")
 include("UniverseAPI.jl")
 include("BrokerageAPI.jl")
-#include("UtilityAPI.jl")
-#include("OptimizeAPI.jl")
 
 export  setstartdate,
         setenddate,

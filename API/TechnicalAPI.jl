@@ -184,8 +184,6 @@ function filter(condition::Condition, date::Date)
 end
 export filter
 
-# function TimesSeries.:[](c:)
-
 function setupMinuteDataStore(open, high, low, close, volume)
     global minuteDataStore["Open"] = open
     global minuteDataStore["High"] = high
