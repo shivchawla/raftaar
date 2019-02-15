@@ -474,9 +474,7 @@ function _fetch_minute_prices(universeIds, startdate::DateTime, enddate::DateTim
     # println(closeprices)
 
     if closeprices_unadj == nothing
-        Logger.warn_static("Close Price Data not available from $(startdate) to $(enddate)")
-        Logger.warn_static("Aborting test")
-        return false
+        return Dict()
     end
 
     (openprices_unadj, openprices) = YRead.history(universeIds, "Open", Symbol("1m"), DateTime(startdate) - Dates.Month(1), DateTime(enddate), displaylogs = false, everything=true)

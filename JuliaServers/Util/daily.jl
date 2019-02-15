@@ -15,6 +15,10 @@ end
 function _fetch_EOD_prices(universeIds, startdate::DateTime, enddate::DateTime)
     closeprices_EOD = YRead.history_unadj(universeIds, "Close", :Day, DateTime(startdate), DateTime(enddate), displaylogs = false)
 
+    if closeprices_EOD == nothing
+      return Dict()
+    end
+
     # println("closeprices_EOD")
     # println(closeprices_EOD)
 
