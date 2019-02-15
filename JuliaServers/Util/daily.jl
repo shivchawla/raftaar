@@ -198,9 +198,11 @@ function _process_long_entry(currentLongEntry, currentLongExit, currentShortEntr
         end
 
         if (pos.quantity > 0)
-          Logger.warn_static("Skipping Long Entry!! Already a long position for $(ticker)")
+          continue
+          # Logger.warn_static("Skipping Long Entry!! Already a long position for $(ticker)")
         elseif (pos.quantity < 0)
-          Logger.warn_static("Skipping Long Entry!! Already a short position for $(ticker)")
+          continue
+          # Logger.warn_static("Skipping Long Entry!! Already a short position for $(ticker)")
         else
           # println("Setting Long Holding in $(ticker)")
           setholdingpct(ticker, 1/length(universe))
@@ -231,10 +233,12 @@ function _process_short_entry(currentLongEntry, currentLongExit, currentShortEnt
         end
 
         if (pos.quantity < 0)
-          Logger.warn_static("Skipping Short Entry!! Already a short position for $(ticker)")
+          continue
+          # Logger.warn_static("Skipping Short Entry!! Already a short position for $(ticker)")
 
         elseif (pos.quantity > 0)
-          Logger.warn_static("Skipping Short Entry!! Already a long position for $(ticker)")
+          continue
+          # Logger.warn_static("Skipping Short Entry!! Already a long position for $(ticker)")
         
         else
           # println("Setting Short Holding in $(ticker)")
@@ -266,7 +270,8 @@ function _process_long_exit(currentLongEntry, currentLongExit, currentShortEntry
         end
 
         if (pos.quantity <= 0)
-          Logger.warn_static("Skipping Long Exit!! No long position for $(ticker)")
+          continue
+          # Logger.warn_static("Skipping Long Exit!! No long position for $(ticker)")
         else
           setholdingpct(ticker, 0.0)
         end
@@ -296,7 +301,8 @@ function _process_short_exit(currentLongEntry, currentLongExit, currentShortEntr
         end
 
         if (pos.quantity >= 0 )
-          Logger.warn_static("Skipping Short Exit!! No short position for $(ticker)")
+          continue
+          # Logger.warn_static("Skipping Short Exit!! No short position for $(ticker)")
         else
           setholdingpct(ticker, 0.0)
         end
