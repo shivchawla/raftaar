@@ -311,10 +311,16 @@ function _process_target_stoploss(pos)
     stopLoss = getStopLoss()
     profitTarget = getProfitTarget()
 
-    if abs(pos.quantity) > 0
-      _chg = (pos.lastprice - pos.averageprice)/pos.averageprice
+    println("Ticker: $(pos.securitysymbol.ticker)")
+    println("Stop Loss: $(stopLoss)")
+    println("Profit Target: $(profitTarget)")
 
-      chg = pos.averageprice > 0 ? (pos.quantity > 0 ? _chg : -_chg) : 0.0
+    if abs(pos.quantity) > 0
+      _chg = pos.averageprice > 0  && pos.lastprice > 0 ? (pos.lastprice - pos.averageprice)/pos.averageprice : 0.0
+
+      chg = pos.quantity > 0 ? _chg : -_chg
+
+      println("Chg: $(chg)")
 
       if chg < stopLoss || chg > profitTarget
          setholdingpct(pos.securitysymbol.ticker, 0.0)
