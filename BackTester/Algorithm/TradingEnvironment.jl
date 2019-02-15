@@ -116,12 +116,12 @@ function setbenchmarkvalues!(tradeenv::TradingEnvironment, prices::Dict{String, 
   tradeenv.benchmarkvalues = prices
 end
 
-function setProfitTarget!(tradeenv::TradingEnvironment, stopLoss::Float64 = 0.05)
-  tradeenv.stopLoss = stopLoss
+function setProfitTarget!(tradeenv::TradingEnvironment, profitTarget::Float64 = 0.05)
+  tradeenv.profitTarget = profitTarget
 end
 
-function setStopLoss!(tradeenv::TradingEnvironment, profitTarget::Float64 = 0.05)
-  tradeenv.profitTarget = profitTarget
+function setStopLoss!(tradeenv::TradingEnvironment, stopLoss::Float64 = 0.05)
+  tradeenv.stopLoss = stopLoss
 end
 
 export setinvestmentplan!, setrebalance!, setbenchmarkvalues!, setProfitTarget!, setStopLoss!

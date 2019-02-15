@@ -311,10 +311,6 @@ function _process_target_stoploss(pos)
     stopLoss = getStopLoss()
     profitTarget = getProfitTarget()
 
-    println("Ticker: $(pos.securitysymbol.ticker)")
-    println("Stop Loss: $(stopLoss)")
-    println("Profit Target: $(profitTarget)")
-
     if abs(pos.quantity) > 0
       _chg = pos.averageprice > 0  && pos.lastprice > 0 ? (pos.lastprice - pos.averageprice)/pos.averageprice : 0.0
 

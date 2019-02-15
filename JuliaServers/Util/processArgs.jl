@@ -9,8 +9,6 @@ function processargs(parsed_args::Dict{String,Any})
   
   fname = nothing
 
-  println(parsed_args)
-
   #Include the strategy code
   if (parsed_args["code"] == nothing)
     fname = parsed_args["file"]
