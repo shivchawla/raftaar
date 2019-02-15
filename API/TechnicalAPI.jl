@@ -146,6 +146,18 @@ function crossBelow(ind::Indicator, val::Float64)
     return Condition(rename(y .< 0, names_ind))
 end
 
+function crossAbove(ind1::Indicator, ind2::Indicator)
+    names_ind1 = colnames(ind1._ta)
+    names_ind2 = colnames(ind2._ta)
+
+    if length(setdiff(names_ind1, names_ind2)) != 0
+      throw("Unequal entities")
+    end
+    x = ind1._ta .- ind2._ta[names_ind1]
+    y = x .- lag(x)
+    return Condition(rename(y .> 0, names_ind1))
+end
+
 function crossAbove(ind::Indicator, val::Float64)
     names_ind = colnames(ind._ta)
 
@@ -153,6 +165,8 @@ function crossAbove(ind::Indicator, val::Float64)
     y = x .- lag(x)
     return Condition(rename(y .> 0, names_ind))
 end
+
+export crossAbove, crossBelow
 
 function Base.:&(c1::Condition, c2::Condition)
     names_c1 = colnames(c1._ta)
