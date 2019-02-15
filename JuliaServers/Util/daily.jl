@@ -322,7 +322,7 @@ function _process_target_stoploss(pos)
 
       println("Chg: $(chg)")
 
-      if chg < stopLoss || chg > profitTarget
+      if chg <= -stopLoss || chg >= profitTarget
          setholdingpct(pos.securitysymbol.ticker, 0.0)
       end
     end
