@@ -314,7 +314,7 @@ function _process_target_stoploss(pos)
     if abs(pos.quantity) > 0
       _chg = (pos.lastprice - pos.averageprice)/pos.averageprice
 
-      chg = pos.averageprice > 0 ? (pos.quantity > 0 ? _chg : -chg) : 0.0
+      chg = pos.averageprice > 0 ? (pos.quantity > 0 ? _chg : -_chg) : 0.0
 
       if chg < stopLoss || chg > profitTarget
          setholdingpct(pos.securitysymbol.ticker, 0.0)
@@ -401,7 +401,7 @@ function _process_technical_conditions(date::Date, LONGENTRY, LONGEXIT, SHORTENT
     #Check stopLoss/profitTarget conditions for name not exited already
     allPositions = getallpositions()
     if length(allPositions) == 0
-      continue
+      return 
     else
       for pos in allPositions
         if !(pos.securitysymbol.ticker in exitedNames)
