@@ -153,13 +153,13 @@ function getbenchmarkvalue(tradeenv::TradingEnvironment, date::Date)
     return haskey(tradeenv.benchmarkvalues, dstr)  ? tradeenv.benchmarkvalues[dstr] :  0.0
 end
 
-function getStopLoss(tradeenv::TradingEnvironment)
-  return tradeenv.stopLoss
-end
+# function getStopLoss(tradeenv::TradingEnvironment)
+#   return tradeenv.stopLoss
+# end
 
-function getProfitTarget(tradeenv::TradingEnvironment)
-  return tradeenv.profitTarget
-end
+# function getProfitTarget(tradeenv::TradingEnvironment)
+#   return tradeenv.profitTarget
+# end
 
 
 #="""
