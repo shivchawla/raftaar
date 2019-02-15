@@ -197,12 +197,8 @@ function _process_long_entry(currentLongEntry, currentLongExit, currentShortEntr
           end
         end
 
-        if (pos.quantity > 0)
+        if (pos.quantity != 0)
           continue
-          # Logger.warn_static("Skipping Long Entry!! Already a long position for $(ticker)")
-        elseif (pos.quantity < 0)
-          continue
-          # Logger.warn_static("Skipping Long Entry!! Already a short position for $(ticker)")
         else
           # println("Setting Long Holding in $(ticker)")
           setholdingpct(ticker, 1/length(universe))
@@ -232,14 +228,8 @@ function _process_short_entry(currentLongEntry, currentLongExit, currentShortEnt
           end
         end
 
-        if (pos.quantity < 0)
+        if pos.quantity != 0 
           continue
-          # Logger.warn_static("Skipping Short Entry!! Already a short position for $(ticker)")
-
-        elseif (pos.quantity > 0)
-          continue
-          # Logger.warn_static("Skipping Short Entry!! Already a long position for $(ticker)")
-        
         else
           # println("Setting Short Holding in $(ticker)")
           setholdingpct(ticker, 1/length(universe))
@@ -253,8 +243,9 @@ function _process_long_exit(currentLongEntry, currentLongExit, currentShortEntry
 
     otherConditionTickers = String.(union(_getcolnames(currentLongEntry), _getcolnames(currentShortEntry), _getcolnames(currentShortExit)))
 
+    exitedNames = String[]
     for ticker in String.(colnames(currentLongExit))
-        
+
         if ticker in otherConditionTickers
           Logger.warn_static("Skipping Long Exit!! Conflicting entry/exit condtions for $(ticker)")
           continue
@@ -269,13 +260,16 @@ function _process_long_exit(currentLongEntry, currentLongExit, currentShortEntry
           end
         end
 
-        if (pos.quantity <= 0)
+        if pos.quantity <= 0
           continue
-          # Logger.warn_static("Skipping Long Exit!! No long position for $(ticker)")
+
         else
+          push!(exitedNames, ticker)
           setholdingpct(ticker, 0.0)
         end
     end
+
+    return exitedNames
 end
 
 function _process_short_exit(currentLongEntry, currentLongExit, currentShortEntry, currentShortExit)
@@ -283,6 +277,7 @@ function _process_short_exit(currentLongEntry, currentLongExit, currentShortEntr
     universe = getuniverse()
 
     otherConditionTickers = String.(union(_getcolnames(currentLongEntry), _getcolnames(currentLongExit), _getcolnames(currentShortEntry)))
+    exitedNames = String[]
 
     for ticker in String.(colnames(currentShortExit))
 
@@ -300,12 +295,30 @@ function _process_short_exit(currentLongEntry, currentLongExit, currentShortEntr
           end
         end
 
-        if (pos.quantity >= 0 )
+        if pos.quantity >= 0
           continue
-          # Logger.warn_static("Skipping Short Exit!! No short position for $(ticker)")
         else
+          push!(exitedNames, ticker)
           setholdingpct(ticker, 0.0)
         end
+    end
+
+    return exitedNames
+end
+
+
+function _process_target_stoploss(pos)
+    stopLoss = getStopLoss()
+    profitTarget = getProfitTarget()
+
+    if abs(pos.quantity) > 0
+      _chg = (pos.lastprice - pos.averageprice)/pos.averageprice
+
+      chg = pos.averageprice > 0 ? (pos.quantity > 0 ? _chg : -chg) : 0.0
+
+      if chg < stopLoss || chg > profitTarget
+         setholdingpct(pos.securitysymbol.ticker, 0.0)
+      end
     end
 end
 
@@ -355,7 +368,7 @@ function _evaluate_technical_conditions(forward::Bool=false)
       "LONGENTRY" =>  LONGENTRY,
       "LONGEXIT" =>  LONGEXIT,
       "SHORTENTRY" =>  SHORTENTRY,
-      "SHORTEIT" =>  SHORTEXIT
+      "SHORTEXIT" =>  SHORTEXIT
   )
 
 end
@@ -366,38 +379,8 @@ function _process_technical_conditions(date::Date, LONGENTRY, LONGEXIT, SHORTENT
     currentLongExit = _findActive(LONGEXIT != nothing ? LONGEXIT[date] : nothing)
     currentShortEntry = _findActive(SHORTENTRY != nothing ? SHORTENTRY[date] : nothing)
     currentShortExit = _findActive(SHORTEXIT != nothing ? SHORTEXIT[date] : nothing)
-
-    # println(date)
-    # if currentLongEntry != nothing
-    #   println(currentLongEntry)
-    # else
-    #   println("Empty Long Entry")
-    # end
-
-    # if currentLongExit != nothing
-    #   println(currentLongExit)
-    # else
-    #   println("Empty Long Exit")
-    # end
-
-    # if currentShortEntry != nothing
-    #   println(currentShortEntry)
-    # else
-    #   println("Empty Short Entry")
-    # end
-
-    # if currentShortExit != nothing
-    #   println(currentShortExit)
-    # else
-    #   println("Empty Short Exit")
-    # end
     
-    if currentLongEntry == nothing && currentLongExit == nothing && currentShortEntry == nothing && currentShortExit == nothing
-        # Logger.info("No Technical Conditions for $(date)")
-        return
-    end
-
-    #Continue if conditions are valid   
+    #Continue if some of the conditions are valid   
     if currentLongEntry != nothing
       _process_long_entry(currentLongEntry, currentLongExit, currentShortEntry, currentShortExit)
     end
@@ -406,12 +389,25 @@ function _process_technical_conditions(date::Date, LONGENTRY, LONGEXIT, SHORTENT
       _process_short_entry(currentLongEntry, currentLongExit, currentShortEntry, currentShortExit)
     end
 
+    exitedNames = String[]
     if currentLongExit != nothing
-      _process_long_exit(currentLongEntry, currentLongExit, currentShortEntry, currentShortExit)
+      push!(exitedNames, _process_long_exit(currentLongEntry, currentLongExit, currentShortEntry, currentShortExit))
     end
 
     if currentShortExit != nothing
-      _process_short_exit(currentLongEntry, currentLongExit, currentShortEntry, currentShortExit)
+      push!(exitedNames, _process_short_exit(currentLongEntry, currentLongExit, currentShortEntry, currentShortExit))
+    end
+
+    #Check stopLoss/profitTarget conditions for name not exited already
+    allPositions = getallpositions()
+    if length(allPositions) == 0
+      continue
+    else
+      for pos in allPositions
+        if !(pos.securitysymbol.ticker in exitedNames)
+          _process_target_stoploss(pos)
+        end
+      end
     end
 end
 

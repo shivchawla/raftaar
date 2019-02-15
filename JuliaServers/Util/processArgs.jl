@@ -107,11 +107,11 @@ function processargs(parsed_args::Dict{String,Any})
 
       
       if (parsed_args["stopLoss"] != nothing)
-        setStopLoss(parsed_args["stopLoss"])
+        setStopLoss(parsed_args["stopLoss"]/100.0)
       end
 
       if (parsed_args["profitTarget"] != nothing)
-        setProfitTarget(parsed_args["profitTarget"])
+        setProfitTarget(parsed_args["profitTarget"]/100.0)
       end
 
   end 
