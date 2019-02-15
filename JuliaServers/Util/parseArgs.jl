@@ -80,11 +80,11 @@ function getargparsesettings()
         "--profitTarget"
             help = "Profit target for trade"
             arg_type = Float64
-            default = 0.05
+            default = 5.0
         "--stopLoss"
             help = "Stop loss for trade"
             arg_type = Float64
-            default = 0.05
+            default = 5.0
         "--forward"
             help = "Enable forward testing"
             arg_type = Bool

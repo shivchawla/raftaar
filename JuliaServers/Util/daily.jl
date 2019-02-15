@@ -311,6 +311,10 @@ function _process_target_stoploss(pos)
     stopLoss = getStopLoss()
     profitTarget = getProfitTarget()
 
+    println("Ticker: $(pos.securitysymbol.ticker)")
+    println("Stop Loss: $(stopLoss)")
+    println("Profit Target: $(profitTarget)")
+
     if abs(pos.quantity) > 0
       _chg = pos.averageprice > 0  && pos.lastprice > 0 ? (pos.lastprice - pos.averageprice)/pos.averageprice : 0.0
 
@@ -393,11 +397,11 @@ function _process_technical_conditions(date::Date, LONGENTRY, LONGEXIT, SHORTENT
 
     exitedNames = String[]
     if currentLongExit != nothing
-      push!(exitedNames, _process_long_exit(currentLongEntry, currentLongExit, currentShortEntry, currentShortExit))
+      append!(exitedNames, _process_long_exit(currentLongEntry, currentLongExit, currentShortEntry, currentShortExit))
     end
 
     if currentShortExit != nothing
-      push!(exitedNames, _process_short_exit(currentLongEntry, currentLongExit, currentShortEntry, currentShortExit))
+      append!(exitedNames, _process_short_exit(currentLongEntry, currentLongExit, currentShortEntry, currentShortExit))
     end
 
     #Check stopLoss/profitTarget conditions for name not exited already

@@ -117,10 +117,12 @@ function setbenchmarkvalues!(tradeenv::TradingEnvironment, prices::Dict{String, 
 end
 
 function setProfitTarget!(tradeenv::TradingEnvironment, profitTarget::Float64 = 0.05)
+  println("Tradenv profit target: $(profitTarget)")
   tradeenv.profitTarget = profitTarget
 end
 
 function setStopLoss!(tradeenv::TradingEnvironment, stopLoss::Float64 = 0.05)
+  println("Tradenv stopLoss: $(stopLoss)")
   tradeenv.stopLoss = stopLoss
 end
 

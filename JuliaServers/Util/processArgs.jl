@@ -9,6 +9,8 @@ function processargs(parsed_args::Dict{String,Any})
   
   fname = nothing
 
+  println(parsed_args)
+
   #Include the strategy code
   if (parsed_args["code"] == nothing)
     fname = parsed_args["file"]
@@ -107,10 +109,12 @@ function processargs(parsed_args::Dict{String,Any})
 
       
       if (parsed_args["stopLoss"] != nothing)
+        println("Setting stop loss")
         setStopLoss(parsed_args["stopLoss"]/100.0)
       end
 
       if (parsed_args["profitTarget"] != nothing)
+        println("Setting progit target")
         setProfitTarget(parsed_args["profitTarget"]/100.0)
       end
 
