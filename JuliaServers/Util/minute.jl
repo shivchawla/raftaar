@@ -7,7 +7,7 @@ function _filterConditionsForDate(LONGENTRY, LONGEXIT, SHORTENTRY, SHORTEXIT, da
     ) 
 end
 
-function _computeTradeTimePerTicker(ticker, entryTA, exitTA, prices, direction::String, stopLoss::Float64, profitTarget::Float64)
+function _computeTradeTimePerTicker(ticker, entryTA, exitTA, prices, direction::String)
   allPos = getallpositions()
 
   pos = Position()
@@ -28,6 +28,9 @@ function _computeTradeTimePerTicker(ticker, entryTA, exitTA, prices, direction::
       println("Invalid intraday prices. Aborting")
       return []
   end
+
+  stopLoss = getStopLoss()
+  profitTarget = getProfitTarget()
 
   qty = pos.quantity > 0 ? 1 : pos.quantity < 0 ? -1 : 0;
   
@@ -51,13 +54,6 @@ function _computeTradeTimePerTicker(ticker, entryTA, exitTA, prices, direction::
   exitDate = nothing
   stopLossPrice = nothing
   profitTargetPrice = nothing
-
-  # println("OK-1")
-  # println("allEntryDates: $(length(allEntryDates))")
-  # println("allExitDates: $(length(allExitDates))")
-  # println("Direction: $(direction)")
-  # println("Qty: $(qty)")
-
 
   while length(allEntryDates) > 0 || length(allExitDates) > 0  
     if qty > 0 && length(allExitDates) > 0 && direction == "LONG" 
@@ -207,10 +203,13 @@ function _computeTradeTimePerTicker(ticker, entryTA, exitTA, prices, direction::
 
   end #While ends
 
+  # println("Trade Dates")
+  # println(tradeDates)
+
   return tradeDates
 end
 
-function _computeTradeTimes(date::Date, ENTRY, EXIT, prices;direction::String = "LONG", stopLoss::Float64 = 0.05, profitTarget::Float64 = 0.05)
+function _computeTradeTimes(date::Date, ENTRY, EXIT, prices;direction::String = "LONG")
   
   # println("In Every Minute")
   entryNames = ENTRY != nothing ? colnames(ENTRY) : Symbol[]
@@ -226,7 +225,7 @@ function _computeTradeTimes(date::Date, ENTRY, EXIT, prices;direction::String = 
     exitForDate = name in exitNames ? EXIT[name] : nothing
     # exitForDate = exitForDate != nothing ? exitForDate[Date.(timestamp(exitForDate)) .== date] : nothing
 
-    allTradingMinutes = [allTradingMinutes; _computeTradeTimePerTicker(String(name), entryForDate, exitForDate, pricesThisTicker, direction, stopLoss, profitTarget)]
+    allTradingMinutes = [allTradingMinutes; _computeTradeTimePerTicker(String(name), entryForDate, exitForDate, pricesThisTicker, direction)]
   end
 
   return allTradingMinutes
@@ -303,7 +302,7 @@ function _before_close(date::Date, eodPrices, adjustments, forward; dynamic::Boo
   #If liquidation is set to true, add additional pending orders of liquidation
 end
 
-function _process_conditions(date::Date, prices, conditions, options, forward; dynamic::Bool = false)
+function _process_conditions(date::Date, prices, conditions, forward; dynamic::Bool = false)
   
   # println("In Minute Main Function")
   allMinuteDataForDate = prices
@@ -314,14 +313,11 @@ function _process_conditions(date::Date, prices, conditions, options, forward; d
   SHORTENTRY = get(conditions, "SHORTENTRY", nothing)
   SHORTEXIT = get(conditions, "SHORTEXIT", nothing)
 
-  stopLoss = get(options, "stopLoss", 0.05)
-  profitTarget = get(options, "profitTarget", 0.05)
-
   # println("Long Trade Times")
-  longTradeTimes = _computeTradeTimes(date, LONGENTRY, LONGEXIT, prices, direction = "LONG", stopLoss = stopLoss, profitTarget = profitTarget)
+  longTradeTimes = _computeTradeTimes(date, LONGENTRY, LONGEXIT, prices, direction = "LONG")
   
   # println("Short Trade Times")
-  shortTradeTimes = _computeTradeTimes(date, SHORTENTRY, SHORTEXIT, prices, direction = "SHORT", stopLoss = stopLoss, profitTarget = profitTarget)
+  shortTradeTimes = _computeTradeTimes(date, SHORTENTRY, SHORTEXIT, prices, direction = "SHORT")
 
   allTradeTimes = sort([longTradeTimes; shortTradeTimes], by=x->x[2])
 
@@ -682,7 +678,6 @@ function _run_algo_minute(startdate::Date = getstartdate(), enddate::Date = gete
 
           success = _process_conditions(date, 
               ohlcvMinuteToday, todayTradeConditions,
-              Dict("stopLoss" =>  getStopLoss(), "profitTarget" => getProfitTarget()),
               forward)
 
           if(!success)

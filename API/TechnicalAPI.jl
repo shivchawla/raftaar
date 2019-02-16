@@ -135,15 +135,17 @@ function crossBelow(ind1::Indicator, ind2::Indicator)
       throw("Unequal entities")
     end
     x = ind1._ta .- ind2._ta[names_ind1]
-    y = x .- lag(x)
-    return Condition(rename(y .< 0, names_ind1))
+    y = x ./ abs.(x)
+    z = y .- lag(y)
+    return Condition(rename(z .< 0, names_ind1))
 end
 
 function crossBelow(ind::Indicator, val::Float64)
     names_ind = colnames(ind._ta)
     x = ind._ta .- val
-    y = x .- lag(x)
-    return Condition(rename(y .< 0, names_ind))
+    y = x ./ abs.(x)
+    z = y .- lag(y)
+    return Condition(rename(z .< 0, names_ind))
 end
 
 function crossAbove(ind1::Indicator, ind2::Indicator)
@@ -154,16 +156,19 @@ function crossAbove(ind1::Indicator, ind2::Indicator)
       throw("Unequal entities")
     end
     x = ind1._ta .- ind2._ta[names_ind1]
-    y = x .- lag(x)
-    return Condition(rename(y .> 0, names_ind1))
+    y = x ./ abs.(x)
+    z = y .- lag(y)
+    return Condition(rename(z .> 0, names_ind1))
 end
 
 function crossAbove(ind::Indicator, val::Float64)
     names_ind = colnames(ind._ta)
 
     x = ind1._ta .- val
-    y = x .- lag(x)
-    return Condition(rename(y .> 0, names_ind))
+    y = x ./ abs.(x)
+    z = y .- lag(y)
+
+    return Condition(rename(z .> 0, names_ind))
 end
 
 export crossAbove, crossBelow
