@@ -144,10 +144,21 @@ function _computeTradeTimePerTicker(ticker, entryTA, exitTA, prices, direction::
     profitTargetDates = profitTargetDates[profitTargetDates .< allExitDates[1]]
     stopLossDates = stopLossDates[stopLossDates .< allExitDates[1]]
     
-    append!(allExitDates, unique(profitTargetDates, stopLossDates))
+    pslDates = sort(unique(profitTargetDates, stopLossDates))
+    if length(pslDates) > 0
+      append!(allExitDates, pslDates[1])
+    end
+
   end
   
   while length(allEntryDates) > 0 || length(allExitDates) > 0  
+
+    println("allExitDates")
+    println(allExitDates)
+
+    println("allExitDates")
+    println(allEntryDates)
+
     if qty > 0 && length(allExitDates) > 0 && direction == "LONG" 
         exitDate = allExitDates[1]
         push!(tradeDates, (ticker, exitDate, "LONGEXIT"))
@@ -194,9 +205,11 @@ function _computeTradeTimePerTicker(ticker, entryTA, exitTA, prices, direction::
             stopLossDates = stopLossDates[stopLossDates .< allExitDates[1]]
           end
           
-          #append the profit/loss dates to possible exit dates
-          allExitDates = unique([allExitDates; profitTargetDates; stopLossDates])
-          # println("OK-4")
+          pslDates = sort(unique(profitTargetDates, stopLossDates))
+          if length(pslDates) > 0
+            push!(allExitDates, pslDates[1])
+          end
+          
         end
      
     elseif qty == 0 && length(allEntryDates) > 0 && direction == "SHORT"
@@ -225,9 +238,11 @@ function _computeTradeTimePerTicker(ticker, entryTA, exitTA, prices, direction::
             stopLossDates = stopLossDates[stopLossDates .< allExitDates[1]]
           end
 
-          #append the profit/loss dates to possible exit dates
-          allExitDates = unique([allExitDates; profitTargetDates; stopLossDates])
-
+          pslDates = sort(unique(profitTargetDates, stopLossDates))
+          if length(pslDates) > 0
+            push!(allExitDates, pslDates[1])
+          end
+          
         end
     end
 
@@ -263,13 +278,13 @@ function _computeTradeTimePerTicker(ticker, entryTA, exitTA, prices, direction::
     println(tradeDates)
 
     println("Prices")
-    println(closeprices[timestamp(closeprices) .== tds])
+    println(closeprices[tds])
 
     println("High Prices")
-    println(highprices[timestamp(highprices) .== tds])
+    println(highprices[tds])
 
     println("Low Prices")
-    println(lowprices[timestamp(lowprices) .== tds])
+    println(lowprices[tds])
   end
 
   return tradeDates
