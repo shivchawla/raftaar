@@ -9,6 +9,13 @@
         }]    
     },
 
+    "CONSTANT": {
+        "label": "Constant Value",
+        "options": [{
+            "defaultValue": {"daily": 10, "minute": 30}, 
+        }]    
+    },
+
     "EMA": {
         "label": "Exponential Moving Average",
         "options": [{

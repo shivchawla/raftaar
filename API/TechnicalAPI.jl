@@ -235,6 +235,21 @@ function _getTA(;price::String="Close", horizon = 10)
     end
 end
 
+"""
+Constant Indicator
+"""
+function CONSTANT(val::Float64)
+    ta = _getTA(price = "Close")
+
+    if ta != nothing
+      _ind = TimeArray(timestamp(ta), val*ones(size(ta)), colnames(ta))
+
+      return Indicator(_ind)
+    end
+end
+
+export CONSTANT
+
 horizonDefault() = 22
 
 """
