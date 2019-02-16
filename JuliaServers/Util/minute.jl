@@ -142,29 +142,23 @@ function _computeTradeTimePerTicker(ticker, entryTA, exitTA, prices, direction::
 
   pslDates = sort(unique([profitTargetDates; stopLossDates]))
 
-  println("Typeof PSL: $(typeof(pslDates))")
-
   #Filter out PT/SL dates before first exit date
   if length(allExitDates) > 0
     pslDates = pslDates[pslDates .< allExitDates[1]]
   end
 
-  println("Typeof PSL: $(typeof(pslDates))")
-
-  #Finallt append the latest PT/SL date
+  #Finally append the latest PT/SL date
   if length(pslDates) > 0
     allExitDates = sort(push!(allExitDates, pslDates[1]))
   end
 
-  
-  
   while length(allEntryDates) > 0 || length(allExitDates) > 0  
 
-    println("allExitDates")
-    println(allExitDates)
+    # println("allExitDates")
+    # println(allExitDates)
 
-    println("allEntryDates")
-    println(allEntryDates)
+    # println("allEntryDates")
+    # println(allEntryDates)
 
     if qty > 0 && length(allExitDates) > 0 && direction == "LONG" 
         exitDate = allExitDates[1]
@@ -279,20 +273,20 @@ function _computeTradeTimePerTicker(ticker, entryTA, exitTA, prices, direction::
 
   end #While ends
 
-  if length(tradeDates) > 0
-    tds = [td[2] for td in tradeDates]
-    println("Trade Dates")
-    println(tradeDates)
+  # if length(tradeDates) > 0
+  #   tds = [td[2] for td in tradeDates]
+  #   println("Trade Dates")
+  #   println(tradeDates)
 
-    println("Prices")
-    println(closeprices[tds])
+  #   println("Prices")
+  #   println(closeprices[tds])
 
-    println("High Prices")
-    println(highprices[tds])
+  #   println("High Prices")
+  #   println(highprices[tds])
 
-    println("Low Prices")
-    println(lowprices[tds])
-  end
+  #   println("Low Prices")
+  #   println(lowprices[tds])
+  # end
 
   return tradeDates
 end
