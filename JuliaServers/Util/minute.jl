@@ -1,3 +1,73 @@
+function _getProfitTargetDates(highprices, lowprices, entryPrice, entryDate, direction)
+  
+  profitTarget = getProfitTarget()
+
+  if direction == "LONG"
+
+    profitTargetPrice = (1 + profitTarget)*entryPrice
+    
+    highPriceTs = TimeSeries.timestamp(highprices)
+    lowPriceTs = TimeSeries.timestamp(lowprices)
+
+    profitTargetDates = entryDate != nothing ?
+        highPriceTs[
+           (highPriceTs .> entryDate) .& #1
+           (TimeSeries.values(highprices) .>= profitTargetPrice)] :
+
+       highPriceTs[
+            (TimeSeries.values(highprices) .>= profitTargetPrice)]
+
+           
+  else
+
+    profitTargetPrice = (1 - profitTarget)*entryPrice
+    
+    profitTargetDates = entryDate != nothing ?
+        lowPriceTs[
+             (lowPriceTs .> entryDate) .& #1
+             (TimeSeries.values(lowprices) .<= profitTargetPrice)] :
+
+        lowPriceTs[
+             (TimeSeries.values(lowprices) .<= profitTargetPrice)]
+
+  end
+
+end
+
+
+function _getStopLossDates(highprices, lowprices, entryPrice, entryDate, direction)
+  
+  stopLoss = getStopLoss()
+
+  highPriceTs = TimeSeries.timestamp(highprices)
+  lowPriceTs = TimeSeries.timestamp(lowprices)
+
+  if direction == "LONG"
+    stopLossPrice = (1 - stopLoss)*entryPrice
+    
+    stopLossDates = entryDate != nothing ?
+      lowPriceTs[
+         (lowPriceTs .> entryDate) .& #1
+         (TimeSeries.values(lowprices) .<= stopLossPrice)] :
+
+      lowPriceTs[
+         (TimeSeries.values(lowprices) .<= stopLossPrice)]
+
+  else
+
+      stopLossPrice = (1 + stopLoss)*entryPrice
+      stopLossDates = entryDate != nothing ?
+          highPriceTs[
+               (highPriceTs .> entryDate) .& #1
+               (TimeSeries.values(highprices) .>= stopLossPrice)] :
+
+          highPriceTs[
+               (TimeSeries.values(highprices) .>= stopLossPrice)]
+  
+  end 
+
+end
+
 function _filterConditionsForDate(LONGENTRY, LONGEXIT, SHORTENTRY, SHORTEXIT, date::Date)
     Dict(
         "LONGENTRY" => (LONGENTRY != nothing ? filter(LONGENTRY, date) : nothing), 
@@ -33,6 +103,7 @@ function _computeTradeTimePerTicker(ticker, entryTA, exitTA, prices, direction::
   profitTarget = getProfitTarget()
 
   qty = pos.quantity > 0 ? 1 : pos.quantity < 0 ? -1 : 0;
+  avgPrice  = pos.averageprice
   
   tradeDates = []
 
@@ -55,6 +126,27 @@ function _computeTradeTimePerTicker(ticker, entryTA, exitTA, prices, direction::
   stopLossPrice = nothing
   profitTargetPrice = nothing
 
+  #check if incoming position for today is non-zero
+  # if non-zero, add profitTargetDates/stopLossDates as possible allExitDates
+
+  profitTargetDates = []
+  stopLossDates = []
+
+  if qty > 0
+    profitTargetDates = _getProfitTargetDates(highprices, lowprices, avgPrice, nothing, "LONG")
+    stopLossDates = _getStopLossDates(highprices, lowprices, avgPrice, nothing, "LONG")
+  elseif qty < 0
+    profitTargetDates = _getProfitTargetDates(highprices, lowprices, avgPrice, nothing, "LONG")
+    stopLossDates = _getStopLossDates(highprices, lowprices, avgPrice, nothing, "LONG")
+  end
+
+  if length(allExitDates) > 0
+    profitTargetDates = profitTargetDates[profitTargetDates .< allExitDates[1]]
+    stopLossDates = stopLossDates[stopLossDates .< allExitDates[1]]
+    
+    append!(allExitDates, unique(profitTargetDates, stopLossDates))
+  end
+  
   while length(allEntryDates) > 0 || length(allExitDates) > 0  
     if qty > 0 && length(allExitDates) > 0 && direction == "LONG" 
         exitDate = allExitDates[1]
@@ -77,7 +169,7 @@ function _computeTradeTimePerTicker(ticker, entryTA, exitTA, prices, direction::
 
         # println("OK-3")
 
-    elseif qty <= 0 && length(allEntryDates) > 0 && direction == "LONG"
+    elseif qty == 0 && length(allEntryDates) > 0 && direction == "LONG"
         entryDate = allEntryDates[1]
         allEntryDates = allEntryDates[allEntryDates .> entryDate]
         allExitDates = allExitDates[allExitDates .> entryDate]
@@ -94,37 +186,20 @@ function _computeTradeTimePerTicker(ticker, entryTA, exitTA, prices, direction::
 
           qty = 1
 
-          profitTargetPrice = (1 + profitTarget)*entryPrice
-          stopLossPrice = (1 - stopLoss)*entryPrice
+          profitTargetDates = _getProfitTargetDates(highprices, lowprices, entryPrice, entryDate, "LONG")
+          stopLossDates = _getStopLossDates(highprices, lowprices, entryPrice, entryDate, "LONG")
 
-          highPriceTs = TimeSeries.timestamp(highprices)
-          lowPriceTs = TimeSeries.timestamp(lowprices)
-
-          profitTargetDates = length(allExitDates) > 0 ? 
-              highPriceTs[
-                 (highPriceTs .> entryDate) .& #1
-                 (TimeSeries.values(highprices) .>= profitTargetPrice)  .& #2
-                 (highPriceTs .< allExitDates[1])] :
-
-              highPriceTs[
-                 (highPriceTs .> entryDate) .& #1
-                 (TimeSeries.values(highprices) .>= profitTargetPrice)]
+          if length(allExitDates) > 0
+            profitTargetDates = profitTargetDates[profitTargetDates .< allExitDates[1]]
+            stopLossDates = stopLossDates[stopLossDates .< allExitDates[1]]
+          end
           
-          stopLossDates = length(allExitDates) > 0 ? 
-              lowPriceTs[
-                 (lowPriceTs .> entryDate) .& #1
-                 (TimeSeries.values(lowprices) .<= stopLossPrice)  .& #2
-                 (lowPriceTs .< allExitDates[1])] : 
-                 
-              lowPriceTs[(lowPriceTs .> entryDate) .& #1
-                 (TimeSeries.values(lowprices) .<= stopLossPrice)]
-
           #append the profit/loss dates to possible exit dates
           allExitDates = unique([allExitDates; profitTargetDates; stopLossDates])
           # println("OK-4")
         end
      
-    elseif qty >= 0 && length(allEntryDates) > 0 && direction == "SHORT"
+    elseif qty == 0 && length(allEntryDates) > 0 && direction == "SHORT"
         
         entryDate = allEntryDates[1]
         #First set of conditional date for exit (doesn't include PT/SL)
@@ -142,42 +217,21 @@ function _computeTradeTimePerTicker(ticker, entryTA, exitTA, prices, direction::
           push!(tradeDates, (ticker, entryDate, "SHORTENTRY"))
           qty = -1  
 
-          profitTargetPrice = (1 - profitTarget)*entryPrice
-          stopLossPrice = (1 + stopLoss)*entryPrice
+          profitTargetDates = _getProfitTargetDates(highprices, lowprices, entryPrice, entryDate, "SHORT")
+          stopLossDates = _getStopLossDates(highprices, lowprices, entryPrice, entryDate, "SHORT")
 
-          highPriceTs = TimeSeries.timestamp(highprices)
-          lowPriceTs = TimeSeries.timestamp(lowprices)
-
-          profitTargetDates = length(allExitDates) > 0 ? 
-              lowPriceTs[
-                   (lowPriceTs .> entryDate) .& #1
-                   (TimeSeries.values(lowprices) .<= profitTargetPrice)  .& #2
-                   (lowPriceTs .< allExitDates[1])] :
-
-              lowPriceTs[
-                   (lowPriceTs .> entryDate) .& #1
-                   (TimeSeries.values(lowprices) .<= profitTargetPrice)]
-
-            
-          stopLossDates = length(allExitDates) > 0 ? 
-              highPriceTs[
-                   (highPriceTs .> entryDate) .& #1
-                   (TimeSeries.values(highprices) .>= stopLossPrice)  .& #2
-                   (highPriceTs .< allExitDates[1])] :
-
-              highPriceTs[
-                   (highPriceTs .> entryDate) .& #1
-                   (TimeSeries.values(highprices) .>= stopLossPrice)]
+          if length(allExitDates) > 0
+            profitTargetDates = profitTargetDates[profitTargetDates .< allExitDates[1]]
+            stopLossDates = stopLossDates[stopLossDates .< allExitDates[1]]
+          end
 
           #append the profit/loss dates to possible exit dates
           allExitDates = unique([allExitDates; profitTargetDates; stopLossDates])
 
-          # println("OK-5")
         end
     end
 
     #Refresh allLongEntryDate and allLongExitDates
-
     #NextEntryDate is after the FIRST EXIT DATE (if position is non-zero)
     try
       allEntryDates = length(allEntryDates) == 0 ? [] : 
@@ -203,8 +257,20 @@ function _computeTradeTimePerTicker(ticker, entryTA, exitTA, prices, direction::
 
   end #While ends
 
-  # println("Trade Dates")
-  # println(tradeDates)
+  if length(tradeDates) > 0
+    tds = [td[2] for td in tradeDates]
+    println("Trade Dates")
+    println(tradeDates)
+
+    println("Prices")
+    println(closeprices[timestamp(closeprices) .== tds])
+
+    println("High Prices")
+    println(highprices[timestamp(highprices) .== tds])
+
+    println("Low Prices")
+    println(lowprices[timestamp(lowprices) .== tds])
+  end
 
   return tradeDates
 end
