@@ -140,15 +140,16 @@ function _computeTradeTimePerTicker(ticker, entryTA, exitTA, prices, direction::
     stopLossDates = _getStopLossDates(highprices, lowprices, avgPrice, nothing, "LONG")
   end
 
-  if length(allExitDates) > 0
-    profitTargetDates = profitTargetDates[profitTargetDates .< allExitDates[1]]
-    stopLossDates = stopLossDates[stopLossDates .< allExitDates[1]]
-    
-    pslDates = sort(unique([profitTargetDates; stopLossDates]))
-    if length(pslDates) > 0
-      append!(allExitDates, pslDates[1])
-    end
+  pslDates = sort(unique([profitTargetDates; stopLossDates]))
 
+  #Filter out PT/SL dates before first exit date
+  if length(allExitDates) > 0
+    pslDates = pslDates[pslDates .< allExitDates[1]]
+  end
+
+  #Finallt append the latest PT/SL date
+  if length(pslDates) > 0
+    allExitDates = sort(append!(allExitDates, pslDates[1]))
   end
   
   while length(allEntryDates) > 0 || length(allExitDates) > 0  
