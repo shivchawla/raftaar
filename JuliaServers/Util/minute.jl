@@ -142,15 +142,21 @@ function _computeTradeTimePerTicker(ticker, entryTA, exitTA, prices, direction::
 
   pslDates = sort(unique([profitTargetDates; stopLossDates]))
 
+  println("Typeof PSL: $(typeof(pslDates))")
+
   #Filter out PT/SL dates before first exit date
   if length(allExitDates) > 0
     pslDates = pslDates[pslDates .< allExitDates[1]]
   end
 
+  println("Typeof PSL: $(typeof(pslDates))")
+
   #Finallt append the latest PT/SL date
   if length(pslDates) > 0
-    allExitDates = sort(append!(allExitDates, pslDates[1]))
+    allExitDates = sort(push!(allExitDates, pslDates[1]))
   end
+
+  
   
   while length(allEntryDates) > 0 || length(allExitDates) > 0  
 
@@ -208,7 +214,7 @@ function _computeTradeTimePerTicker(ticker, entryTA, exitTA, prices, direction::
           
           pslDates = sort(unique([profitTargetDates; stopLossDates]))
           if length(pslDates) > 0
-            push!(allExitDates, pslDates[1])
+            allExitDates = sort(push!(allExitDates, pslDates[1]))
           end
           
         end
@@ -241,7 +247,7 @@ function _computeTradeTimePerTicker(ticker, entryTA, exitTA, prices, direction::
 
           pslDates = sort(unique([profitTargetDates; stopLossDates]))
           if length(pslDates) > 0
-            push!(allExitDates, pslDates[1])
+            allExitDates = sort(push!(allExitDates, pslDates[1]))
           end
           
         end
