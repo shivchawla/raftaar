@@ -144,7 +144,7 @@ function _computeTradeTimePerTicker(ticker, entryTA, exitTA, prices, direction::
     profitTargetDates = profitTargetDates[profitTargetDates .< allExitDates[1]]
     stopLossDates = stopLossDates[stopLossDates .< allExitDates[1]]
     
-    pslDates = sort(unique(profitTargetDates, stopLossDates))
+    pslDates = sort(unique([profitTargetDates; stopLossDates]))
     if length(pslDates) > 0
       append!(allExitDates, pslDates[1])
     end
@@ -156,7 +156,7 @@ function _computeTradeTimePerTicker(ticker, entryTA, exitTA, prices, direction::
     println("allExitDates")
     println(allExitDates)
 
-    println("allExitDates")
+    println("allEntryDates")
     println(allEntryDates)
 
     if qty > 0 && length(allExitDates) > 0 && direction == "LONG" 
@@ -205,7 +205,7 @@ function _computeTradeTimePerTicker(ticker, entryTA, exitTA, prices, direction::
             stopLossDates = stopLossDates[stopLossDates .< allExitDates[1]]
           end
           
-          pslDates = sort(unique(profitTargetDates, stopLossDates))
+          pslDates = sort(unique([profitTargetDates; stopLossDates]))
           if length(pslDates) > 0
             push!(allExitDates, pslDates[1])
           end
@@ -238,7 +238,7 @@ function _computeTradeTimePerTicker(ticker, entryTA, exitTA, prices, direction::
             stopLossDates = stopLossDates[stopLossDates .< allExitDates[1]]
           end
 
-          pslDates = sort(unique(profitTargetDates, stopLossDates))
+          pslDates = sort(unique([profitTargetDates; stopLossDates]))
           if length(pslDates) > 0
             push!(allExitDates, pslDates[1])
           end
