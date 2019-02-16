@@ -252,7 +252,7 @@
     "LagOpen": {
         "label": "Lagged Open",
         "options":[{
-            "key": "period", 
+            "key": "period", "type": "Integer",
             "label": "Lag Period",
             "defaultValue": {"daily": 1, "minute": 5}, 
             "values": {"daily" : [1, 2, 3, 4, 5], "minute": [1, 5, 10, 30, 60]},
@@ -263,7 +263,7 @@
     "LagHigh": {
         "label": "Lagged High",
         "options":[{
-            "key": "period", 
+            "key": "period", "type": "Integer",
             "label": "Lag Period",
             "defaultValue": {"daily": 1, "minute": 5}, 
             "values": {"daily" : [1, 2, 3, 4, 5], "minute": [1, 5, 10, 30, 60]},
@@ -274,7 +274,7 @@
     "LagLow": {
         "label": "Lagged Low",
         "options":[{
-            "key": "period", 
+            "key": "period", "type": "Integer",
             "label": "Lag Period",
             "defaultValue": {"daily": 1, "minute": 5}, 
             "values": {"daily" : [1, 2, 3, 4, 5], "minute": [1, 5, 10, 30, 60]},
@@ -285,7 +285,7 @@
     "LagClose": {
         "label": "Lagged Close",
         "options":[{
-            "key": "period", 
+            "key": "period", "type": "Integer",
             "label": "Lag Period",
             "defaultValue": {"daily": 1, "minute": 5}, 
             "values": {"daily" : [1, 2, 3, 4, 5], "minute": [1, 5, 10, 30, 60]},
@@ -296,7 +296,7 @@
     "LagVolume": {
         "label": "Lagged Volume",
         "options":[{
-            "key": "period", 
+            "key": "period", "type": "Integer",
             "label": "Lag Period",
             "defaultValue": {"daily": 1, "minute": 5}, 
             "values": {"daily" : [1, 2, 3, 4, 5], "minute": [1, 5, 10, 30, 60]},

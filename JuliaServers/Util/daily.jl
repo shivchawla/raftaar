@@ -232,7 +232,7 @@ function _process_short_entry(currentLongEntry, currentLongExit, currentShortEnt
           continue
         else
           # println("Setting Short Holding in $(ticker)")
-          setholdingpct(ticker, 1/length(universe))
+          setholdingpct(ticker, -1/length(universe))
         end
     end
 end
@@ -311,16 +311,10 @@ function _process_target_stoploss(pos)
     stopLoss = getStopLoss()
     profitTarget = getProfitTarget()
 
-    println("Ticker: $(pos.securitysymbol.ticker)")
-    println("Stop Loss: $(stopLoss)")
-    println("Profit Target: $(profitTarget)")
-
     if abs(pos.quantity) > 0
       _chg = pos.averageprice > 0  && pos.lastprice > 0 ? (pos.lastprice - pos.averageprice)/pos.averageprice : 0.0
 
       chg = pos.quantity > 0 ? _chg : -_chg
-
-      println("Chg: $(chg)")
 
       if chg <= -stopLoss || chg >= profitTarget
          setholdingpct(pos.securitysymbol.ticker, 0.0)
@@ -333,8 +327,6 @@ function _findActive(ta)
   if ta == nothing
     return nothing
   end
-
-  # println(ta)
 
   vals = values(ta)
   idx = findall(x->x==true, reshape(vals, (length(vals),)))
