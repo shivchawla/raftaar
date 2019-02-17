@@ -16,6 +16,9 @@ YRead.configureRedis(redisClient)
 # tb = YRead.history(["YESBANK, TCS"], "Close", :Day, DateTime("2017-08-01"), DateTime("2017-09-30"), displaylogs = false, strict = false)
 # benchmarkdata = YRead.history_unadj(["YESBANK"], "Close", Symbol("1m"), DateTime("2018-12-01"), DateTime("2018-12-31"))
 
+d = YRead.history(["WIPRO"], "Close", Symbol("1m"), DateTime("2018-11-15"), DateTime("2018-12-31"), everything=true)
+
+
 # tickers= ["ACC","ADANIPORTS","AMBUJACEM",
 # 	"ASIANPAINT","AUROPHARMA","AXISBANK","BAJAJ_AUTO"]
 
@@ -29,7 +32,7 @@ YRead.configureRedis(redisClient)
 
  # ta = YRead.history_unadj(["TCS", "WIPRO"], "Close", :Day, DateTime("2018-12-01"), DateTime("2018-12-31"), displaylogs = false, strict = false)
 
-ta = YRead.history(["TCS"], "Close", :Day, DateTime(Date("2017-12-31") - Dates.Day(2*100)), DateTime(Date("2018-12-31")), displaylogs = false)
+# ta = YRead.history(["TCS"], "Close", :Day, DateTime(Date("2017-12-31") - Dates.Day(2*100)), DateTime(Date("2018-12-31")), displaylogs = false)
 
 # tb = ta
 
