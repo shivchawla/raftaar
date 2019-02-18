@@ -140,7 +140,7 @@ function crossBelow(ind1::Indicator, ind2::Indicator)
     return Condition(rename(z .< 0, names_ind1))
 end
 
-function crossBelow(ind::Indicator, val::Float64)
+function crossBelow(ind::Indicator, val)
     names_ind = colnames(ind._ta)
     x = ind._ta .- val
     y = x ./ abs.(x)
@@ -161,7 +161,7 @@ function crossAbove(ind1::Indicator, ind2::Indicator)
     return Condition(rename(z .> 0, names_ind1))
 end
 
-function crossAbove(ind::Indicator, val::Float64)
+function crossAbove(ind::Indicator, val)
     names_ind = colnames(ind._ta)
 
     x = ind1._ta .- val
@@ -243,11 +243,11 @@ end
 """
 Constant Indicator
 """
-function CONSTANT(val::Float64)
+function CONSTANT(val)
     ta = _getTA(price = "Close")
 
     if ta != nothing
-      _ind = TimeArray(timestamp(ta), val*ones(size(ta)), colnames(ta))
+      _ind = TimeArray(timestamp(ta), Float64(val)*ones(size(ta)), colnames(ta))
 
       return Indicator(_ind)
     end
@@ -395,7 +395,7 @@ function UBB(;horizon = horizonDefault(), price="Close", width = 2.0)
     ta = _getTA(price = price, horizon = horizon)
 
     if ta != nothing  
-      return Indicator(_bollinger(ta, horizon, width, :up))
+      return Indicator(_bollinger(ta, horizon, Float64(width), :up))
     end
 end
 
@@ -406,7 +406,7 @@ function MBB(;horizon = horizonDefault(), price="Close", width = 2.0)
     ta = _getTA(price = price, horizon = horizon)
 
     if ta != nothing  
-      return Indicator(_bollinger(ta, horizon, width, :mean))
+      return Indicator(_bollinger(ta, horizon, Float64(width), :mean))
     end
 end
 
@@ -417,7 +417,7 @@ function LBB(;horizon = horizonDefault(), price="Close", width = 2.0)
     ta = _getTA(price = price, horizon = horizon)
 
     if ta != nothing  
-      return Indicator(_bollinger(ta, horizon, width, :down))
+      return Indicator(_bollinger(ta, horizon, Float64(width), :down))
     end
 end
 
