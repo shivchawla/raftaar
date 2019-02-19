@@ -3,21 +3,23 @@
 # Email: shiv.chawla@aimsquant.com
 # Organization: AIMSQUANT PVT. LTD.
 
-import Base: exit, run
 using BufferedStreams
 
-#overwriting Base.exit
-# function exit(code=0)
-#     warn_static("Illegal Action at exit()")
-# end
+function _exit(code)
+    warn_static("Illegal Action at exit()")
+end
 
-# function quit()
-#     warn_static("Illegal Action at quit()")
-# end
+function _quit(whatever)
+    warn_static("Illegal Action at quit()")
+end
 
-# function _run(command::Any)
-#     warn_static("Illegal Action at run()")
-# end
+function _run(command)
+    warn_static("Illegal Action at run()")
+end
+
+function _eval(command)
+    warn_static("Illegal Action at eval()")
+end
 
 function handleexception(err::Any, forward=false)
 

@@ -13,8 +13,17 @@ function processargs(parsed_args::Dict{String,Any})
   if (parsed_args["code"] == nothing)
     fname = parsed_args["file"]
   elseif (parsed_args["file"] == nothing)
+    
+    #Added security features (to prevent malicious code)
+    #System related code leads to warning
+    #Exit/Run/Eval/Filesystem/quit not allowed
     parsed_args["code"] = replace(parsed_args["code"], "Base." => "_")
     parsed_args["code"] = replace(parsed_args["code"], "run(" => "_run(") 
+    parsed_args["code"] = replace(parsed_args["code"], "exit(" => "_exit(") 
+    parsed_args["code"] = replace(parsed_args["code"], "quit(" => "_quit(") 
+    parsed_args["code"] = replace(parsed_args["code"], "eval(" => "_eval")
+
+    parsed_args["code"] = replace(parsed_args["code"], "Filesystem" => "_")
 
     (tf, io) = mktemp(tempDir)
 
