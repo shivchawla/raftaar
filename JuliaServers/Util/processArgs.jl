@@ -21,7 +21,7 @@ function processargs(parsed_args::Dict{String,Any})
     parsed_args["code"] = replace(parsed_args["code"], "run(" => "_run(") 
     parsed_args["code"] = replace(parsed_args["code"], "exit(" => "_exit(") 
     parsed_args["code"] = replace(parsed_args["code"], "quit(" => "_quit(") 
-    parsed_args["code"] = replace(parsed_args["code"], "eval(" => "_eval")
+    parsed_args["code"] = replace(parsed_args["code"], "eval(" => "_eval(")
 
     parsed_args["code"] = replace(parsed_args["code"], "Filesystem" => "_")
 
