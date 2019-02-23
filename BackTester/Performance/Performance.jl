@@ -357,8 +357,8 @@ function calculateperformance_rollingperiods(returns::TimeArray)
     sd_wtd = TimeSeries.timestamp(past_returns)[1]
     if(length(past_returns) > 0)
 
-        algo_returns = TimeSeries.values(past_returns["algorithm"])
-        benchmark_returns = TimeSeries.values(past_returns["benchmark"])
+        algo_returns = TimeSeries.values(past_returns[:algorithm])
+        benchmark_returns = TimeSeries.values(past_returns[:benchmark])
 
         ts = TimeSeries.timestamp(past_returns)
         ndays = Int(Dates.value(ts[end] - ts[1])) + 1
@@ -372,8 +372,8 @@ function calculateperformance_rollingperiods(returns::TimeArray)
     sd_1wk = TimeSeries.timestamp(past_returns)[1]
     if(length(past_returns) > 0 && sd_1wk < sd_wtd)
 
-        algo_returns = TimeSeries.values(past_returns["algorithm"])
-        benchmark_returns = TimeSeries.values(past_returns["benchmark"])
+        algo_returns = TimeSeries.values(past_returns[:algorithm])
+        benchmark_returns = TimeSeries.values(past_returns[:benchmark])
 
         ts = TimeSeries.timestamp(past_returns)
         ndays = Int(Dates.value(ts[end] - ts[1])) + 1
@@ -386,8 +386,8 @@ function calculateperformance_rollingperiods(returns::TimeArray)
     past_returns = from(returns, sd)
     sd_mtd = TimeSeries.timestamp(past_returns)[1]
     if(length(past_returns) > 0)
-        algo_returns = TimeSeries.values(past_returns["algorithm"])
-        benchmark_returns = TimeSeries.values(past_returns["benchmark"])
+        algo_returns = TimeSeries.values(past_returns[:algorithm])
+        benchmark_returns = TimeSeries.values(past_returns[:benchmark])
 
         ts = TimeSeries.timestamp(past_returns)
         ndays = Int(Dates.value(ts[end] - ts[1])) + 1
@@ -401,8 +401,8 @@ function calculateperformance_rollingperiods(returns::TimeArray)
     past_returns = from(returns, sd)
     sd_1m = TimeSeries.timestamp(past_returns)[1]
     if(length(past_returns) > 0 && sd_1m < sd_mtd)
-        algo_returns = TimeSeries.values(past_returns["algorithm"])
-        benchmark_returns = TimeSeries.values(past_returns["benchmark"])
+        algo_returns = TimeSeries.values(past_returns[:algorithm])
+        benchmark_returns = TimeSeries.values(past_returns[:benchmark])
 
         ts = TimeSeries.timestamp(past_returns)
         ndays = Int(Dates.value(ts[end] - ts[1])) + 1
@@ -415,8 +415,8 @@ function calculateperformance_rollingperiods(returns::TimeArray)
     past_returns = from(returns, sd)
     sd_2m = TimeSeries.timestamp(past_returns)[1]
     if(length(past_returns) > 0 && sd_2m < sd_1m)
-        algo_returns = TimeSeries.values(past_returns["algorithm"])
-        benchmark_returns = TimeSeries.values(past_returns["benchmark"])
+        algo_returns = TimeSeries.values(past_returns[:algorithm])
+        benchmark_returns = TimeSeries.values(past_returns[:benchmark])
 
         ts = TimeSeries.timestamp(past_returns)
         ndays = Int(Dates.value(ts[end] - ts[1])) + 1
@@ -429,8 +429,8 @@ function calculateperformance_rollingperiods(returns::TimeArray)
     past_returns = from(returns, sd)
     sd_3m = TimeSeries.timestamp(past_returns)[1]
     if(length(past_returns) > 0 && sd_3m < sd_2m)
-        algo_returns = TimeSeries.values(past_returns["algorithm"])
-        benchmark_returns = TimeSeries.values(past_returns["benchmark"])
+        algo_returns = TimeSeries.values(past_returns[:algorithm])
+        benchmark_returns = TimeSeries.values(past_returns[:benchmark])
 
         ts = TimeSeries.timestamp(past_returns)
         ndays = Int(Dates.value(ts[end] - ts[1])) + 1
@@ -443,8 +443,8 @@ function calculateperformance_rollingperiods(returns::TimeArray)
     past_returns = from(returns, sd)
     sd_6m = TimeSeries.timestamp(past_returns)[1]
     if(length(past_returns) > 0 && sd_6m < sd_3m)
-        algo_returns = TimeSeries.values(past_returns["algorithm"])
-        benchmark_returns = TimeSeries.values(past_returns["benchmark"])
+        algo_returns = TimeSeries.values(past_returns[:algorithm])
+        benchmark_returns = TimeSeries.values(past_returns[:benchmark])
 
         ts = TimeSeries.timestamp(past_returns)
         ndays = Int(Dates.value(ts[end] - ts[1])) + 1
@@ -457,8 +457,8 @@ function calculateperformance_rollingperiods(returns::TimeArray)
     past_returns = when(returns, year, Dates.year(lastdate))
     sd_ytd = TimeSeries.timestamp(past_returns)[1]
     if(length(past_returns) > 0)
-        algo_returns = TimeSeries.values(past_returns["algorithm"])
-        benchmark_returns = TimeSeries.values(past_returns["benchmark"])
+        algo_returns = TimeSeries.values(past_returns[:algorithm])
+        benchmark_returns = TimeSeries.values(past_returns[:benchmark])
 
         ts = TimeSeries.timestamp(past_returns)
         ndays = Int(Dates.value(ts[end] - ts[1])) + 1
@@ -471,8 +471,8 @@ function calculateperformance_rollingperiods(returns::TimeArray)
     past_returns = from(returns, sd)
     sd_1y = TimeSeries.timestamp(past_returns)[1]
     if(length(past_returns) > 0 && sd_1y < sd_ytd)
-        algo_returns = TimeSeries.values(past_returns["algorithm"])
-        benchmark_returns = TimeSeries.values(past_returns["benchmark"])
+        algo_returns = TimeSeries.values(past_returns[:algorithm])
+        benchmark_returns = TimeSeries.values(past_returns[:benchmark])
 
         ts = TimeSeries.timestamp(past_returns)
         ndays = Int(Dates.value(ts[end] - ts[1])) + 1
@@ -485,8 +485,8 @@ function calculateperformance_rollingperiods(returns::TimeArray)
     past_returns = from(returns, sd)
     sd_2y = TimeSeries.timestamp(past_returns)[1]
     if(length(past_returns) > 0 && sd_2y < sd_1y)
-        algo_returns = TimeSeries.values(past_returns["algorithm"])
-        benchmark_returns = TimeSeries.values(past_returns["benchmark"])
+        algo_returns = TimeSeries.values(past_returns[:algorithm])
+        benchmark_returns = TimeSeries.values(past_returns[:benchmark])
 
         ts = TimeSeries.timestamp(past_returns)
         ndays = Int(Dates.value(ts[end] - ts[1])) + 1
@@ -499,8 +499,8 @@ function calculateperformance_rollingperiods(returns::TimeArray)
     past_returns = from(returns, sd)
     sd_5y = TimeSeries.timestamp(past_returns)[1]
     if(length(past_returns) > 0 && sd_5y < sd_2y)
-        algo_returns = TimeSeries.values(past_returns["algorithm"])
-        benchmark_returns = TimeSeries.values(past_returns["benchmark"])
+        algo_returns = TimeSeries.values(past_returns[:algorithm])
+        benchmark_returns = TimeSeries.values(past_returns[:benchmark])
 
         ts = TimeSeries.timestamp(past_returns)
         ndays = Int(Dates.value(ts[end] - ts[1])) + 1
@@ -513,8 +513,8 @@ function calculateperformance_rollingperiods(returns::TimeArray)
     past_returns = from(returns, sd)
     sd_10y = TimeSeries.timestamp(past_returns)[1]
     if(length(past_returns) > 0 && sd_10y < sd_5y)
-        algo_returns = TimeSeries.values(past_returns["algorithm"])
-        benchmark_returns = TimeSeries.values(past_returns["benchmark"])
+        algo_returns = TimeSeries.values(past_returns[:algorithm])
+        benchmark_returns = TimeSeries.values(past_returns[:benchmark])
 
         ts = TimeSeries.timestamp(past_returns)
         ndays = Int(Dates.value(ts[end] - ts[1])) + 1
@@ -526,8 +526,8 @@ function calculateperformance_rollingperiods(returns::TimeArray)
     # Since inception
     past_returns = returns
     if(length(past_returns) > 0)
-        algo_returns = TimeSeries.values(past_returns["algorithm"])
-        benchmark_returns = TimeSeries.values(past_returns["benchmark"])
+        algo_returns = TimeSeries.values(past_returns[:algorithm])
+        benchmark_returns = TimeSeries.values(past_returns[:benchmark])
 
         ts = TimeSeries.timestamp(past_returns)
         ndays = Int(Dates.value(ts[end] - ts[1])) + 1
@@ -552,8 +552,8 @@ function calculateperformance_staticperiods(returns::TimeArray)
     for y = 2007:Dates.year(dates[end])
         past_returns = when(returns, year, y)
         if(length(past_returns) > 0)
-            algo_returns = TimeSeries.values(past_returns["algorithm"])
-            benchmark_returns = TimeSeries.values(past_returns["benchmark"])
+            algo_returns = TimeSeries.values(past_returns[:algorithm])
+            benchmark_returns = TimeSeries.values(past_returns[:benchmark])
 
             ts = TimeSeries.timestamp(past_returns)
             ndays = Int(Dates.value(ts[end] - ts[1])) + 1
@@ -564,8 +564,8 @@ function calculateperformance_staticperiods(returns::TimeArray)
         for m = 1:12
             past_monthly_returns = when(past_returns, month, m)
             if(size(past_monthly_returns.values,1) > 0)
-                algo_returns = TimeSeries.values(past_monthly_returns["algorithm"])
-                benchmark_returns = TimeSeries.values(past_monthly_returns["benchmark"])
+                algo_returns = TimeSeries.values(past_monthly_returns[:algorithm])
+                benchmark_returns = TimeSeries.values(past_monthly_returns[:benchmark])
                 
                 ts = TimeSeries.timestamp(past_monthly_returns)
                 ndays = Int(Dates.value(ts[end] - ts[1])) + 1
