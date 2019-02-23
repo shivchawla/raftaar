@@ -29,7 +29,7 @@ end
 securitycollection() = dict["client"][dict["db"]]["security_test"]
 datacollection() = dict["client"][dict["db"]]["data_test"]
 minutedatacollection() = dict["client"][dict["db"]]["data_minute"]
-redisClient() = dict["redis_client"]
+redisClient() = get(dict, "redis_client", nothing)
 
 const PRIORITY = 1
 const STRICT = false

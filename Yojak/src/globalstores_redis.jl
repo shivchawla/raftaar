@@ -299,6 +299,10 @@ function _updateglobaldatastores(ta::TimeArray, datatype::String, frequency::Sym
         #return false
     end
 
+    if redisClient() == nothing
+        println("Redis client not available")
+        return false
+    end
 
     for (i, name) in enumerate(colnames(ta))
 
@@ -391,6 +395,10 @@ function fromglobalstores(names::Vector{String}, datatype::String, frequency::Sy
 
     #In case of :Day and forceRedis = true, read from redis
 
+    if redisClient() == nothing
+        println("Redis client not available")
+        return
+    end
     #Else read from redis
     timeunits = String[];
 

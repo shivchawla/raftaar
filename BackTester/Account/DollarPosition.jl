@@ -85,7 +85,7 @@ Function to update position for latest price
 function updateposition_price!(position::DollarPosition, tradebar::TradeBar)
   if(tradebar.close > 0.0000000001 && !isnan(tradebar.close))
     position.lastprice = tradebar.close
-    position.lasttradepnl = round(position.averageprice > 0 ? (position.investment * (position.lastprice - position.averageprice)/position.averageprice) : 0.0, 2)
+    position.lasttradepnl = round(position.averageprice > 0 ? (position.investment * (position.lastprice - position.averageprice)/position.averageprice) : 0.0, digits = 2)
   end
 end
 
@@ -96,7 +96,7 @@ function updateposition_fill!(position::DollarPosition, fill::OrderFill)
 
   #apply sales value to holdings
   position.totaltradedvolume += fill.fillprice*abs(fill.fillquantity)
-  position.totaltradedvolume = round(position.totaltradedvolume, 2)
+  position.totaltradedvolume = round(position.totaltradedvolume, digits = 2)
 
   #update total fees paid
   position.totalfees += fill.orderfee
@@ -112,7 +112,7 @@ function updateposition_fill!(position::DollarPosition, fill::OrderFill)
   #Cashlining introduced to support MktPlace portfolios/transactions
   cashgenerated = fill.cashlinked ? -(fill.fillquantity*fill.fillprice) - fill.orderfee : 0.0
 
-  return round(cashgenerated, 2)
+  return round(cashgenerated, digits = 2)
 
 end
 
@@ -144,9 +144,9 @@ function updatetradeprofit!(position::DollarPosition, fill::OrderFill)
 
     lasttradepnl_wofee = (closedsalevalue - closedcost)
     #*conversionFactor
-    position.lasttradepnl = round(lasttradepnl_wofee - fill.orderfee,2)
+    position.lasttradepnl = round(lasttradepnl_wofee - fill.orderfee, digits = 2)
     position.realizedpnl += position.lasttradepnl
-    position.realizedpnl = round(position.realizedpnl, 2)
+    position.realizedpnl = round(position.realizedpnl, digits = 2)
   end
 end
 
@@ -199,8 +199,8 @@ function updateaverageprice!(position::DollarPosition, fill::OrderFill)
 
   end
 
-  position.averageprice = round(position.averageprice, 2)
-  position.lastprice = round(position.lastprice, 2)
+  position.averageprice = round(position.averageprice, digits = 2)
+  position.lastprice = round(position.lastprice, digits = 2)
 
 end
 
@@ -210,8 +210,8 @@ Function to update position for corporate adjustment (not cash dividend)
 function updateposition_splits_dividends!(position::DollarPosition, adjustment::Adjustment)
     cash = 0.0
     if(adjustment.adjustmenttype != "17.0")
-        position.averageprice = round(position.averageprice * adjustment.adjustmentfactor,2)
-        position.lastprice = round(position.lastprice * adjustment.adjustmentfactor,2)
+        position.averageprice = round(position.averageprice * adjustment.adjustmentfactor, digits = 2)
+        position.lastprice = round(position.lastprice * adjustment.adjustmentfactor, digits = 2)
     else
         cash = position.averageprice > 0.0 ? (position.investment/position.averageprice)*adjustment.adjustmentfactor : 0.0
         position.dividendcash += cash

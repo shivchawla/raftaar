@@ -57,7 +57,7 @@ function adjustdata(data::Array{Any, 2}, name::String)
     sortrows(vals, by=x->(x[1]), rev=true)
     
     nrows = size(vals)[1]
-    vals[2:end, 2] = round.(vals[2:end, 2] .* cumprod(vals[1:nrows-1, 3]), 2)
+    vals[2:end, 2] = round.(vals[2:end, 2] .* cumprod(vals[1:nrows-1, 3]), digits = 2)
     
     fvals = zeros(nrows,1) 
     dates = Vector{Date}(nrows)
