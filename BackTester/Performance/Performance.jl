@@ -277,7 +277,7 @@ function calculateperformance_rollingperiods(algorithmreturns::Vector{Float64}, 
         ts = TimeSeries.timestamp(past_returns)
         ndays = Int(Dates.value(ts[end] - ts[1])) + 1
 
-        performances["ytd"] = calculateperformance(past_returns["algorithm"].values, past_returns["benchmark"].values, scale=365, period=ndays)
+        performances["ytd"] = calculateperformance(TimeSeries.values(past_returns["algorithm"]), TimeSeries.values(past_returns["benchmark"]), scale=365, period=ndays)
     end    
 
     # Last 1 year data
@@ -563,14 +563,14 @@ function calculateperformance_staticperiods(returns::TimeArray)
 
         for m = 1:12
             past_monthly_returns = when(past_returns, month, m)
-            if(size(past_monthly_returns.values,1) > 0)
+            if(size(TimeSeries.values(past_monthly_returns),1) > 0)
                 algo_returns = TimeSeries.values(past_monthly_returns[:algorithm])
                 benchmark_returns = TimeSeries.values(past_monthly_returns[:benchmark])
                 
                 ts = TimeSeries.timestamp(past_monthly_returns)
                 ndays = Int(Dates.value(ts[end] - ts[1])) + 1
 
-                performance["monthly"]["$y_$m"] = calculateperformance(algo_returns, benchmark_returns, scale=365, period=ndays)
+                performance["monthly"]["$(y)_$(m)"] = calculateperformance(algo_returns, benchmark_returns, scale=365, period=ndays)
             end
         end
     end
