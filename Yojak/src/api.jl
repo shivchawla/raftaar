@@ -486,8 +486,8 @@ function history_unadj(secids::Vector{Int},
                         strict::Bool=true,
                         forwardfill::Bool=false) 
     
-    println("History unadj between dates: $(now())")
-    println("Frequency: $(frequency), Datatype: $(datatype), horizon: $(horizon)")
+    # println("History unadj between dates: $(now())")
+    # println("Frequency: $(frequency), Datatype: $(datatype), horizon: $(horizon)")
 
     _populateBenchmarkStore(frequency)
 
@@ -497,7 +497,7 @@ function history_unadj(secids::Vector{Int},
         return nothing
     end
 
-    println("Finding in global stores $(now())")
+    # println("Finding in global stores $(now())")
     ta = findinglobalstores(secids, datatype, frequency, 
                                 horizon, enddate,
                                 offset = -1,
@@ -517,8 +517,8 @@ function history_unadj(secids::Vector{Int},
         return __renamecolumns(ta)
     end
 
-    println("OOPS! Data not sufficient: $(now())")
-    println("Fetching from DB: $(now())")
+    # println("OOPS! Data not sufficient: $(now())")
+    # println("Fetching from DB: $(now())")
 
     more_ta = _history_unadj(securitycollection(), 
                             frequency == :Day ? datacollection() : minutedatacollection(),
@@ -529,7 +529,7 @@ function history_unadj(secids::Vector{Int},
                             exchange,
                             country, strict) 
 
-    println("Again updating the global data stores: $(now())")
+    # println("Again updating the global data stores: $(now())")
 
     if (more_ta != ta)
 
@@ -538,7 +538,7 @@ function history_unadj(secids::Vector{Int},
            updateStatus = _updateglobaldatastores(more_ta, datatype, frequency)
         end
 
-        println("Again finding in the global data stores: $(now())")
+        # println("Again finding in the global data stores: $(now())")
 
         if updateStatus
             #finally get from updated global stores
@@ -572,8 +572,8 @@ function history_unadj(secids::Vector{Int},
                         strict::Bool = true,
                         forwardfill::Bool=false) 
 
-    println("History unadj between dates: $(now())")
-    println("Frequency: $(frequency), Datatype: $(datatype)")
+    # println("History unadj between dates: $(now())")
+    # println("Frequency: $(frequency), Datatype: $(datatype)")
     
     _populateBenchmarkStore(frequency)
 
@@ -583,7 +583,7 @@ function history_unadj(secids::Vector{Int},
         return nothing
     end
 
-    println("Finding in global stores $(now())")
+    # println("Finding in global stores $(now())")
     ta = findinglobalstores(secids, datatype, frequency,
                                 startdate, enddate,
                                 removeNaN = (frequency == :Day ? true : false),
@@ -599,8 +599,8 @@ function history_unadj(secids::Vector{Int},
         return __renamecolumns(ta)
     end
 
-    println("OOPS! Data not sufficient: $(now())")
-    println("Fetching from DB: $(now())")
+    # println("OOPS! Data not sufficient: $(now())")
+    # println("Fetching from DB: $(now())")
 
     more_ta = _history_unadj(securitycollection(), 
                         frequency == :Day ? datacollection() : minutedatacollection(),
@@ -613,14 +613,14 @@ function history_unadj(secids::Vector{Int},
 
 
     if (more_ta != ta)
-        println("Again updating the global data stores: $(now())")
+        # println("Again updating the global data stores: $(now())")
 
         updateStatus = false
         if (more_ta != nothing)
             updateStatus = _updateglobaldatastores(more_ta, datatype, frequency)
         end
 
-        println("Again finding in the global data stores: $(now())")
+        # println("Again finding in the global data stores: $(now())")
 
         if updateStatus
             #finally get from updated global stores
@@ -638,7 +638,7 @@ function history_unadj(secids::Vector{Int},
 
     ta = __fillmissingdata(ta, secids)
     
-    println("Finally done: $(now())")
+    # println("Finally done: $(now())")
 
     Logger.update_display(true)
     return __renamecolumns(ta)

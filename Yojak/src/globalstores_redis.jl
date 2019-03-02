@@ -183,6 +183,10 @@ function _mergeWithExisting(ta::TimeArray, datatype::String, frequency::Symbol)
         val_old = values(merged_common_ta_ticker[ticker])
         val_new = values(merged_common_ta_ticker[Symbol(String(ticker)*"_1")])
 
+        #Replace zero prices with NaN
+        val_old[val_old .== 0] .= NaN
+        val_new[val_new .== 0] .= NaN
+
         nrows = length(val_new) #???
         vals = zeros(nrows, 1)
         for i = 1:nrows

@@ -361,10 +361,19 @@ function removeduplicates(data::Array{Any,2})
     v = Array{Any, 2}
     nrows, ncols = size(data)
 
-    for i = 1:nrows - 1
-        if data[i, 1] == data[i+1, 1]
+    for i = 1:nrows
+        #replace duplicates with -1
+        if i < nrows
+            if data[i, 1] == data[i+1, 1]
+                data[i, 2] = -1
+            end
+        end
+
+        #Remove zeros from data as well
+        if data[i, 2] == 0.0
             data[i, 2] = -1
         end
+
     end
     
     A = .~any((data .== -1), dims=2)
