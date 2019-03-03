@@ -698,9 +698,9 @@ function updatecolumndata_fromEODH(datacollection::Mongoc.Collection, securityid
 
     #Find whether the security for datasource already exists in the collection 
     #If not, then insert
-    if(Mongoc.count_documents(datacollection,("securityid"=>securityid, 
+    if(Mongoc.count_documents(datacollection, Mongoc.BSON(Dict("securityid"=>securityid, 
                             "datasource.sourcename"=>"EODH_"*securitydata["database_code"],
-                            "datasource.dataset_code"=>securitydata["dataset_code"])) == 0)
+                            "datasource.dataset_code"=>securitydata["dataset_code"]))) == 0)
         Logger.info("In updatecolumndata_fromEODH(): quandl/$(securitydata["dataset_code"]) datasource doesn't exist for $(securityid)")
         Logger.info("In updatecolumndata_fromEODH(), attempting to insert column data for securityid $securityid in the database")
         return insertcolumndata_fromquandl(datacollection, securityid, securitydata, priority)
@@ -755,7 +755,7 @@ function updatecolumndata_fromEODH(datacollection::Mongoc.Collection, securityid
             
             if(duplicates)
                 Logger.info("In updatecolumndata_fromEODH(): Duplicate Column data was found for securityid: $(securityid), dataset:$(securitydata["dataset_code"]) and datasource: $(securitydata["database_code"]). Deleted!!!")
-                doc = Mongoc.as_dict(Mongoc.find_one(datacollection, query))
+                doc = Mongoc.as_dict(Mongoc.find_one(datacollection, Mongoc.BSON(query)))
             end
 
             latest_date = getlatestdate(doc["data"])
