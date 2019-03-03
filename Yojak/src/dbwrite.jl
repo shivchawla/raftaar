@@ -297,7 +297,7 @@ function updatesecuritydata_fromquandl(securitycollection::Mongoc.Collection, se
 
         if found   #Should always be true 
             # Check if data needs update
-            if (datasource["newest_available_date"] 
+            if (haskey(datasource, "newest_available_date") && datasource["newest_available_date"] 
                 == data["newest_available_date"])
                 Logger.info("updatesecuritydata_fromquandl(): Data is up-to-date for securityid: $(securityid), dataset:$(data["dataset_code"]) and datasource: $(data["database_code"])")
                 return 2
@@ -358,7 +358,10 @@ function updatecolumndata_fromquandl(datacollection::Mongoc.Collection, security
         return insertcolumndata_fromquandl(datacollection, securityid, securitydata, priority)
     else
         #Update logic
-        year = parse(Int, (split(securitydata["newest_available_date"] , "-")[1]) )
+        year = 2030
+        if haskey(securitydata, "newest_available_date")
+            year = parse(Int, (split(securitydata["newest_available_date"] , "-")[1]) )
+        end
             
         dyear = year
         query = Dict("securityid"=>securityid,
@@ -372,7 +375,9 @@ function updatecolumndata_fromquandl(datacollection::Mongoc.Collection, security
             # If document with latest year is present, compare the latest dates
             doc = Mongoc.find_one(datacollection, Mongoc.BSON(query))
           
-            if (doc["datasource"]["newest_available_date"]
+            if (haskey(doc["datasource"], "newest_available_date") && 
+                    haskey(securitydata, "newest_available_date") && 
+                    doc["datasource"]["newest_available_date"]
                 == securitydata["newest_available_date"])
                 Logger.info("In updatecolumndata_fromquandl(): Column data is up-to-date for securityid: $(securityid), dataset:$(securitydata["dataset_code"]) and datasource: $(securitydata["database_code"])")
                 
@@ -416,7 +421,7 @@ function updatecolumndata_fromquandl(datacollection::Mongoc.Collection, security
 
             data_quandl = getcolumndata(securitydata, 
                                 startdate = string(Date(latest_date) + Dates.Day(1)),
-                                enddate = securitydata["newest_available_date"])
+                                enddate = get(securitydata, "newest_available_date", ""))
         
             if data_quandl != Dict{String, Any}()
                 #get true data and columns
@@ -706,7 +711,10 @@ function updatecolumndata_fromEODH(datacollection::Mongoc.Collection, securityid
         return insertcolumndata_fromquandl(datacollection, securityid, securitydata, priority)
     else
         #Update logic
-        year = parse(Int, (split(securitydata["newest_available_date"] , "-")[1]))
+        year = 2030
+        if haskey(securitydata, "newest_available_date")
+            year = parse(Int, (split(securitydata["newest_available_date"] , "-")[1]))
+        end
             
         dyear = year
         query = Dict("securityid"=>securityid,
@@ -719,9 +727,9 @@ function updatecolumndata_fromEODH(datacollection::Mongoc.Collection, securityid
 
         if(ct > 0) 
             # If document with latest year is present, compare the latest dates
-            doc = Mongoc.find_one(datacollection, query)
+            doc = Mongoc.find_one(datacollection, Mongoc.BSON(query))
           
-            if (doc["datasource"]["newest_available_date"]
+            if (haskey(doc["datasource"], "newest_available_date") && doc["datasource"]["newest_available_date"]
                 == today)
                 Logger.info("In updatecolumndata_fromEODH(): Column data is up-to-date for securityid: $(securityid), dataset:$(securitydata["dataset_code"]) and datasource: $(securitydata["database_code"])")
                 
