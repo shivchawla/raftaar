@@ -6,7 +6,7 @@ function getlatestdate(data)
         return
     end 
     nvals = length(data["values"])
-    dates = Vector{String}(nvals)
+    dates = Vector{String}(undef, nvals)
     for i=1:nvals
         dates[i] = data["values"][i][date_column]
     end
@@ -34,7 +34,7 @@ function checkduplicates_and_update(datacollection, query, data)
 
     num_unique_dates = length(keys(vals_dict))
     if  num_unique_dates!= nvals
-        updated_vals = Vector{Any}(num_unique_dates)
+        updated_vals = Vector{Any}(undef, num_unique_dates)
         for (i,key) in enumerate(sort(collect(keys(vals_dict))))
             updated_vals[i] = vals_dict[key]
         end 
