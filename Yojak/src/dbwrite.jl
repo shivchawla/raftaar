@@ -1,5 +1,5 @@
 function getlatestdate(data)
-    date_column = find(data["columns"].== "Date")
+    date_column = findall(isequal("Date"), data["columns"])
     if(length(date_column) > 0)
         date_column = date_column[1]
     else
@@ -18,7 +18,7 @@ end
 
 """
 function checkduplicates_and_update(datacollection, query, data)
-    date_column = find(data["columns"].== "Date")
+    date_column = findall(isequal("Date"), data["columns"])
     
     if(length(date_column) > 0)
         date_column = date_column[1]
@@ -385,7 +385,7 @@ function updatecolumndata_fromquandl(datacollection::Mongoc.Collection, security
             end
         #First try to find the last available year document               
         elseif(ct == 0)
-            while (ct == 0)          
+            while (ct == 0 && dyear > 1990)                   
                 dyear = dyear - 1
                 query = Dict("securityid"=>securityid,
                              "year"=>dyear, 
@@ -393,6 +393,11 @@ function updatecolumndata_fromquandl(datacollection::Mongoc.Collection, security
                             "datasource.dataset_code"=>securitydata["dataset_code"])
                 ct = Mongoc.count_documents(datacollection, Mongoc.BSON(query))
             end
+        end
+
+        if dyear == 1990 #seems like some data-issue 
+            Logger.warn("In updatecolumndata_fromquandl(): Data issue(no/little data present) for securityid: $(securityid), dataset:$(securitydata["dataset_code"]) and datasource: $(securitydata["database_code"])")
+            return 1
         end    
 
         try   
@@ -844,8 +849,8 @@ function updatecolumndata_fromEODH(datacollection::Mongoc.Collection, securityid
                     end
                 end 
             end
-
         catch err
+            println(err)
             Logger.warn("In updatecolumndata_fromEODH(), data for securityid $securityid and year:$dyear doesn't exist in the database. SKIPPING!!!")
             return -1
         end        
