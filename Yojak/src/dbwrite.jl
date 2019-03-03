@@ -203,6 +203,58 @@ function insertsecuritydata_fromquandl(securitycollection::Mongoc.Collection, se
 end
 
 """
+Insert security data in mongodb
+"""
+function insertsecuritydata(securitycollection::Mongoc.Collection, securityid::Int, sourcedata::Dict{String,Any}, sourcename::String) 
+    
+    Logger.info("Inserting security data for securityid:$securityid")
+
+    sourcedata["sourcename"] = "$(sourcename)_$(sourcedata["database_code"])"
+    
+    if(Mongoc.count_documents(securitycollection, Mongoc.BSON(Dict("securityid"=>securityid))) == 0)
+            
+        curateddata = curatequandlsecurity(sourcedata, sourcedata["database_code"])
+
+        # Here insert if security didn't exist
+        securitydata = Dict{String , Any}("securityid" => securityid,
+            #"ISIN" => ISIN,
+            "ticker" => curateddata["ticker"],
+            "exchange" => curateddata["exchange"],
+            "securitytype" => curateddata["securitytype"],
+            "country" => curateddata["country"],
+            "name" => get(sourcedata,"name","NULL"),
+            "datasources" => Vector{Dict{String,Any}}([sourcedata]))
+        
+        Mongoc.insert_one(securitycollection, Mongoc.BSON(securitydata))
+
+        return 1
+    
+    else 
+        
+        Logger.info("In insertsecuritydata_fromquandl(): securityid: $(securityid) already exists in the database")
+        Logger.info("Adding source information from quandl/$(sourcedata["database_code"])")
+        
+        query = Dict("securityid"=>securityid, 
+                                    "datasources"=>Dict("\$elemMatch"=>Dict("sourcename"=>"quandl_"*sourcedata["database_code"],
+                            "dataset_code"=>sourcedata["dataset_code"])))
+        if(Mongoc.count_documents(securitycollection, Mongoc.BSON(query)) == 0)
+       
+            # Add another data source
+            Mongoc.update_one(securitycollection, Mongoc.BSON(Dict("securityid"=>securityid)), Mongoc.BSON(Dict("\$push"=>Dict("datasources"=>sourcedata))))
+                #Dict("datasources"=>Dict("sourcename"=>"quandl_"*data["database_code"], 
+                            #"data"=>data))))
+            return 1
+
+        else
+            Logger.info("In insertsecuritydata_fromquandl(): quandl/$(sourcedata["database_code"]) datasource already exists for $(securityid)")
+            Logger.info("Cannot add source information from quandl/$(sourcedata["database_code"])")
+            return -1
+        end    
+                    
+    end
+end
+
+"""
 Update security data in mongodb
 THIS FUNCTION NEEDS TO BE FIXED FOR CORRECT QUERIES (A LOT OF HACKY CODE)
 """
@@ -568,13 +620,14 @@ function insertcolumndata_fromEODH(datacollection::Mongoc.Collection, securityid
 
     Logger.info("In insertcolumndata_fromEODH(): Inserting column data for securityid:$securityid")
     
-    if (Mongoc.count_documents(datacollection, ("securityid"=>securityid, "priority"=>priority, "datasource.database_code"=>securitydata["database_code"])) > 0)
+    query = Mongoc.BSON(Dict("securityid"=>securityid, "priority"=>priority, "datasource.database_code"=>securitydata["database_code"])) 
+    if Mongoc.count_documents(datacollection, query) > 0
         Logger.warn("In insertcolumndata_fromEODH(), securityid $securityid for sourcename: $(securitydata["database_code"]) at priority: $(priority) already exists in the database.")
         
         # THIS should not happen
         # But in  case this happens....REMOVE ALL DATA for data tables
         Logger.info("In insertcolumndata_fromEODH(): DELETING data for securityid $securityid for sourcename: $(securitydata["database_code"]) at priority: $(priority) from the database") 
-        delete(datacollection, ("securityid"=>securityid, "priority"=>priority, "datasource.database_code"=>securitydata["database_code"]))
+        Mongoc.delete(datacollection, query)
         
         #AND CONTINUE
     end
@@ -604,7 +657,8 @@ function insertcolumndata_fromEODH(datacollection::Mongoc.Collection, securityid
                                                 "priority" => priority,
                                                 "datasource" => sourcedata,
                                                 "data" => Dict{String, Any}("columns"=>columns, "values"=>array))
-                Mongoc.insert_one(datacollection , BSON(toinsertdict))
+
+                Mongoc.insert_one(datacollection, Mongoc.BSON(toinsertdict))
             end
             
         end

@@ -96,32 +96,36 @@ function getmetadata_OLD(database_code::AbstractString; per_page::Int = 100)
     end
 end
 
-function getmetadata(database_code::AbstractString) 
+function getmetadata(database_code::AbstractString; refetch = true) 
 
     source_dir = Base.source_dir()
+    
     #first create initial request for single page.
     path = getbaseurl_quandl() * "v3/databases/$database_code/metadata?api_key=$(getapikey_quandl())" 
-    Logger.info("Downloading metadata from Quandl/$(database_code)")
+    
+    if refetch
+        Logger.info("Downloading metadata from Quandl/$(database_code)")
+    end
     
     zip_data=source_dir*"/tmp/zip_metadata_"*database_code
     fdir=source_dir*"/data"
     metadata_file = "$fdir/$(database_code)_metadata.csv"
     metadata = Vector{Dict{String, Any}}()
-    
 
     try
-        #download(path, zip_data)
+        if refetch
+            download(path, zip_data)
 
-        r = ZipFile.Reader(zip_data)
-        
-        if length(r.files) > 0
-            f = r.files[1]
-            println("Extracting Metadata file")
+            r = ZipFile.Reader(zip_data)
             
-            open(metadata_file, "w") do file
-                write(file, read(f, String))
+            if length(r.files) > 0
+                f = r.files[1]
+                println("Extracting Metadata file")
+                
+                open(metadata_file, "w") do file
+                    write(metadata_file, readstring(f) )
+                end
             end
-
         end
 
         #Now process the metadata file
@@ -134,7 +138,7 @@ function getmetadata(database_code::AbstractString)
                 
                 dict = Dict(
                         "database_code" => database_code,
-                        "dataset_code" => string(data[row, find(headers.=="code")[1]]),
+                        "dataset_code" => String(data[row, find(headers.=="code")[1]]),
                         "name" => data[row, find(headers.=="name")[1]],
                         "description" => data[row, find(headers.=="description")[1]],
                         "refreshed_at" => data[row, find(headers.=="refreshed_at")[1]],
@@ -274,10 +278,19 @@ function curatequandlsecurity(quandlsecurity::Dict{String,Any}, quandlsource::St
     curateddata = Dict{String,Any}()
 
     if quandlsource == "NSE"
-        curateddata["ticker"] = String(quandlsecurity["dataset_code"])
+        curateddata["ticker"] = replace(String(quandlsecurity["dataset_code"]), r"[^a-zA-Z0-9]" => "_")
+        curateddata["actTicker"] = String(quandlsecurity["dataset_code"])
         curateddata["exchange"] = "NSE"
         curateddata["securitytype"] = "EQ"
         curateddata["country"] = "IN"
+
+    elseif quandlsource == "US"
+        curateddata["ticker"] = replace(String(quandlsecurity["dataset_code"]), r"[^a-zA-Z0-9]" => "_")
+        curateddata["actTicker"] = String(quandlsecurity["dataset_code"])
+        curateddata["exchange"] = "US"
+        curateddata["securitytype"] = "EQ"
+        curateddata["country"] = "US"
+
     elseif quandlsource == "XNSE"    
         
         #XNSE has dataset codes as ticker_ADJ or ticker_UADJ

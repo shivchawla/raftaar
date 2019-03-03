@@ -10,7 +10,7 @@ function getapikey_EODH()
         Logger.error("Api Key is not initialized")
     end
 
-    api_key = replace(readstring(PATH*"/token/auth_token_EODH"), "\n", "")
+    api_key = replace(read(PATH*"/token/auth_token_EODH", String), "\n" => "")
     
     if api_key == ""
         println("Empty API Key")
@@ -19,7 +19,6 @@ function getapikey_EODH()
     end
 
     return api_key
-
 end
 
 """
@@ -70,9 +69,6 @@ function downloadHTTPData(url)
         end
     end
 end
-
-
-
 
 """
 function to get daily updates from EODH
@@ -125,7 +121,6 @@ function getdailydata_EODHfromfile(ticker::String, exchange::String, date::Strin
 
     return (true, output)       
 end
-
 
 """
 function to get column and values data for a security 
@@ -208,16 +203,16 @@ function getcolumndata_EODH(ticker::String, exchange::String; startdate="", endd
         data_keys = ["Date", "Open", "High", "Low", "Close", "Volume", "Adjustment Factor", "Adjustment Type"]        
         available_keys = ["Date", "Open", "High", "Low", "Close", "Volume"]
 
-        data = Vector{Any}(length(eodData))
+        data = Vector{Any}(undef, length(eodData))
 
-        nextAdjFactor = nothing
-        nextAdjType = nothing
+        nextAdjFactor = ""
+        nextAdjType = ""
 
         for i in 1:length(eodData)
 
             date = Date(eodData[i]["date"])
 
-            data_today = Vector{Any}(length(data_keys))
+            data_today = Vector{Any}(undef, length(data_keys))
             
             for (j, key) in enumerate(available_keys)
                 data_today[j] = eodData[i][lowercase(key)]
@@ -227,11 +222,11 @@ function getcolumndata_EODH(ticker::String, exchange::String; startdate="", endd
             data_today[8] = nextAdjType
 
             # Now compute next day factors
-            nextAdjFactor = nothing
-            nextAdjType = nothing
+            nextAdjFactor = ""
+            nextAdjType = ""
 
-            splitIdxArr = find(splitDates.==date)
-            dividendIdxArr = find(dividendDates.==date)
+            splitIdxArr = findall(isequal(date), splitDates) 
+            dividendIdxArr = findall(isequal(date), dividendDates)
 
             if length(splitIdxArr) != 0
                 nextAdjFactor = splitData[splitIdxArr[1]]
@@ -256,5 +251,4 @@ function getcolumndata_EODH(ticker::String, exchange::String; startdate="", endd
             "data" => data,
             "columns" => data_keys)
     end   
-    
 end
