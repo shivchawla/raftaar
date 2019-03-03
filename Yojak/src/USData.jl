@@ -46,10 +46,10 @@ function getValidSecurities(date)
 
                 #if Volume data is available for the security for the date (non-zero)
                 if(dlm_data[i, 11] > 0)
-                    push!(tickers, Dict(
-                            "dataset_code" => dlm_data[i,1], 
+                    push!(validSecurities, Dict{String, Any}(
+                            "dataset_code" => String(dlm_data[i,1]), 
                             "database_code" => "US", 
-                            "name" => dlm_data[i,2]))
+                            "name" => String(dlm_data[i,2])))
                 end
             end 
         end
@@ -57,7 +57,7 @@ function getValidSecurities(date)
    		println(err)
     end
 
-    return tickers
+    return validSecurities
 end
 
 
@@ -106,14 +106,14 @@ end
 function updatedb_fromEODH_US(date = nothing)
     try
     	#1. Download bulk data for date
-    	bulkData = downloadBulkData(date) 
+    	#bulkData = downloadBulkData(date) 
 
         #Get validSecurities with non-zero volume
     	validSecurities = getValidSecurities(date)
 
         if length(validSecurities) > 0
     		#Read all the symbols and do the historical data from symbol 
-    		for validSecurity in validSecurities
+    		for validSecurity in validSecurities[1:3]
     	        updatedb_fromEODH_perUSsecurity(validSecurity, 3, false)
             end
         end

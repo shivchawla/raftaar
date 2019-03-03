@@ -214,17 +214,20 @@ function insertsecuritydata(securitycollection::Mongoc.Collection, securityid::I
     if(Mongoc.count_documents(securitycollection, Mongoc.BSON(Dict("securityid"=>securityid))) == 0)
             
         curateddata = curatequandlsecurity(sourcedata, sourcedata["database_code"])
+        curateddata["name"] = String(get(sourcedata, "name", "NULL"))
+        delete!(sourcedata, "name")
 
         # Here insert if security didn't exist
-        securitydata = Dict{String , Any}("securityid" => securityid,
+        securitydata = Dict{String, Any}("securityid" => securityid,
             #"ISIN" => ISIN,
             "ticker" => curateddata["ticker"],
             "exchange" => curateddata["exchange"],
             "securitytype" => curateddata["securitytype"],
             "country" => curateddata["country"],
-            "name" => get(sourcedata,"name","NULL"),
-            "datasources" => Vector{Dict{String,Any}}([sourcedata]))
-        
+            "name" => curateddata["name"],
+            "datasources" => [sourcedata])
+
+
         Mongoc.insert_one(securitycollection, Mongoc.BSON(securitydata))
 
         return 1
@@ -840,3 +843,4 @@ function updatecolumndata_fromEODH(datacollection::Mongoc.Collection, securityid
         end        
     end
 end
+
