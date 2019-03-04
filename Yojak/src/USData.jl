@@ -113,7 +113,7 @@ function updatedb_fromEODH_US(date = nothing)
 
         if length(validSecurities) > 0
     		#Read all the symbols and do the historical data from symbol 
-    		for validSecurity in validSecurities[1:3]
+    		for validSecurity in validSecurities
     	        updatedb_fromEODH_perUSsecurity(validSecurity, 3, false)
             end
         end
@@ -124,31 +124,35 @@ function updatedb_fromEODH_US(date = nothing)
 
 end
 
-function initialFullDownload()
-    endDate = Date("2019-03-01")
-    startDate = Date("1998-01-01")
+function initialFullDownload(startDate = nothing, endDate = nothing)
+    endDate = endDate == nothing ? Date(now()) : Date(endDate)
+    startDate = startDate == nothing ? Date("1998-01-01") : Date(startDate)
 
     for date in endDate:Day(-1):startDate
 
-        if dayofweek(date) != 0 && dayofweek(date) != 6
+        try
+            if dayofweek(date) != 0 && dayofweek(date) != 6
 
-            #1. Download bulk data for date
-            bulkData = downloadBulkData(date) 
+                #1. Download bulk data for date
+                bulkData = downloadBulkData(date) 
 
-            #Get validSecurities with non-zero volume
-            validSecurities = getValidSecurities(date)
+                #Get validSecurities with non-zero volume
+                validSecurities = getValidSecurities(date)
 
-            if length(validSecurities) > 0
-                #Read all the symbols and do the historical data from symbol 
-                for validSecurity in validSecurities
+                if length(validSecurities) > 0
+                    #Read all the symbols and do the historical data from symbol 
+                    for validSecurity in validSecurities
 
-                    if !alreadyExistsUSData(validSecurity, 3)
-                        updatedb_fromEODH_perUSsecurity(validSecurity, 3, false)
+                        if !alreadyExistsUSData(validSecurity, 3)
+                            updatedb_fromEODH_perUSsecurity(validSecurity, 3, false)
+                        end
+
                     end
-
                 end
-            end
 
+            end
+        catch err
+            println(err)
         end
 
     end 
