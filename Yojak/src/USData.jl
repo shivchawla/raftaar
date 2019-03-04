@@ -44,12 +44,18 @@ function getValidSecurities(date)
         if nrows > 0
             for i = 1:nrows
 
+                isVolumeGreaterThanThreshold = false
+                try
+                    isVolumeGreaterThanThreshold = dlm_data[i, 10]*dlm_data[i, 11] > 100000
+                catch err
+                end
+
                 #if Volume data is available for the security for the date (non-zero)
-                if(dlm_data[i, 11] > 0)
+                if isVolumeGreaterThanThreshold
                     push!(validSecurities, Dict{String, Any}(
-                            "dataset_code" => String(dlm_data[i,1]), 
+                            "dataset_code" => string(dlm_data[i,1]), 
                             "database_code" => "US", 
-                            "name" => String(dlm_data[i,2])))
+                            "name" => string(dlm_data[i,2])))
                 end
             end 
         end
@@ -128,6 +134,7 @@ function initialFullDownload(startDate = nothing, endDate = nothing)
     endDate = endDate == nothing ? Date(now()) : Date(endDate)
     startDate = startDate == nothing ? Date("1998-01-01") : Date(startDate)
 
+    alreadyAddedTickers = String[]
     for date in endDate:Day(-1):startDate
 
         try
@@ -142,9 +149,15 @@ function initialFullDownload(startDate = nothing, endDate = nothing)
                 if length(validSecurities) > 0
                     #Read all the symbols and do the historical data from symbol 
                     for validSecurity in validSecurities
+                        ticker = get(validSecurity, "dataset_code", "")
 
-                        if !alreadyExistsUSData(validSecurity, 3)
-                            updatedb_fromEODH_perUSsecurity(validSecurity, 3, false)
+                        if findall(isequal(ticker), alreadyAddedTickers) == Int64[]
+
+                            if !alreadyExistsUSData(validSecurity, 3)
+                                updatedb_fromEODH_perUSsecurity(validSecurity, 3, false)
+                            end
+
+                            push!(alreadyAddedTickers, ticker)
                         end
 
                     end
