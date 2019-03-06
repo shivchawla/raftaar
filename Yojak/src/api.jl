@@ -540,18 +540,15 @@ function history_unadj(secids::Vector{Int},
 
         # println("Again finding in the global data stores: $(now())")
 
-        if updateStatus
-            #finally get from updated global stores
-            ta = findinglobalstores(secids, datatype, frequency,
-                                        horizon, enddate,
-                                        offset = offset,
-                                        forwardfill = forwardfill,
-                                        securitytype = securitytype,
-                                        exchange = exchange,
-                                        country = country)
-        else 
-            ta = more_ta
-        end
+        #finally get from updated global stores
+        ta = findinglobalstores(secids, datatype, frequency,
+                                    horizon, enddate,
+                                    offset = offset,
+                                    forwardfill = forwardfill,
+                                    securitytype = securitytype,
+                                    exchange = exchange,
+                                    country = country)
+        
     end
 
     ta = __fillmissingdata(ta, secids)
@@ -622,17 +619,13 @@ function history_unadj(secids::Vector{Int},
 
         # println("Again finding in the global data stores: $(now())")
 
-        if updateStatus
-            #finally get from updated global stores
-            ta = findinglobalstores(secids, datatype, frequency,
-                                        startdate, enddate,
-                                        forwardfill = forwardfill,
-                                        securitytype = securitytype,
-                                        exchange = exchange,
-                                        country = country)
-        else
-            ta = more_ta
-        end
+        #finally get from updated global stores
+        ta = findinglobalstores(secids, datatype, frequency,
+                                    startdate, enddate,
+                                    forwardfill = forwardfill,
+                                    securitytype = securitytype,
+                                    exchange = exchange,
+                                    country = country)
 
     end
 

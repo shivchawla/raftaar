@@ -1,36 +1,24 @@
 println(ENV)
-println("Running data update process for Quandl XNSE and NSE at $(now())")
-println()
 
 using YWrite
-using Mongo
+using Mongoc
 using JSON
 using Logger
 using ZipFile
 using Dates
 using DelimitedFiles
 
-const source_dir = Base.source_dir()
+println("Running data update process for NSE at $(now())")
+println()
 
-parameters = JSON.parsefile(source_dir*"/configuration_quandl_update.json")
-mongo_user = parameters["mongo_user"]
-mongo_pass = parameters["mongo_pass"]
-mongo_host = parameters["mongo_host"]
-mongo_port = parameters["mongo_port"]
+function connect(host::String, port::Int, user::String="", pass::String="")
+    usr_pwd_less = user=="" && pass==""
 
-mongo_database = parameters["mongo_database"]
+    #info_static("Configuring datastore connections")
+    client = usr_pwd_less ? Mongoc.Client("mongodb://$(host):$(port)") :
+                            Mongoc.Client("mongodb://$(user):$(pass)@$(host):$(port)/?authMechanism=MONGODB-CR&authSource=admin")
+end
 
-usr_pwd_less = mongo_user=="" && mongo_pass==""
-client = usr_pwd_less ? MongoClient(mongo_host, mongo_port) :
-                        MongoClient(mongo_host, mongo_port, mongo_user, mongo_pass)
-
-YWrite.configure(client, database = mongo_database)
-
-#Download partial file for today
-auth_token_quandl = replace(readstring(joinpath(source_dir*"/../src/token/auth_token_quandl")),"\n","")
-auth_token_EODH = replace(readstring(joinpath(source_dir*"/../src/token/auth_token_EODH")),"\n","")
-refreshAll = haskey(parameters, "refreshAll") ? parameters["refreshAll"] : false
-debDownload = haskey(parameters, "debDownload") ? parameters["debDownload"] : true
 
 function fetchBulkFromQuandl(exchange::String, token::String)
     try
@@ -86,23 +74,34 @@ function updateSecuritiesList(download=true)
     catch err
         println(err)
     end
-
 end
+
+const source_dir = Base.source_dir()
+
+parameters = JSON.parsefile(source_dir*"/configuration_quandl_update.json")
+mongo_user = parameters["mongo_user"]
+mongo_pass = parameters["mongo_pass"]
+mongo_host = parameters["mongo_host"]
+mongo_port = parameters["mongo_port"]
+
+mongo_database = parameters["mongo_database"]
+
+client = connect(mongo_host, mongo_port, mongo_user, mongo_pass)
+YWrite.configure(client, database = mongo_database)
+
+#Download partial file for today
+auth_token_quandl = replace(read(joinpath(source_dir*"/../src/token/auth_token_quandl"), String),"\n" => "")
+auth_token_EODH = replace(read(joinpath(source_dir*"/../src/token/auth_token_EODH"), String),"\n" => "")
+refreshAll = haskey(parameters, "refreshAll") ? parameters["refreshAll"] : false
+debDownload = haskey(parameters, "debDownload") ? parameters["debDownload"] : true
+
 
 #updateSecuritiesList(debDownload)
 
-@sync begin
-    #There is no latest file for NSE
-    #Indices list
-    #allIndices = JSON.parsefile(source_dir*"/../src/data/indices.json")
-    #YWrite.updatedb_fromNSEIndices(allIndices, priority=2, refreshAll=true)
+#There is no latest file for NSE
+#Indices list
+allIndices = JSON.parsefile(source_dir*"/../src/data/indices.json")
+YWrite.updatedb_fromNSEIndices(allIndices, priority=2, refreshAll=true)
 
-    #fetchBulkFromQuandl("XNSE", quandl_auth_token)
-    #YWrite.updatedb_fromquandl("XNSE", priority=2, refreshAll = refreshAll)
-
-    #fetchBulkFromEODH("NSE", auth_token_EODH)
-    YWrite.updatedb_fromEODH("NSE", priority=3, refreshAll = refreshAll)
-
-    #There is no latest file for NSE
-    #YWrite.updatedb_fromquandl("NSE", priority=1, refreshAll = refreshAll)
-end
+#fetchBulkFromEODH("NSE", auth_token_EODH)
+YWrite.updatedb_fromEODH("NSE", priority=3, refreshAll = refreshAll)

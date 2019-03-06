@@ -70,7 +70,7 @@ function generateid()
     #Here create a new
     
     #find the count in the security collection
-    ct = count(securitycollection()) + 1
+    ct = Mongoc.count_documents(securitycollection()) + 1
 
     file = open(abspath(PATH*"/randomsequence.txt"),"r")
     lines = readlines(file)
@@ -337,11 +337,6 @@ function updatedb_fromEODH_persecurity(securitydata::Dict{String,Any}, datasourc
     #used NSE/securty-data from Quandl
     securityid = getsecurityid(curatequandlsecurity(securitydata, datasource))
     
-    println("updatedb_fromEODH_persecurity")
-    println(securityid)
-    
-    return 
-
     if securityid == -1
         Logger.warn("In updatedb_fromEODH_persecurity(): security is not present. Attempting to INSERT instead!")
         
@@ -355,10 +350,6 @@ function updatedb_fromEODH_persecurity(securitydata::Dict{String,Any}, datasourc
         end
     end    
    
-    println(securityid)
-    println(securitydata)
-    return
-
     #Attempt updating column data from the EODH
     success = updatecolumndata_fromEODH(datacollection(), securityid, securitydata, priority, refreshAll)
         
@@ -374,7 +365,7 @@ function updatedb_fromEODH_persecurity(securitydata::Dict{String,Any}, datasourc
 end
 
 
-function updatedb_fromEODH(datasource::String; priority::Int=1, refreshAll::Bool = false)
+function updatedb_fromEODH(datasource::String; priority::Int=1, refreshAll::Bool = false, rewriteTickers::Vector{String} = String[], tickers::Vector{String} = String[])
     
     #Get meta data from quandl databases (even in case of EODH -- NSE/Quandl is free)
     # But as of 2019-01-09, Quandl/NSE is deprecated, so don't download any meta-data
@@ -385,15 +376,26 @@ function updatedb_fromEODH(datasource::String; priority::Int=1, refreshAll::Bool
         Logger.warn("updatedb_fromEODH(): No meta data found for Quandl/$(datasource)")
         Logger.warn("updatedb_fromEODH(): Update Failed!!!")
         return 
-    
     else
-        
         for securitydata in metadata
+
+            #Logic two rewrite a particular ticker
+            tk = String(securitydata["dataset_code"])
+
+            if length(tickers) > 0 && length(find(x->x==tk, tickers)) == 0
+                continue
+            end
+
+            if length(rewriteTickers) != 0 && length(find(x->x==tk, rewriteTickers)) != 0
+                success = updatedb_fromEODH_persecurity(securitydata, datasource, priority, true)
+            else
+                success = updatedb_fromEODH_persecurity(securitydata, datasource, priority, refreshAll)
+            end
 
             # first try to search document for this security 
             # data in the collection. if found, then proceed with update
             # else insert as a new security
-            success  = updatedb_fromEODH_persecurity(securitydata, datasource, priority, refreshAll)
+            
             println("")
         end
     end

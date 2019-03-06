@@ -31,6 +31,7 @@ include("EODH.jl")
 include("dbread.jl")
 include("dbwrite.jl")
 include("dataio.jl")
+include("USData.jl")
 
 end
 

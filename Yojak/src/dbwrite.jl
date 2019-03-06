@@ -1,12 +1,12 @@
 function getlatestdate(data)
-    date_column = find(data["columns"].== "Date")
+    date_column = findall(isequal("Date"), data["columns"])
     if(length(date_column) > 0)
         date_column = date_column[1]
     else
         return
     end 
     nvals = length(data["values"])
-    dates = Vector{String}(nvals)
+    dates = Vector{String}(undef, nvals)
     for i=1:nvals
         dates[i] = data["values"][i][date_column]
     end
@@ -18,7 +18,7 @@ end
 
 """
 function checkduplicates_and_update(datacollection, query, data)
-    date_column = find(data["columns"].== "Date")
+    date_column = findall(isequal("Date"), data["columns"])
     
     if(length(date_column) > 0)
         date_column = date_column[1]
@@ -34,7 +34,7 @@ function checkduplicates_and_update(datacollection, query, data)
 
     num_unique_dates = length(keys(vals_dict))
     if  num_unique_dates!= nvals
-        updated_vals = Vector{Any}(num_unique_dates)
+        updated_vals = Vector{Any}(undef, num_unique_dates)
         for (i,key) in enumerate(sort(collect(keys(vals_dict))))
             updated_vals[i] = vals_dict[key]
         end 
@@ -203,6 +203,61 @@ function insertsecuritydata_fromquandl(securitycollection::Mongoc.Collection, se
 end
 
 """
+Insert security data in mongodb
+"""
+function insertsecuritydata(securitycollection::Mongoc.Collection, securityid::Int, sourcedata::Dict{String,Any}, sourcename::String) 
+    
+    Logger.info("Inserting security data for securityid:$securityid")
+
+    sourcedata["sourcename"] = "$(sourcename)_$(sourcedata["database_code"])"
+    
+    if(Mongoc.count_documents(securitycollection, Mongoc.BSON(Dict("securityid"=>securityid))) == 0)
+            
+        curateddata = curatequandlsecurity(sourcedata, sourcedata["database_code"])
+        curateddata["name"] = String(get(sourcedata, "name", "NULL"))
+        delete!(sourcedata, "name")
+
+        # Here insert if security didn't exist
+        securitydata = Dict{String, Any}("securityid" => securityid,
+            #"ISIN" => ISIN,
+            "ticker" => curateddata["ticker"],
+            "exchange" => curateddata["exchange"],
+            "securitytype" => curateddata["securitytype"],
+            "country" => curateddata["country"],
+            "name" => curateddata["name"],
+            "datasources" => [sourcedata])
+
+
+        Mongoc.insert_one(securitycollection, Mongoc.BSON(securitydata))
+
+        return 1
+    
+    else 
+        
+        Logger.info("In insertsecuritydata_fromquandl(): securityid: $(securityid) already exists in the database")
+        Logger.info("Adding source information from quandl/$(sourcedata["database_code"])")
+        
+        query = Dict("securityid"=>securityid, 
+                                    "datasources"=>Dict("\$elemMatch"=>Dict("sourcename"=>"quandl_"*sourcedata["database_code"],
+                            "dataset_code"=>sourcedata["dataset_code"])))
+        if(Mongoc.count_documents(securitycollection, Mongoc.BSON(query)) == 0)
+       
+            # Add another data source
+            Mongoc.update_one(securitycollection, Mongoc.BSON(Dict("securityid"=>securityid)), Mongoc.BSON(Dict("\$push"=>Dict("datasources"=>sourcedata))))
+                #Dict("datasources"=>Dict("sourcename"=>"quandl_"*data["database_code"], 
+                            #"data"=>data))))
+            return 1
+
+        else
+            Logger.info("In insertsecuritydata_fromquandl(): quandl/$(sourcedata["database_code"]) datasource already exists for $(securityid)")
+            Logger.info("Cannot add source information from quandl/$(sourcedata["database_code"])")
+            return -1
+        end    
+                    
+    end
+end
+
+"""
 Update security data in mongodb
 THIS FUNCTION NEEDS TO BE FIXED FOR CORRECT QUERIES (A LOT OF HACKY CODE)
 """
@@ -242,7 +297,7 @@ function updatesecuritydata_fromquandl(securitycollection::Mongoc.Collection, se
 
         if found   #Should always be true 
             # Check if data needs update
-            if (datasource["newest_available_date"] 
+            if (haskey(datasource, "newest_available_date") && datasource["newest_available_date"] 
                 == data["newest_available_date"])
                 Logger.info("updatesecuritydata_fromquandl(): Data is up-to-date for securityid: $(securityid), dataset:$(data["dataset_code"]) and datasource: $(data["database_code"])")
                 return 2
@@ -303,7 +358,10 @@ function updatecolumndata_fromquandl(datacollection::Mongoc.Collection, security
         return insertcolumndata_fromquandl(datacollection, securityid, securitydata, priority)
     else
         #Update logic
-        year = parse(Int, (split(securitydata["newest_available_date"] , "-")[1]) )
+        year = 2030
+        if haskey(securitydata, "newest_available_date")
+            year = parse(Int, (split(securitydata["newest_available_date"] , "-")[1]) )
+        end
             
         dyear = year
         query = Dict("securityid"=>securityid,
@@ -317,7 +375,9 @@ function updatecolumndata_fromquandl(datacollection::Mongoc.Collection, security
             # If document with latest year is present, compare the latest dates
             doc = Mongoc.find_one(datacollection, Mongoc.BSON(query))
           
-            if (doc["datasource"]["newest_available_date"]
+            if (haskey(doc["datasource"], "newest_available_date") && 
+                    haskey(securitydata, "newest_available_date") && 
+                    doc["datasource"]["newest_available_date"]
                 == securitydata["newest_available_date"])
                 Logger.info("In updatecolumndata_fromquandl(): Column data is up-to-date for securityid: $(securityid), dataset:$(securitydata["dataset_code"]) and datasource: $(securitydata["database_code"])")
                 
@@ -325,7 +385,7 @@ function updatecolumndata_fromquandl(datacollection::Mongoc.Collection, security
             end
         #First try to find the last available year document               
         elseif(ct == 0)
-            while (ct == 0)          
+            while (ct == 0 && dyear > 1990)                   
                 dyear = dyear - 1
                 query = Dict("securityid"=>securityid,
                              "year"=>dyear, 
@@ -333,6 +393,11 @@ function updatecolumndata_fromquandl(datacollection::Mongoc.Collection, security
                             "datasource.dataset_code"=>securitydata["dataset_code"])
                 ct = Mongoc.count_documents(datacollection, Mongoc.BSON(query))
             end
+        end
+
+        if dyear == 1990 #seems like some data-issue 
+            Logger.warn("In updatecolumndata_fromquandl(): Data issue(no/little data present) for securityid: $(securityid), dataset:$(securitydata["dataset_code"]) and datasource: $(securitydata["database_code"])")
+            return 1
         end    
 
         try   
@@ -361,7 +426,7 @@ function updatecolumndata_fromquandl(datacollection::Mongoc.Collection, security
 
             data_quandl = getcolumndata(securitydata, 
                                 startdate = string(Date(latest_date) + Dates.Day(1)),
-                                enddate = securitydata["newest_available_date"])
+                                enddate = get(securitydata, "newest_available_date", ""))
         
             if data_quandl != Dict{String, Any}()
                 #get true data and columns
@@ -568,13 +633,14 @@ function insertcolumndata_fromEODH(datacollection::Mongoc.Collection, securityid
 
     Logger.info("In insertcolumndata_fromEODH(): Inserting column data for securityid:$securityid")
     
-    if (Mongoc.count_documents(datacollection, ("securityid"=>securityid, "priority"=>priority, "datasource.database_code"=>securitydata["database_code"])) > 0)
+    query = Mongoc.BSON(Dict("securityid"=>securityid, "priority"=>priority, "datasource.database_code"=>securitydata["database_code"])) 
+    if Mongoc.count_documents(datacollection, query) > 0
         Logger.warn("In insertcolumndata_fromEODH(), securityid $securityid for sourcename: $(securitydata["database_code"]) at priority: $(priority) already exists in the database.")
         
         # THIS should not happen
         # But in  case this happens....REMOVE ALL DATA for data tables
         Logger.info("In insertcolumndata_fromEODH(): DELETING data for securityid $securityid for sourcename: $(securitydata["database_code"]) at priority: $(priority) from the database") 
-        delete(datacollection, ("securityid"=>securityid, "priority"=>priority, "datasource.database_code"=>securitydata["database_code"]))
+        Mongoc.delete(datacollection, query)
         
         #AND CONTINUE
     end
@@ -604,7 +670,8 @@ function insertcolumndata_fromEODH(datacollection::Mongoc.Collection, securityid
                                                 "priority" => priority,
                                                 "datasource" => sourcedata,
                                                 "data" => Dict{String, Any}("columns"=>columns, "values"=>array))
-                Mongoc.insert_one(datacollection , BSON(toinsertdict))
+
+                Mongoc.insert_one(datacollection, Mongoc.BSON(toinsertdict))
             end
             
         end
@@ -641,15 +708,18 @@ function updatecolumndata_fromEODH(datacollection::Mongoc.Collection, securityid
 
     #Find whether the security for datasource already exists in the collection 
     #If not, then insert
-    if(Mongoc.count_documents(datacollection,("securityid"=>securityid, 
+    if(Mongoc.count_documents(datacollection, Mongoc.BSON(Dict("securityid"=>securityid, 
                             "datasource.sourcename"=>"EODH_"*securitydata["database_code"],
-                            "datasource.dataset_code"=>securitydata["dataset_code"])) == 0)
+                            "datasource.dataset_code"=>securitydata["dataset_code"]))) == 0)
         Logger.info("In updatecolumndata_fromEODH(): quandl/$(securitydata["dataset_code"]) datasource doesn't exist for $(securityid)")
         Logger.info("In updatecolumndata_fromEODH(), attempting to insert column data for securityid $securityid in the database")
         return insertcolumndata_fromquandl(datacollection, securityid, securitydata, priority)
     else
         #Update logic
-        year = parse(Int, (split(securitydata["newest_available_date"] , "-")[1]))
+        year = 2030
+        if haskey(securitydata, "newest_available_date")
+            year = parse(Int, (split(securitydata["newest_available_date"] , "-")[1]))
+        end
             
         dyear = year
         query = Dict("securityid"=>securityid,
@@ -662,9 +732,9 @@ function updatecolumndata_fromEODH(datacollection::Mongoc.Collection, securityid
 
         if(ct > 0) 
             # If document with latest year is present, compare the latest dates
-            doc = Mongoc.find_one(datacollection, query)
+            doc = Mongoc.find_one(datacollection, Mongoc.BSON(query))
           
-            if (doc["datasource"]["newest_available_date"]
+            if (haskey(doc["datasource"], "newest_available_date") && doc["datasource"]["newest_available_date"]
                 == today)
                 Logger.info("In updatecolumndata_fromEODH(): Column data is up-to-date for securityid: $(securityid), dataset:$(securitydata["dataset_code"]) and datasource: $(securitydata["database_code"])")
                 
@@ -698,7 +768,7 @@ function updatecolumndata_fromEODH(datacollection::Mongoc.Collection, securityid
             
             if(duplicates)
                 Logger.info("In updatecolumndata_fromEODH(): Duplicate Column data was found for securityid: $(securityid), dataset:$(securitydata["dataset_code"]) and datasource: $(securitydata["database_code"]). Deleted!!!")
-                doc = Mongoc.as_dict(Mongoc.find_one(datacollection, query))
+                doc = Mongoc.as_dict(Mongoc.find_one(datacollection, Mongoc.BSON(query)))
             end
 
             latest_date = getlatestdate(doc["data"])
@@ -779,10 +849,11 @@ function updatecolumndata_fromEODH(datacollection::Mongoc.Collection, securityid
                     end
                 end 
             end
-
         catch err
+            println(err)
             Logger.warn("In updatecolumndata_fromEODH(), data for securityid $securityid and year:$dyear doesn't exist in the database. SKIPPING!!!")
             return -1
         end        
     end
 end
+
