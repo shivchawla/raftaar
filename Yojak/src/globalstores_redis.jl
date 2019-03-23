@@ -547,7 +547,7 @@ function findinglobalstores(secids::Vector{Int},
     end
 
     if forwardfill
-        full_ta = __forwardfill(full_ta)
+        full_ta = full_ta != nothing ? __forwardfill(full_ta) : nothing
     end
 
     full_ta = full_ta != nothing ? getsubset(full_ta, startdate, enddate, offset, frequency) : nothing
@@ -590,7 +590,7 @@ function findinglobalstores(secids::Vector{Int},
     end
     
     if forwardfill
-        full_ta = __forwardfill(full_ta)
+        full_ta = full_ta != nothing ? __forwardfill(full_ta) : nothing
     end
 
     full_ta = full_ta != nothing ? getsubset(full_ta, enddate, horizon, offset, frequency) : nothing

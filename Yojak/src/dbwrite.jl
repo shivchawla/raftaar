@@ -822,7 +822,7 @@ function updatecolumndata_fromEODH(datacollection::Mongoc.Collection, securityid
 
                         if ct > 0
                             #get the already stored data
-                            doc = Mongoc.as_dict(Mongoc.find_one(datacollection,query))
+                            doc = Mongoc.as_dict(Mongoc.find_one(datacollection, Mongoc.BSON(query)))
                             data = doc["data"]["values"]
                             append!(data, array)
                             Mongoc.update_one(datacollection, Mongoc.BSON(query), Mongoc.BSON(Dict("\$set" => Dict("data.values"=>data))))
