@@ -28,6 +28,7 @@ end
 
 securitycollection() = dict["client"][dict["db"]]["security_test"]
 datacollection() = dict["client"][dict["db"]]["data_test"]
+fundamentaldatacollection() = dict["client"][dict["db"]]["data_fundamental"]
 minutedatacollection() = dict["client"][dict["db"]]["data_minute"]
 redisClient() = get(dict, "redis_client", nothing)
 

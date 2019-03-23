@@ -14,6 +14,7 @@ COMPLETE_BACKTEST_SET  = "backtest-completion-set-$(env)";
 BACKTEST_REALTIME_CHANNEL_PREFIX = "backtest-realtime-"
 BACKTEST_FINAL_CHANNEL_PREFIX = "backtest-final-"
 DEFAULT_WAIT_TIME = 5
+CURRENT_WAIT_TIME = 0.1
 
 source_dir = Base.source_dir()
 include("$(source_dir)/Util/evalStrategy.jl")
@@ -199,9 +200,8 @@ function processRedisQueue()
                 removeRequestFromActiveSet(request, success = false)
             end
 
-            waitALittle()
-        else 
-            waitALittle(DEFAULT_WAIT_TIME)
+            return true
+        
         end
     catch err 
         println(err)
@@ -217,8 +217,11 @@ end
 Entry function (runs every 5 seconds when idle/runs immediately otherwise)
 """
 function startProcess() 
+    requestprocessed = false
+
     try
-        processRedisQueue()
+        requestprocessed = processRedisQueue()
+
     catch err 
         println("Error processing redis queue")
         println(err) 
@@ -227,17 +230,24 @@ function startProcess()
             setupRedisClient()
         end
 
-        waitALittle(DEFAULT_WAIT_TIME)
     end
-end
 
-function waitALittle(seconds = 0.1)
-    wait(Timer(seconds))
-    startProcess()
-end
+    if requestprocessed
+        CURRENT_WAIT_TIME = 0.1
+    else
+        CURRENT_WAIT_TIME = DEFAULT_WAIT_TIME
+    end 
 
+end
 
 setupRedisClient()
 
 println("Starting to process redis queue")
-startProcess()
+#Updating the logic to keep the process running without using any recursion
+while 1
+    startProcess()
+    wait(Timer(CURRENT_WAIT_TIME))
+end
+
+
+

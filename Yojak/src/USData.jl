@@ -46,7 +46,7 @@ function getValidSecurities(date)
 
                 isVolumeGreaterThanThreshold = false
                 try
-                    isVolumeGreaterThanThreshold = dlm_data[i, 10]*dlm_data[i, 11] > 100000
+                    isVolumeGreaterThanThreshold = dlm_data[i, 10]*dlm_data[i, 11] > 1000000
                 catch err
                 end
 
