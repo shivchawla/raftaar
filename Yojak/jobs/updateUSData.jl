@@ -36,6 +36,7 @@ auth_token_EODH = replace(read(joinpath(source_dir*"/../src/token/auth_token_EOD
 refreshAll = haskey(parameters, "refreshAll") ? parameters["refreshAll"] : false
 
 
-# YWrite.updatedb_fromEODH_US()
-YWrite.initialFullDownload("2019-01-01")
+#YWrite.updatedb_fromEODH_US()
+#YWrite.initialFullDownload("2019-01-01")
+#YWrite.updateFundamentalAll()
 

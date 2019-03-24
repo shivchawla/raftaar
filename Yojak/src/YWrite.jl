@@ -32,6 +32,7 @@ include("dbread.jl")
 include("dbwrite.jl")
 include("dataio.jl")
 include("USData.jl")
+include("fundamental.jl")
 
 end
 
