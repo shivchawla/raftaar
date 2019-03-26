@@ -200,8 +200,8 @@ function processRedisQueue()
                 removeRequestFromActiveSet(request, success = false)
             end
 
-            return true
-        
+            CURRENT_WAIT_TIME = 0.1
+
         end
     catch err 
         println(err)
@@ -217,11 +217,11 @@ end
 Entry function (runs every 5 seconds when idle/runs immediately otherwise)
 """
 function startProcess() 
-    requestprocessed = false
-
-    try
-        requestprocessed = processRedisQueue()
-
+    try 
+        #Reset current wait time
+        CURRENT_WAIT_TIME = DEFAULT_WAIT_TIME
+        processRedisQueue()
+        
     catch err 
         println("Error processing redis queue")
         println(err) 
@@ -232,19 +232,13 @@ function startProcess()
 
     end
 
-    if requestprocessed
-        CURRENT_WAIT_TIME = 0.1
-    else
-        CURRENT_WAIT_TIME = DEFAULT_WAIT_TIME
-    end 
-
 end
 
 setupRedisClient()
 
 println("Starting to process redis queue")
 #Updating the logic to keep the process running without using any recursion
-while 1
+while true
     startProcess()
     wait(Timer(CURRENT_WAIT_TIME))
 end

@@ -20,6 +20,7 @@ end
 securitycollection() = dict["client"][dict["db"]]["security_test"]
 datacollection() = dict["client"][dict["db"]]["data_test"]
 minutedatacollection() = dict["client"][dict["db"]]["data_minute"]
+fundamentaldatacollection() = dict["client"][dict["db"]]["data_fundamental"]
 
 function deleteAll() 
     Mongoc.delete_many(securitycollection(), BSON(Dict("securityid"=>gt(0))))

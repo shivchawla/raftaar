@@ -1,3 +1,20 @@
+function processData(dict)
+	_id = Dict()
+	for (k,v) in dict
+		if k == ""
+			k = "empty_key"
+		end
+
+	    if typeof(v) == Dict{String, Any}
+	    	_id[replace(k, "." => "_")] = processData(v)
+		else
+			_id[replace(k, "." => "_")] = v
+		end
+    end
+
+    return _id
+end
+
 function downloadFundamentalData(ticker::String, country::String)
 	
 	tkr = ""
@@ -11,10 +28,18 @@ function downloadFundamentalData(ticker::String, country::String)
 	
 	if tkr != ""
 	    downloadUrl = "https://eodhistoricaldata.com/api/fundamentals/$(tkr)?api_token=$(EODH_API_KEY)"
-	  
-	    file = "$(Base.source_dir())/USFundmentalData/$(tkr)/$(tkr)_$(Dates.format(now(), "yyyymmdd"))"
-	    # "https://eodhistoricaldata.com/api/fundamentals/AAPL.US?api_token={your_api_key}
+	  	
+	  	directory = "$(Base.source_dir())/USFundmentalData/$(tkr)"
+	    println("Directory: $(directory)")
+	    try
+	    	mkdir(directory)
+    	catch err
+    		println(err)
+		end
+	    # chmod(directory, 777, recursive = true)
 
+	    file = "$(directory)/$(tkr)_$(Dates.format(now(), "yyyymmdd"))"
+	    
 	    #Create a file
 	    touch(file)
 	    download(downloadUrl, file)
@@ -35,7 +60,7 @@ function updateFundamentalAll(;skipExist::Bool = true)
 	numSecurities = Mongoc.count_documents(securitycollection(), Mongoc.BSON(Dict()))
 
 	while skp < numSecurities
-		docs = Mongoc.collect(Mongoc.find(securitycollection(), Mongoc.BSON(Dict()), Mongoc(Dict("skip" => skp, "limit" => lmt)))) 
+		docs = Mongoc.collect(Mongoc.find(securitycollection(), Mongoc.BSON(Dict()), options = Mongoc.BSON(Dict("skip" => skp, "limit" => lmt)))) 
 
 		for d in docs
 			doc = JSON.parse(Mongoc.as_json(d))
@@ -52,10 +77,9 @@ function updateFundamentalAll(;skipExist::Bool = true)
         skp = skp + 10
 
     end
-
 end
 
-function updateFundamentalForTicker(ticker::String, country::String == "US", securityid::Int64 = -1; skipExist::Bool = true)
+function updateFundamentalForTicker(ticker::String, country::String = "US", securityid::Int64 = -1; skipExist::Bool = true)
 	
 	if securityid == -1
 		securityid = getsecurityid(ticker, exchange = country == "US" ? "US" : "NSE", country = country)
@@ -66,7 +90,7 @@ function updateFundamentalForTicker(ticker::String, country::String == "US", sec
 		return
 	end
 
-	exists = Mongoc.count(fundamentaldatacollection(), Mongoc.BSON(Dict("securityid" => securityid))) > 0
+	exists = Mongoc.count_documents(fundamentaldatacollection(), Mongoc.BSON(Dict("securityid" => securityid))) > 0
 
 	if exists && skipExist
 		println("Skipping as data exists and skipExists is true")
@@ -75,8 +99,8 @@ function updateFundamentalForTicker(ticker::String, country::String == "US", sec
 
 	fData = nothing
 	if ticker != ""
-		fundamentalFile = downloadFundamentalData(tkr)
-		fData = JSON.parseFile(fundamentalFile)
+		fundamentalFile = downloadFundamentalData(ticker, country)
+		fData = processData(JSON.parsefile(fundamentalFile))
 	end
 
 	if fData != nothing
@@ -87,3 +111,4 @@ function updateFundamentalForTicker(ticker::String, country::String == "US", sec
 		end 	
 	end
 end
+
