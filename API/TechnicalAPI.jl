@@ -425,6 +425,59 @@ export UBB, MBB, LBB
 
 
 """
+Keltner Band (Upper/Lower)
+"""
+function _keltner(high, low, close, horizon, width, type)
+  
+  _fubb = nothing
+
+  for name in colnames(close)
+
+    h = rename(high[name], :High)
+    l = rename(low[name], :Low)
+    c = rename(close[name], :Close)
+
+    hlc = merge(merge(h, l, :outer), c, :outer)
+
+    _tubb = rename(keltnerbands(hlc, horizon, width)[type], [name])
+
+    if _fubb == nothing
+      _fubb = _tubb
+    else
+      _fubb = merge(_fubb, _tubb, :outer)
+    end
+  end
+
+  return _fubb
+end
+
+"""
+Upper Keltner Band
+"""
+function UKB(;horizon = horizonDefault(), width = 2.0)
+    close = _getTA(price = "Close", horizon = horizon)
+    high = _getTA(price = "High", horizon = horizon)
+    low = _getTA(price = "Low", horizon = horizon)
+
+    return Indicator(_keltner(high, low, close, horizon, Float64(width), :kup))
+end
+
+
+"""
+Lower Keltner Band 
+"""
+function LKB(;horizon = horizonDefault(), width = 2.0)
+    close = _getTA(price = "Close", horizon = horizon)
+    high = _getTA(price = "High", horizon = horizon)
+    low = _getTA(price = "Low", horizon = horizon)
+
+    return Indicator(_keltner(high, low, close, horizon, Float64(width), :kdn))
+end
+
+export UKB, LKB
+
+
+"""
 Average Directional Movement Index
 """
 function _adx(high, low, close, horizon, type)
@@ -441,12 +494,8 @@ function _adx(high, low, close, horizon, type)
         c = rename(close[name], :Close)
 
         hlc = merge(merge(h, l, :outer), c, :outer)
-
-        # println(hlc)
         
         _tadx = hlc != nothing ? rename(adx(hlc,horizon)[type], [name]) : nothing
-
-        # println(_tadx)
 
         if _tadx != nothing
           push!(all_names, name)
@@ -505,6 +554,41 @@ end
 export RSI
 
 
+fastTSIDefault() = 10
+slowTSIDefault() = 25
+
+"""
+True Strength Index
+"""
+function TSI(;slow = slowTSIDefault(), fast = fastTSIDefault())
+
+  close = _getTA(price = "Close", horizon = max(slow, fast))
+
+  _ftsi = nothing
+  all_names = Symbol[]
+  for name in colnames(close)
+
+     c = rename(close[name], [:Close])
+    _ttsi = nothing
+  
+    if c != nothing
+      _ttsi = rename(tsi(c, slow, fast), [name]) 
+    end 
+
+    if _ttsi != nothing
+      push!(all_names, name)
+      _ftsi = _ftsi == nothing ? _ttsi : merge(_ftsi, _ttsi)
+    end
+  end
+
+  if _ftsi != nothing
+    return Indicator(rename(_ftsi, all_names))
+  end
+end
+
+export TSI
+
+
 """
 Commodity Channel Index
 """
@@ -537,6 +621,127 @@ function CCI(;horizon=horizonDefault())
 end
 
 export CCI
+
+function _vortex(high, low, close, horizon, type)
+    _fvrtx = nothing
+    all_names = Symbol[]
+    for name in colnames(close)
+
+       hlc = merge(merge(rename(low[name], [:Low]), rename(close[name], [:Close]), :outer), rename(high[name], [:High]), :outer)   
+      _tvrtx = nothing
+      
+      if hlc != nothing
+        _tvrtx = rename(vortex(hlc, horizon)[type], [name]) 
+      end 
+
+      if _tvrtx != nothing
+        push!(all_names, name)
+        _fvrtx = _fvrtx == nothing ? _tvrtx : merge(_fvrtx, _tvrtx)
+      end
+    end
+
+    if _fvrtx != nothing
+      return Indicator(rename(_fvrtx, all_names))
+    end
+end
+
+
+"""
+Plus Vortex
+"""
+function PlusVORTEX(;horizon = horizonDefault())
+    
+    close = _getTA(price = "Close", horizon = horizon)
+    high = _getTA(price = "High", horizon = horizon)
+    low = _getTA(price = "Low", horizon = horizon)
+
+   _vortex(high, low, close, horizon, :v_plus)
+
+end
+
+
+"""
+Minus Vortex
+"""
+function MinusVORTEX(;horizon = horizonDefault())
+    
+    close = _getTA(price = "Close", horizon = horizon)
+    high = _getTA(price = "High", horizon = horizon)
+    low = _getTA(price = "Low", horizon = horizon)
+
+    _vortex(high, low, close, horizon, :v_minus)
+
+end
+
+
+export PlusVORTEX, MinusVORTEX
+
+
+"""
+TRIX
+"""
+function TRIX(;horizon = horizonDefault())
+
+  close = _getTA(price = "Close", horizon = horizon)
+
+  _ftrx = nothing
+  all_names = Symbol[]
+  for name in colnames(close)
+
+     c = rename(close[name], [:Close])
+    _ttrx = nothing
+  
+    if c != nothing
+      _ttrx = trix(c, horizon) 
+    end 
+
+    if _ttrx != nothing
+      push!(all_names, name)
+      _ftrx = _ftrx == nothing ? _ttrx : merge(_ftrx, _ttrx)
+    end
+  end
+
+  if _ftrx != nothing
+    return Indicator(rename(_ftrx, all_names))
+  end
+end
+
+export TRIX
+
+
+"""
+MASS INDEX
+"""
+function MASSINDEX(;fast = fastStochasticDefault(), slow = slowStochasticDefault())
+    
+    high = _getTA(price = "High", horizon = max(fast, slow))
+    low = _getTA(price = "Low", horizon = max(fast, slow))
+
+    _fmi = nothing
+    all_names = Symbol[]
+    for name in colnames(high)
+
+       hl = merge(rename(low[name], [:Low]), rename(high[name], [:High]), :outer)
+      
+      _tmi = nothing
+    
+      if hl != nothing
+        _tmi = massindex(hl, fast, slow) 
+      end 
+
+      if _tmi != nothing
+        push!(all_names, name)
+        _fmi = _fmi == nothing ? _tmi : merge(_fmi, _tmi)
+      end
+    end
+
+    if _fmi != nothing
+      return Indicator(rename(_fmi, all_names))
+    end
+end
+
+
+export MASSINDEX
 
 
 fastMACDDefault() = 10
@@ -890,6 +1095,41 @@ end
 export TRUERANGE, AVGTRUERANGE
 
 
+smoothChaikinDefault() = 20
+
+"""
+Chaikin Volatility
+"""
+function CHAIKIN_VOL(;horizon = horizonDefault(), smooth = smoothChaikinDefault())
+
+    high = _getTA(price = "High", horizon = horizon + smooth)
+    low = _getTA(price = "Low", horizon = horizon + smooth)
+
+    _fcvl = nothing
+    all_names = Symbol[]
+    for name in colnames(high)
+
+       hl = merge(rename(low[name], [:Low]), rename(high[name], [:High]), :outer)
+      _tcvl = nothing
+    
+      if hl != nothing
+        _tcvl = chaikinvolatility(hl, smooth, horizon)
+      end 
+
+      if _tcvl != nothing
+        push!(all_names, name)
+        _fcvl = _fcvl == nothing ? _tcvl : merge(_fcvl, _tcvl)
+      end
+    end
+
+    if _fcvl != nothing
+      return Indicator(rename(_fcvl, all_names))
+    end
+end
+
+export CHAIKIN_VOL
+
+
 """
 Accumulation/Distribution Line
 """
@@ -923,6 +1163,147 @@ function ADL()
 end
 
 export ADL
+
+
+"""
+Chaikin Money Flow
+"""
+function CHAIKINMONEYFLOW(;horizon = horizonDefault())
+    
+    volume = _getTA(price = "Volume", horizon = horizon)
+    close = _getTA(price = "Close", horizon = horizon)
+    high = _getTA(price = "High", horizon = horizon)
+    low = _getTA(price = "Low", horizon = horizon)
+
+    _fcmf = nothing
+    all_names = Symbol[]
+    for name in colnames(close)
+
+       hlcv = merge(merge(merge(rename(low[name], [:Low]), rename(close[name], [:Close]), :outer), rename(high[name], [:High]), :outer), rename(volume[name], [:Volume]), :outer)      
+      _tcmf = nothing
+    
+      if hlcv != nothing
+        _tcmf = chaikinmoneyflow(hlcv, horizon)
+      end 
+
+      if _tcmf != nothing
+        push!(all_names, name)
+        _fcmf = _fcmf == nothing ? _tcmf : merge(_fcmf, _tcmf)
+      end
+    end
+
+    if _fcmf != nothing
+      return Indicator(rename(_fcmf, all_names))
+    end
+end
+
+export CHAIKINMONEYFLOW
+
+
+"""
+Force Index
+"""
+function FORCEINDEX(;horizon = horizonDefault())
+    
+    volume = _getTA(price = "Volume", horizon = horizon)
+    close = _getTA(price = "Close", horizon = horizon)
+    
+    _ffi = nothing
+    all_names = Symbol[]
+    for name in colnames(close)
+
+       cv = merge(rename(close[name], [:Close]), rename(volume[name], [:Volume]), :outer)
+      _tfi = nothing
+    
+      if cv != nothing
+        _tfi = forceindex(cv, horizon)
+      end 
+
+      if _tfi != nothing
+        push!(all_names, name)
+        _ffi = _ffi == nothing ? _tfi : merge(_ffi, _tfi)
+      end
+    end
+
+    if _ffi != nothing
+      return Indicator(rename(_ffi, all_names))
+    end
+end
+
+export FORCEINDEX
+
+
+"""
+Ease of Movement
+"""
+function EASEOFMOVEMENT(;horizon = horizonDefault())
+    
+    volume = _getTA(price = "Volume", horizon = horizon)
+    high = _getTA(price = "High", horizon = horizon)
+    low = _getTA(price = "Low", horizon = horizon)
+
+    _feom = nothing
+    all_names = Symbol[]
+    for name in colnames(high)
+
+       hlv = merge(merge(rename(low[name], [:Low]), rename(high[name], [:High]), :outer), rename(volume[name], [:Volume]), :outer)      
+      _teom = nothing
+    
+      if hlv != nothing
+        _teom = easeofmovement(hlv, horizon)
+      end 
+
+      if _teom != nothing
+        push!(all_names, name)
+        _feom = _feom == nothing ? _teom : merge(_feom, _teom)
+      end
+    end
+
+    if _feom != nothing
+      return Indicator(rename(_feom, all_names))
+    end
+end
+
+export EASEOFMOVEMENT
+
+
+
+"""
+Volume Price Trend
+"""
+function VOLUMEPRICETREND(;horizon = horizonDefault())
+    
+    close = _getTA(price = "Close", horizon = horizon)
+    volume = _getTA(price = "Volume", horizon = horizon)
+
+    _fvpt = nothing
+    all_names = Symbol[]
+
+    for name in colnames(close)
+      
+      _tvpt = nothing
+      v = volume[name]
+      c = close[name]
+
+      cv = merge(rename(c, [:Close]), rename(v, [:Volume]), :inner)
+
+      if cv != nothing
+        _tvpt = volumepricetrend(cv, horizon)    
+      end
+
+      if _tvpt != nothing
+          push!(all_names, name)
+          _fvpt =  _fvpt == nothing ? _tvpt : merge(_fvpt, _tvpt, :outer)
+      end
+    end
+
+    if _fvpt != nothing 
+        return Indicator(rename(_fvpt, all_names))
+    end
+end
+
+export VOLUMEPRICETREND
+
 
 function _aroon(high, low, horizon, type)
    _farn = nothing
@@ -981,41 +1362,6 @@ function AROON_OSC(;horizon = horizonDefault())
 end
 
 export AROON_OSC, AROON_UP, AROON_DOWN
-
-
-smoothChaikinDefault() = 20
-
-"""
-Chaikin Volatility
-"""
-function CHAIKIN_VOL(;horizon = horizonDefault(), smooth = smoothChaikinDefault())
-
-    high = _getTA(price = "High", horizon = horizon + smooth)
-    low = _getTA(price = "Low", horizon = horizon + smooth)
-
-    _fcvl = nothing
-    all_names = Symbol[]
-    for name in colnames(high)
-
-       hl = merge(rename(low[name], [:Low]), rename(high[name], [:High]), :outer)
-      _tcvl = nothing
-    
-      if hl != nothing
-        _tcvl = chaikinvolatility(hl, smooth, horizon)
-      end 
-
-      if _tcvl != nothing
-        push!(all_names, name)
-        _fcvl = _fcvl == nothing ? _tcvl : merge(_fcvl, _tcvl)
-      end
-    end
-
-    if _fcvl != nothing
-      return Indicator(rename(_fcvl, all_names))
-    end
-end
-
-export CHAIKIN_VOL
 
 
 function _donchian(high, low, horizon, type)
@@ -1119,37 +1465,210 @@ export CHAIKIN_OSC
 fastStochasticDefault() = 10
 slowStochasticDefault() = 30
 
-"""
-Stochastic Oscillator
-"""
-# function STOCHASTIC_OSC(;horizon = horizonDefault(), fast = fastStochasticDefault(), slow = slowStochasticDefault())
+function _stochastic(high, low, close, horizon, fast, slow, type)
+    _fstosc = nothing
+    all_names = Symbol[]
+    for name in colnames(close)
+
+       hlc = merge(merge(rename(low[name], [:Low]), rename(close[name], [:Close]), :outer), rename(high[name], [:High]), :outer)   
+      _tstosc = nothing
     
-#     close = _getTA("Close", horizon = max(fast, slow))
-#     high = _getTA("High", horizon = max(fast, slow))
-#     low = _getTA("Low", horizon = max(fast, slow))
+      if hlc != nothing
+        _tstosc = stochasticoscillator(hlc, horizon, fast, slow)[type] ##? Three outputs...which one to use
+      end 
 
-#     _fstosc = nothing
-#     all_names = Symbol[]
-#     for name in colnames(close)
+      if _tstosc != nothing
+        push!(all_names, name)
+        _fstosc = _fstosc == nothing ? _tstosc : merge(_fstosc, _tstosc)
+      end
+    end
 
-#        hlc = merge(merge(rename(low[name], [:Low]), rename(close[name], [:Close]), :outer), rename(high[name], [:High]), :outer)   
-#       _tstosc = nothing
+    if _fstosc != nothing
+      return Indicator(rename(_fstosc, all_names))
+    end
+end
+
+
+"""
+Stochastic Oscillator (Fast K)
+"""
+function STOCHASTIC_OSC_FASTK(;horizon = horizonDefault(), fast = fastStochasticDefault(), slow = slowStochasticDefault())
     
-#       if hlc != nothing
-#         _tchosc = stochasticoscillator(hlc, horizon, fast, slow) ##? Three outputs...which one to use
-#       end 
+    close = _getTA(price = "Close", horizon = horizon)
+    high = _getTA(price = "High", horizon = horizon)
+    low = _getTA(price = "Low", horizon = horizon)
 
-#       if _tchosc != nothing
-#         push!(all_names, name)
-#         _fchosc = _fchosc == nothing ? _tchosc : merge(_fchosc, _tchosc)
-#       end
-#     end
+    _stochastic(high, low, close, horizon, fast, slow, :fast_k)
+end
 
-#     if _fchosc != nothing
-#       return Indicator(rename(_fchosc, all_names))
-#     end
-# end
 
-# export STOCHASTIC_OSC
+"""
+Stochastic Oscillator (Fast D)
+"""
+function STOCHASTIC_OSC_FASTD(;horizon = horizonDefault(), fast = fastStochasticDefault(), slow = slowStochasticDefault())
+    
+    close = _getTA(price = "Close", horizon = horizon)
+    high = _getTA(price = "High", horizon = horizon)
+    low = _getTA(price = "Low", horizon = horizon)
+
+    _stochastic(high, low, close, horizon, fast, slow, :fast_d)
+end
+
+
+"""
+Stochastic Oscillator (Slow D)
+"""
+function STOCHASTIC_OSC_SLOWD(;horizon = horizonDefault(), fast = fastStochasticDefault(), slow = slowStochasticDefault())
+    
+    close = _getTA(price = "Close", horizon = horizon)
+    high = _getTA(price = "High", horizon = horizon)
+    low = _getTA(price = "Low", horizon = horizon)
+
+    _stochastic(high, low, close, horizon, fast, slow, :slow_d)
+end
+
+export STOCHASTIC_OSC_FASTK, STOCHASTIC_OSC_FASTD, STOCHASTIC_OSC_SLOWD 
+
+
+#Adding new indicators (on 15/04/2019)
+
+"""
+Awesome Oscillator
+"""
+function AWESOME_OSC(;fast = fastStochasticDefault(), slow = slowStochasticDefault())
+    
+    high = _getTA(price = "High", horizon = max(fast, slow))
+    low = _getTA(price = "Low", horizon = max(fast, slow))
+
+    _fawosc = nothing
+    all_names = Symbol[]
+    for name in colnames(high)
+
+       hl = merge(rename(low[name], [:Low]), rename(high[name], [:High]), :outer) 
+      
+      _tawosc = nothing
+      if hl != nothing
+        _tawosc = awesomeoscillator(hl, fast, slow) 
+      end 
+
+      if _tawosc != nothing
+        push!(all_names, name)
+        _fawosc = _fawosc == nothing ? _tawosc : merge(_fawosc, _tawosc)
+      end
+    end
+
+    if _fawosc != nothing
+      return Indicator(rename(_fawosc, all_names))
+    end
+end
+
+export AWESOME_OSC
+
+
+"""
+Williams R
+"""
+function WILLIAMSR(;horizon = horizonDefault())
+    
+    close = _getTA(price = "Close", horizon = horizon)
+    high = _getTA(price = "High", horizon = horizon)
+    low = _getTA(price = "Low", horizon = horizon)
+
+    _fwlm = nothing
+    all_names = Symbol[]
+    for name in colnames(close)
+
+       hlc = merge(merge(rename(low[name], [:Low]), rename(close[name], [:Close]), :outer), rename(high[name], [:High]), :outer)   
+      _twlm = nothing
+    
+      if hlc != nothing
+        _twlm = williamsr(hlc, horizon) 
+      end 
+
+      if _twlm != nothing
+        push!(all_names, name)
+        _fwlm = _fwlm == nothing ? _twlm : merge(_fwlm, _twlm)
+      end
+    end
+
+    if _fwlm != nothing
+      return Indicator(rename(_fwlm, all_names))
+    end
+end
+
+export WILLIAMSR
+
+
+"""
+Detrending Price Oscillator
+"""
+function DPO_OSC(;horizon = horizonDefault())
+
+  close = _getTA(price = "Close", horizon = horizon)
+
+  _fdpo = nothing
+  all_names = Symbol[]
+  for name in colnames(close)
+
+     c = rename(close[name], [:Close])
+    _tdpo = nothing
+  
+    if c != nothing
+      _tdpo = dpo(c, horizon) 
+    end 
+
+    if _tdpo != nothing
+      push!(all_names, name)
+      _fdpo = _fdpo == nothing ? _tdpo : merge(_fdpo, _tdpo)
+    end
+  end
+
+  if _fdpo != nothing
+    return Indicator(rename(_fdpo, all_names))
+  end
+end
+
+export DPO_OSC
+
+
+"""
+Money Flow Index
+"""
+function MONEYFLOWINDEX(;horizon = horizonDefault())
+    
+    high = _getTA(price = "High", horizon = horizon)
+    low = _getTA(price = "Low", horizon = horizon)
+    close = _getTA(price = "Close", horizon = horizon)
+    volume = _getTA(price = "Volume", horizon = horizon)
+
+    _fmfi = nothing
+    all_names = Symbol[]
+    for name in colnames(close)
+
+       hlcv = merge(
+              merge(
+                merge(rename(low[name], [:Low]), rename(high[name], [:High]), :outer),
+                  rename(close[name], [:Close]), :outer),
+                    rename(volume[name], [:Volume]), :outer)
+
+      _tmfi = nothing
+    
+      if hlcv != nothing
+        _tmfi = moneyflowindex(hlcv, horizon) 
+      end 
+
+      if _tmfi != nothing
+        push!(all_names, name)
+        _fmfi = _fmfi == nothing ? _tmfi : merge(_fmfi, _tmfi)
+      end
+    end
+
+    if _fmfi != nothing
+      return Indicator(rename(_fmfi, all_names))
+    end
+end
+
+export MONEYFLOWINDEX
+
 
 end #end module

@@ -112,7 +112,7 @@ in the 1980s. We implement the newer version.
   (https://en.wikipedia.org/wiki/Keltner_channel)
 
 """
-function keltnerbands(ohlc::TimeArray, n::Integer=20, w::Integer=2;
+function keltnerbands(ohlc::TimeArray, n::Integer=20, w::Float64=2.0;
                       h=:High, l=:Low, c=:Close)
     kma = rename(ema(typical(ohlc, h=h, l=l, c=c), n), :kma)
     rng = atr(ohlc, n, h=h, l=l, c=c)

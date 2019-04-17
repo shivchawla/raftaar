@@ -92,3 +92,14 @@ function wilder_smooth(ta::TimeArray, n::Integer;
 end
 
 safediv(x, y) = ifelse(iszero(x) && iszero(y), x, x / y)
+
+
+function lagfill(ta::TimeArray, r1::Int, fill::Float64)
+    _lta = lag(ta, r1, padding = true)
+    _lta_values = values(_lta)
+    _lta_values[1:r1] .= fill
+    
+    TimeArray(timestamp(ta), _lta_values, colnames(ta))
+    
+end
+

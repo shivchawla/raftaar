@@ -15,8 +15,8 @@ On Balance Volume
 """
 function obv(ohlcv::TimeArray{T,N}; price=:Close, v=:Volume) where {T,N}
 
-    ret    = percentchange(ohlcv[price])
-    vol     = zeros(length(ohlcv))
+    ret = percentchange(ohlcv[price])
+    vol = zeros(length(ohlcv))
     
     _vol_values = values(ohlcv[v])
     _ret_values = values(ret)
@@ -32,6 +32,15 @@ function obv(ohlcv::TimeArray{T,N}; price=:Close, v=:Volume) where {T,N}
     end
 
     TimeArray(timestamp(ohlcv), reshape(nancumsum(vol), (length(timestamp(ohlcv)), 1)), [:obv], meta(ohlcv))
+end
+
+"""
+    obv_mean(ohlcv; price="Close", v="Volume")
+
+On Balance Volume Mean
+"""
+function obv_mean(ohlcv::TimeArray{T,N}, n::Int = 10; price=:Close, v=:Volume) where {T,N}
+    obv = moving(nanmean, obv(ohlcv, price = price, v = v), n)
 end
 
 """
@@ -107,3 +116,85 @@ function adl(ohlcv::TimeArray; h=:High, l=:Low, c=:Close, v=:Volume)
 
     TimeArray(timestamp(ohlcv), vals, [:adl], meta(ohlcv))
 end
+
+
+"""
+Chaikin Money Flow
+"""
+function chaikinmoneyflow(ohlcv::TimeArray, n::Int=10; h=:High, l=:Low, c=:Close, v=:Volume)
+    _h = ohlcv[h]
+    _l = ohlcv[l]
+    _c = ohlcv[c]
+    _v = ohlcv[v]
+
+    flow_facor = ((_c .- _l) .- (_h .- _c)) ./ (_h .- _l)
+    flow_vol = flow_facor .* _v
+
+    cmf = rename(moving(nansum, flow_vol, n) ./ moving(nansum, _v, n), :cmf)
+
+end
+
+
+"""
+Force Index
+    
+    It illustrates how strong the actual buying or selling pressure is. High
+    positive values mean there is a strong rising trend, and low values signify
+    a strong downward trend.
+
+    http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:force_index
+
+"""
+function forceindex(ohlcv::TimeArray, n::Int=10; c=:Close, v=:Volume)
+    _c = ohlcv[c]
+    _v = ohlcv[v]
+
+    fi = rename(diff(_c, differences = n) .* diff(_v, differences = n), :fi)
+
+end
+
+
+"""
+Ease of Movement
+
+    It relate an asset's price change to its volume and is particularly useful
+    for assessing the strength of a trend.
+
+    https://en.wikipedia.org/wiki/Ease_of_movement
+"""
+function easeofmovement(ohlcv::TimeArray, n::Int=10; v=:Volume, h=:High, l=:Low)
+    _h = ohlcv[h]
+    _l = ohlcv[l]
+    _v = ohlcv[v]
+
+    _emv = (diff(_h) .+ diff(_l)) .* (_h .- _l) ./ (2 .* (_v./100000))
+    emv = rename(moving(nanmean, _emv, n), :emv)
+
+end
+
+
+"""
+Volume Price Trend
+    
+    Is based on a running cumulative volume that adds or substracts a multiple
+    of the percentage change in share price trend and current volume, depending
+    upon the investment's upward or downward movements.
+
+    https://en.wikipedia.org/wiki/Volume%E2%80%93price_trend
+
+"""
+function volumepricetrend(ohlcv::TimeArray, n::Int=10; c=:Close, v=:Volume)
+
+    _c = ohlcv[c]
+    _v = ohlcv[v]
+
+    _lagc = lagfill(_c, 1, nanmean(values(_c)))
+
+    _vpt = (_v./100000) .* (_c .- _lagc) ./ _lagc
+    _lagvpt = lagfill(_vpt, 1, nanmean(values(_vpt)))
+    
+    vpt = rename(_vpt .+ _lagvpt, :vpt) 
+
+end
+
+
