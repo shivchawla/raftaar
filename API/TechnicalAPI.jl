@@ -164,7 +164,7 @@ end
 function crossAbove(ind::Indicator, val)
     names_ind = colnames(ind._ta)
 
-    x = ind1._ta .- val
+    x = ind._ta .- val
     y = x ./ abs.(x)
     z = y .- lag(y)
 
