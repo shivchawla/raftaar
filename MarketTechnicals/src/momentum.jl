@@ -426,15 +426,20 @@ function moneyflowindex(ohlcv::TimeArray, n::Int=14; c=:Close, h=:High, l=:Low, 
 
     rmf = typ .* _v
     values_rmf = values(rmf)
+
+    lagtyp = lagfill(typ, 1, NaN)
+
+    mf_pos_flag = values(typ .> lagtyp)
+    mf_neg_flag = values(typ .< lagtyp)
     
     # Positive rate of money flow
-    values_rmf_p = values_rmf
-    values_rmf_p[values_rmf_p .< 0] .= 0
+    values_rmf_p = copy(values_rmf)
+    values_rmf_p[mf_pos_flag] .= 0
     rmf_p = moving(nansum, TimeArray(timestamp(ohlcv), values_rmf_p, [:rmf_p]), n, padding = true) 
 
     # Negative rate of money flow
-    values_rmf_n = values_rmf
-    values_rmf_n[values_rmf_n .> 0] .= 0
+    values_rmf_n = copy(values_rmf)
+    values_rmf_n[mf_neg_flag] .= 0
     rmf_n = moving(nansum, TimeArray(timestamp(ohlcv), values_rmf_n, [:rmf_n]), n, padding = true)
 
     mfr = rmf_p ./ rmf_n
@@ -442,6 +447,7 @@ function moneyflowindex(ohlcv::TimeArray, n::Int=14; c=:Close, h=:High, l=:Low, 
     mfi_values = 100 .- 100 ./ (1 .+ values(mfr))
 
     mfi = TimeArray(timestamp(ohlcv), mfi_values, [:mfi])
+
 
 end
 
