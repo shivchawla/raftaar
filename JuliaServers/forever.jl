@@ -54,18 +54,38 @@ function process_backtest()
     if args != nothing
         evaluate_strategy(args)
     end
+
 end
 
 """
 Add requests to active sets
 """
 function addRequestToActiveSet(request)
-    println("Assigning Julia port to request")
-    request["juliaPort"] = port
-    backtestId = get(request, "backtestId", "")
-    
-    println("Adding request to current process request set")
-    Redis.hset(redisClient, THIS_PROCESS_BACKTEST_SET, backtestId, JSON.json(request))
+    try
+        println("Assigning Julia port to request")
+        request["juliaPort"] = port
+        backtestId = get(request, "backtestId", "")
+        
+        println("Adding request to current process request set")
+        Redis.hset(redisClient, THIS_PROCESS_BACKTEST_SET, backtestId, JSON.json(request))
+    catch err
+        println("Error adding request to active set")
+        println(err)
+        
+        if (typeof(err) == Redis.ConnectionException)
+            println("Reconnect and retry")
+            setupRedisClient()
+            if (Redis.is_connected(redisClient))
+                addRequestToActiveSet(request)
+            else
+                println("Error reconnecting redis")
+                rethrow(err)
+            end
+        else
+            rethrow(err)
+        end
+    end
+
 end
 
 """
@@ -74,24 +94,70 @@ Push them back to full list based on success flag
 """
 function removeRequestFromActiveSet(request; success=true)
 
-    backtestId = get(request, "backtestId", "")
-    
-    println("Removing request from current process request set")
-    Redis.hdel(redisClient, THIS_PROCESS_BACKTEST_SET, backtestId)
+    try
+        backtestId = get(request, "backtestId", "")
+        
+        println("Removing request from current process request set")
+        Redis.hdel(redisClient, THIS_PROCESS_BACKTEST_SET, backtestId)
 
-    #On failure, add the request back to the queue 
-    if !success
-        delete!(request, "juliaPort")
-        println("Request Failed: Adding request back to full list")
-        Redis.lpush(redisClient, BACKTEST_QUEUE, JSON.json(request))
-    #On success, add to completion set
-    else
-       
-        println("Request Success: Setting completion flag to true in completion set")
-        Redis.hset(redisClient, COMPLETE_BACKTEST_SET, backtestId, "1")
+        #On failure, add the request back to the queue 
+        if !success
+            delete!(request, "juliaPort")
+            println("Request Failed: Adding request back to full list")
+            Redis.lpush(redisClient, BACKTEST_QUEUE, JSON.json(request))
+        #On success, add to completion set
+        else
+            println("Request Success: Setting completion flag to true in completion set")
+            Redis.hset(redisClient, COMPLETE_BACKTEST_SET, backtestId, "1")
+        end
+    catch err
+        println("Error removing request from Active Set");
+        println(err)
+
+        if (typeof(err) == Redis.ConnectionException)
+            println("Reconnect and retry")
+            setupRedisClient()
+            if (Redis.is_connected(redisClient))
+                removeRequestFromActiveSet(request, success = success)
+            else 
+                println("Error reconnecting redis")
+                rethrow(err)
+            end  
+        else 
+            rethrow(err)
+        end
     end
 
 end
+
+"""
+Add back the original request in case of failure
+"""
+function addBackOriginalRequest(rawRequest)
+    try
+        if rawRequest != nothing 
+            println("Pushing the request in original queue")
+            Redis.rpush(redisClient, BACKTEST_QUEUE, rawRequest)
+        end
+    catch
+        println("Error while adding back the original request")
+        println(err)
+        if (typeof(err) == Redis.ConnectionException)
+            println("Reconnect and retry")
+            setupRedisClient()
+            
+            if (Redis.is_connected(redisClient))
+                addBackOriginalRequest(rawRequest)
+            else
+                println("Error reconnecting redis")
+                rethrow(err)
+            end
+        else 
+            rethrow(err)
+        end
+    end
+end
+
 
 """
 Remove all active requests on restart 
@@ -196,7 +262,8 @@ function processRedisQueue()
                 removeRequestFromActiveSet(request, success = true)
             catch  err
                 println("Error processing backtest")
-                println(err) 
+                println(err)
+
                 removeRequestFromActiveSet(request, success = false)
             end
 
@@ -205,10 +272,7 @@ function processRedisQueue()
         end
     catch err 
         println(err)
-        if rawRequest != nothing 
-            println("Pushing the request in original queue")
-            Redis.rpush(redisClient, BACKTEST_QUEUE, rawRequest)
-        end
+        addBackOriginalRequest(rawRequest)
     end
     
 end
@@ -229,7 +293,6 @@ function startProcess()
         if (typeof(err) == Redis.ConnectionException)
             setupRedisClient()
         end
-
     end
 
 end
