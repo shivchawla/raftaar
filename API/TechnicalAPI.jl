@@ -494,9 +494,12 @@ Average Directional Movement Index
 """
 function _adx(high, low, close, horizon, type)
 
-    if !(colnames(high) == colnames(low) == colnames(close))
-      return nothing
-    end
+    # Removing this check
+    # Assuming all names are available
+    # Check should be added on sorted array (and not as it is)
+    # if !(colnames(high) == colnames(low) == colnames(close))
+    #   return nothing
+    # end
 
    _fadx = nothing
    all_names = Symbol[]
@@ -541,7 +544,7 @@ end
 
 function MinusDI(;horizon = horizonDefault())
     
-   close = _getTA(price = "Close", horizon = horizon)
+    close = _getTA(price = "Close", horizon = horizon)
     high = _getTA(price = "High", horizon = horizon) 
     low = _getTA(price = "Low", horizon = horizon) 
 
@@ -779,12 +782,12 @@ end
 """
 Moving Average Convergence Divergence (MACD)
 """
-function MACD(;price = "Close", wilder = false, fast = fastMACDDefault(), slow = slowMACDDefault(), signal = signalMACDDefault())
+function MACD(;price = "Close", fast = fastMACDDefault(), slow = slowMACDDefault(), signal = signalMACDDefault(), wilder = false)
     
     ta = _getTA(price = price)
 
     if ta != nothing
-      return Indicator(_macd(ta, fast, slow, signal,wilder, :macd))
+      return Indicator(_macd(ta, fast, slow, signal, wilder, :macd))
     end
 end
 
@@ -792,7 +795,7 @@ end
 """
 Moving Average Convergence Divergence (MACD)
 """
-function MACDSignal(;price = "Close", wilder = false, fast = fastMACDDefault(), slow = slowMACDDefault(), signal = signalMACDDefault())
+function MACDSignal(;price = "Close", fast = fastMACDDefault(), slow = slowMACDDefault(), signal = signalMACDDefault(), wilder = false)
     
     ta = _getTA(price = price)
 
