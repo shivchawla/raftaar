@@ -923,7 +923,39 @@ function LagVOL(;period = 1)
     end
 end
 
-export PrevOPEN, PrevHIGH, PrevLOW, PrevCLOSE, PrevVOL, LagOPEN, LagHIGH, LagLOW, LagCLOSE, LagVOL
+
+"""
+N Day High (Period High)
+"""
+function PeriodHIGH(;period = 1)
+    if period < 0
+      return nothing
+    end
+
+    ta = _getTA(price = "High", horizon = period + 1)
+
+    if ta != nothing
+      return Indicator(moving(nanmax, ta, period, padding=true)))
+    end
+end
+
+"""
+N Day Low (Period Low)
+"""
+function PeriodLOW(;period = 1)
+    if period < 0
+      return nothing
+    end
+
+    ta = _getTA(price = "Low", horizon = period + 1)
+
+    if ta != nothing
+      return Indicator(moving(nanmin, ta, period, padding=true)))
+    end
+
+end
+
+export PrevOPEN, PrevHIGH, PrevLOW, PrevCLOSE, PrevVOL, LagOPEN, LagHIGH, LagLOW, LagCLOSE, LagVOL, PeriodHIGH, PeriodLOW
 
 
 """

@@ -318,27 +318,27 @@
         }]    
     },
 
-    "PrevOpen": {
+    "PrevOPEN": {
         "label": "Previous Open"
     },
 
-    "PrevHigh": {
+    "PrevHIGH": {
         "label": "Previous High"
     },
 
-    "PrevLow": {
+    "PrevLOW": {
         "label": "Previous Low"
     },
 
-    "PrevClose": {
+    "PrevCLOSE": {
         "label": "Previous Close"
     },
 
-    "PrevVolume": {
+    "PrevVOL": {
         "label": "Previous Volume"
     },
 
-    "LagOpen": {
+    "LagOPEN": {
         "label": "Lagged Open",
         "options":[{
             "key": "period", "type": "Integer",
@@ -349,7 +349,7 @@
         }]
     },
 
-    "LagHigh": {
+    "LagHIGH": {
         "label": "Lagged High",
         "options":[{
             "key": "period", "type": "Integer",
@@ -360,7 +360,7 @@
         }]
     },
 
-    "LagLow": {
+    "LagLOW": {
         "label": "Lagged Low",
         "options":[{
             "key": "period", "type": "Integer",
@@ -371,7 +371,7 @@
         }]
     },
 
-    "LagClose": {
+    "LagCLOSE": {
         "label": "Lagged Close",
         "options":[{
             "key": "period", "type": "Integer",
@@ -382,7 +382,7 @@
         }]
     },
 
-    "LagVolume": {
+    "LagVOL": {
         "label": "Lagged Volume",
         "options":[{
             "key": "period", "type": "Integer",
@@ -393,22 +393,22 @@
         }]
     },
 
-    "PeriodHigh": {
-        "label": "N Day High Price",
+    "PeriodHIGH": {
+        "label": "N Period High Price",
         "options":[{
             "key": "period", "type": "Integer",
-            "label": "Lag Period",
+            "label": "Period",
             "defaultValue": {"daily": 1, "minute": 5}, 
             "values": {"daily" : [1, 2, 3, 4, 5], "minute": [1, 5, 10, 30, 60]},
             "maxValue" : {"daily":  252, "minute": 9375}
         }]
     },
 
-    "PeriodLow": {
-        "label": "N Day Low Price",
+    "PeriodLOW": {
+        "label": "N Period Low Price",
         "options":[{
             "key": "period", "type": "Integer",
-            "label": "Lag Period",
+            "label": "Period",
             "defaultValue": {"daily": 1, "minute": 5}, 
             "values": {"daily" : [1, 2, 3, 4, 5], "minute": [1, 5, 10, 30, 60]},
             "maxValue" : {"daily":  252, "minute": 9375}

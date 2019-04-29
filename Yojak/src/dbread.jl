@@ -532,7 +532,11 @@ function getdatabydate(datacollection::Mongoc.Collection,
 
         #Format the actual data (with new mongoc module, simplae datetime array field comes as dictionary field)
         if actualdata != nothing && length(actualdata) > 0
-            actualdata = [[DateTime(collect(values(dataRow[1]))[1][1:end-1]); dataRow[2:end]] for dataRow in actualdata]
+            actualdata = [
+                [
+                    DateTime(collect(values(dataRow[1]))[1][1:end-1]); 
+                    [typeof(valueData) == Float64 ? valueData : NaN for valueData in dataRow[2:end]]
+            ] for dataRow in actualdata]
         end
 
         columnindices = Array{Int,1}()
