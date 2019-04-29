@@ -44,6 +44,18 @@ getindex(ind::Indicator, syms::Vector{Symbol}) =  ind._ta[syms]
 
 export Condition, Indicator, getindex
 
+#Helper function to find min/max 
+function nanmax(x) 
+  x[isnan.(x)] .= -Inf
+  maximum(x)
+end
+
+function nanmin(x) 
+  x[isnan.(x)] .= Inf
+  minimum(x)
+end
+
+
 function Base.:(==)(c1::Indicator, c2::Indicator)
     names_c1 = colnames(c1._ta)
     names_c2 = colnames(c2._ta)
@@ -935,7 +947,7 @@ function PeriodHIGH(;period = 1)
     ta = _getTA(price = "High", horizon = period + 1)
 
     if ta != nothing
-      return Indicator(moving(nanmax, ta, period, padding=true)))
+      return Indicator(moving(nanmax, ta, period, padding=true))
     end
 end
 
@@ -950,7 +962,7 @@ function PeriodLOW(;period = 1)
     ta = _getTA(price = "Low", horizon = period + 1)
 
     if ta != nothing
-      return Indicator(moving(nanmin, ta, period, padding=true)))
+      return Indicator(moving(nanmin, ta, period, padding=true))
     end
 
 end
